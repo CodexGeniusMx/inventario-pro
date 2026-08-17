@@ -1016,6 +1016,7 @@ export type Database = {
           id: string
           notes: string | null
           organization_id: string
+          reason: string | null
           sale_id: string
           warehouse_id: string
         }
@@ -1026,6 +1027,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id: string
+          reason?: string | null
           sale_id: string
           warehouse_id: string
         }
@@ -1036,6 +1038,7 @@ export type Database = {
           id?: string
           notes?: string | null
           organization_id?: string
+          reason?: string | null
           sale_id?: string
           warehouse_id?: string
         }
@@ -1631,6 +1634,7 @@ export type Database = {
         }
         Returns: string
       }
+      process_return: { Args: { p_created_by: string; p_idempotency_key?: string; p_lines: Json; p_notes?: string; p_organization_id: string; p_reason: string; p_sale_id: string }; Returns: string }
       get_user_organization_id: { Args: never; Returns: string }
       get_user_role: {
         Args: never

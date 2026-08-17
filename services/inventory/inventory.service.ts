@@ -236,7 +236,7 @@ function mapRelatedDocument(row: {
   }
 
   if (row.return_id) {
-    return { label: "Return", href: null }
+    return { label: "Return", href: `/returns/${row.return_id}` }
   }
 
   return { label: null, href: null }

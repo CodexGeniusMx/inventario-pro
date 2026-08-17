@@ -27,6 +27,7 @@ export type SaleLine = {
   variantName: string
   sku: string
   quantity: number
+  quantityReturned: number
   unitPrice: number
   lineTotal: number
   movementId: string | null
