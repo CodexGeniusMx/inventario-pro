@@ -203,6 +203,10 @@ function mapRelatedDocument(row: {
   stock_adjustments?: { document_number: string } | null
   sale_id: string | null
   purchase_receipt_id: string | null
+  purchase_receipts?: {
+    document_number: string
+    purchase_order_id: string
+  } | null
   return_id: string | null
 }): { label: string | null; href: string | null } {
   if (row.stock_adjustment_id && row.stock_adjustments?.document_number) {
@@ -216,8 +220,11 @@ function mapRelatedDocument(row: {
     return { label: "Sale", href: null }
   }
 
-  if (row.purchase_receipt_id) {
-    return { label: "Purchase receipt", href: null }
+  if (row.purchase_receipt_id && row.purchase_receipts?.document_number) {
+    return {
+      label: row.purchase_receipts.document_number,
+      href: `/purchases/${row.purchase_receipts.purchase_order_id}`,
+    }
   }
 
   if (row.return_id) {
@@ -285,7 +292,11 @@ export async function listMovements(
           products ( name )
         ),
         profiles!inventory_movements_created_by_fkey ( full_name ),
-        stock_adjustments ( document_number )
+        stock_adjustments ( document_number ),
+        purchase_receipts (
+          document_number,
+          purchase_order_id
+        )
       `
     )
     .eq("organization_id", user.organizationId)
