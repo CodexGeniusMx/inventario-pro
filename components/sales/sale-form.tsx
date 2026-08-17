@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { formatCurrency } from "@/lib/format"
 import { createSaleSchema } from "@/lib/validations/sale.schema"
 import type { VariantOption, WarehouseRow } from "@/types/inventory"
@@ -67,6 +68,7 @@ export function SaleForm({
   )
   const [customerId, setCustomerId] = useState<string>("")
   const [discountAmount, setDiscountAmount] = useState("0")
+  const [notes, setNotes] = useState("")
   const [lines, setLines] = useState<SaleLine[]>(() => [createEmptyLine(variants)])
   const [priceMap, setPriceMap] = useState<Record<string, number>>({})
   const [isLoadingPrices, setIsLoadingPrices] = useState(false)
@@ -157,6 +159,7 @@ export function SaleForm({
       warehouseId,
       customerId: customerId || null,
       discountAmount,
+      notes: notes || null,
       idempotencyKey,
       lines: lines.map((line) => ({
         productVariantId: line.productVariantId,
@@ -261,6 +264,19 @@ export function SaleForm({
               step="0.01"
               value={discountAmount}
               onChange={(event) => setDiscountAmount(event.target.value)}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label htmlFor="notes" className="mb-1 block text-sm font-medium">
+              Notes
+            </label>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              placeholder="Optional sale notes"
+              rows={3}
             />
           </div>
         </CardContent>

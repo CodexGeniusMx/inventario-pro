@@ -106,6 +106,12 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                 {formatCurrency(sale.total)}
               </p>
             </div>
+            {sale.notes ? (
+              <div className="sm:col-span-2">
+                <p className="text-sm text-muted-foreground">Notes</p>
+                <p className="whitespace-pre-wrap font-medium">{sale.notes}</p>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 

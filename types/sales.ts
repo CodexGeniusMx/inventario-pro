@@ -48,6 +48,7 @@ export type SaleDetail = {
   completedAt: string | null
   createdAt: string
   createdByName: string
+  notes: string | null
   lines: SaleLine[]
 }
 
@@ -65,6 +66,7 @@ export type CreateSaleInput = {
   warehouseId: string
   customerId?: string | null
   discountAmount?: number
+  notes?: string | null
   lines: CreateSaleLineInput[]
   idempotencyKey?: string
 }
@@ -72,4 +74,5 @@ export type CreateSaleInput = {
 export type VariantSalePrice = {
   productVariantId: string
   unitPrice: number
+  unitCost: number
 }

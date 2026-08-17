@@ -21,12 +21,25 @@ export const createSaleLineSchema = z.object({
     .positive("Quantity must be greater than zero."),
 })
 
+const optionalNotesSchema = z
+  .union([z.string(), z.null()])
+  .optional()
+  .transform((value) => {
+    if (typeof value !== "string") {
+      return null
+    }
+
+    const trimmed = value.trim()
+    return trimmed === "" ? null : trimmed
+  })
+
 export const createSaleSchema = z.object({
   warehouseId: z.string().uuid("Select a warehouse."),
   customerId: z
     .union([z.string().uuid(), z.null()])
     .optional()
     .transform((value) => value ?? null),
+  notes: optionalNotesSchema,
   discountAmount: z.coerce
     .number()
     .min(0, "Discount cannot be negative.")

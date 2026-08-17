@@ -8,4 +8,5 @@ export type CreateAndCompleteSaleRpcArgs = {
   p_customer_id?: string
   p_discount_amount?: number
   p_idempotency_key?: string
+  p_notes?: string
 }

@@ -29,6 +29,9 @@ export function SalesTable({ sales }: SalesTableProps) {
           <TableHead id="date" className="hidden md:table-cell">
             Date
           </TableHead>
+          <TableHead id="warehouse" className="hidden lg:table-cell">
+            Warehouse
+          </TableHead>
           <TableHead id="items" className="hidden sm:table-cell">
             Items
           </TableHead>
@@ -58,6 +61,9 @@ export function SalesTable({ sales }: SalesTableProps) {
               </TableCell>
               <TableCell className="hidden text-muted-foreground md:table-cell">
                 {formatDateTime(sale.completedAt ?? sale.createdAt)}
+              </TableCell>
+              <TableCell className="hidden text-muted-foreground lg:table-cell">
+                {sale.warehouseName}
               </TableCell>
               <TableCell className="hidden tabular-nums sm:table-cell">
                 {sale.itemCount}

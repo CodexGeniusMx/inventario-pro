@@ -3,6 +3,7 @@ import type { PostgrestError } from "@supabase/supabase-js"
 import type { Json } from "@/lib/database.types"
 
 import type { AuthenticatedUser } from "@/lib/auth/types"
+import { resolveCostPrice, resolveSalePrice } from "@/lib/catalog/pricing"
 import {
   ConflictError,
   ForbiddenError,
@@ -54,7 +55,8 @@ function mapRpcError(error: PostgrestError): never {
   if (
     message.includes("invalid_line_quantity") ||
     message.includes("lines_required") ||
-    message.includes("invalid_discount_amount")
+    message.includes("invalid_discount_amount") ||
+    message.includes("invalid_line_price")
   ) {
     throw new ValidationError("Please check the sale details and try again.")
   }
@@ -157,6 +159,7 @@ export async function getSaleById(
         total,
         completed_at,
         created_at,
+        notes,
         customers ( name ),
         warehouses ( name ),
         profiles!sales_created_by_fkey ( full_name ),
@@ -205,6 +208,7 @@ export async function getSaleById(
     completedAt: data.completed_at,
     createdAt: data.created_at,
     createdByName: data.profiles?.full_name ?? "Unknown user",
+    notes: data.notes ?? null,
     lines: (data.sale_items ?? []).map((line) => ({
       id: line.id,
       productVariantId: line.product_variant_id,
@@ -238,7 +242,8 @@ export async function getVariantSalePrices(
       `
         id,
         sale_price,
-        products!inner ( base_sale_price, status, deleted_at )
+        cost_price,
+        products!inner ( base_sale_price, base_cost_price, status, deleted_at )
       `
     )
     .eq("organization_id", user.organizationId)
@@ -257,7 +262,14 @@ export async function getVariantSalePrices(
     )
     .map((variant) => ({
       productVariantId: variant.id,
-      unitPrice: Number(variant.sale_price ?? variant.products?.base_sale_price ?? 0),
+      unitPrice: resolveSalePrice(
+        variant.sale_price,
+        variant.products?.base_sale_price
+      ),
+      unitCost: resolveCostPrice(
+        variant.cost_price,
+        variant.products?.base_cost_price
+      ),
     }))
 }
 
@@ -286,6 +298,10 @@ export async function createAndCompleteSale(
 
   if (input.idempotencyKey) {
     rpcArgs.p_idempotency_key = input.idempotencyKey
+  }
+
+  if (input.notes) {
+    rpcArgs.p_notes = input.notes
   }
 
   const { data, error } = await supabase.rpc(
