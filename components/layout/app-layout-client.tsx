@@ -20,6 +20,7 @@ const pageTitles: Record<string, string> = {
   "/sales": "Sales",
   "/sales/new": "New sale",
   "/customers": "Customers",
+  "/customers/new": "New customer",
   "/suppliers": "Suppliers",
   "/suppliers/new": "New supplier",
   "/reports": "Reports",
@@ -62,6 +63,22 @@ function getPageTitle(pathname: string): string {
 
   if (/^\/purchases\/[^/]+$/.test(pathname)) {
     return "Purchase detail"
+  }
+
+  if (/^\/customers\/[^/]+\/edit$/.test(pathname)) {
+    return "Edit customer"
+  }
+
+  if (/^\/customers\/[^/]+$/.test(pathname)) {
+    return "Customer detail"
+  }
+
+  if (/^\/customers\/new$/.test(pathname)) {
+    return "New customer"
+  }
+
+  if (/^\/sales\/[^/]+$/.test(pathname)) {
+    return "Sale detail"
   }
 
   const match = Object.entries(pageTitles).find(([path]) =>

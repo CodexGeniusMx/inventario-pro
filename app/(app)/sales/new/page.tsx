@@ -1,10 +1,46 @@
-import { PlaceholderPage } from "@/components/layout/placeholder-page"
+import { redirect } from "next/navigation"
 
-export default function NewSalePage() {
+import { PageHeader } from "@/components/layout/page-header"
+import { SaleForm } from "@/components/sales/sale-form"
+import { hasPermission } from "@/lib/auth/permissions"
+import { requirePermission } from "@/lib/auth/session"
+import { listCustomerOptions } from "@/services/parties/customer.service"
+import { listVariantOptions } from "@/services/inventory/inventory.service"
+import {
+  getDefaultWarehouse,
+  listWarehouses,
+} from "@/services/inventory/warehouse.service"
+
+export default async function NewSalePage() {
+  const user = await requirePermission("sales", "read")
+
+  if (
+    !hasPermission(user, "sales", "write") ||
+    !hasPermission(user, "sales", "complete")
+  ) {
+    redirect("/sales")
+  }
+
+  const [customers, warehouses, variants, defaultWarehouse] = await Promise.all([
+    listCustomerOptions(user),
+    listWarehouses(user, { activeOnly: true }),
+    listVariantOptions(user),
+    getDefaultWarehouse(user),
+  ])
+
   return (
-    <PlaceholderPage
-      title="New sale"
-      description="POS-style sale flow for daily checkout operations."
-    />
+    <>
+      <PageHeader
+        title="New sale"
+        description="Record a sale with server-authoritative pricing and atomic stock deduction."
+      />
+
+      <SaleForm
+        customers={customers}
+        warehouses={warehouses}
+        variants={variants}
+        defaultWarehouseId={defaultWarehouse?.id}
+      />
+    </>
   )
 }

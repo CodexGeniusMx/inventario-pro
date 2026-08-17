@@ -202,6 +202,7 @@ function mapRelatedDocument(row: {
   stock_adjustment_id: string | null
   stock_adjustments?: { document_number: string } | null
   sale_id: string | null
+  sales?: { document_number: string } | null
   purchase_receipt_id: string | null
   purchase_receipts?: {
     document_number: string
@@ -216,8 +217,15 @@ function mapRelatedDocument(row: {
     }
   }
 
+  if (row.sale_id && row.sales?.document_number) {
+    return {
+      label: row.sales.document_number,
+      href: `/sales/${row.sale_id}`,
+    }
+  }
+
   if (row.sale_id) {
-    return { label: "Sale", href: null }
+    return { label: "Sale", href: `/sales/${row.sale_id}` }
   }
 
   if (row.purchase_receipt_id && row.purchase_receipts?.document_number) {
@@ -293,6 +301,7 @@ export async function listMovements(
         ),
         profiles!inventory_movements_created_by_fkey ( full_name ),
         stock_adjustments ( document_number ),
+        sales ( document_number ),
         purchase_receipts (
           document_number,
           purchase_order_id
