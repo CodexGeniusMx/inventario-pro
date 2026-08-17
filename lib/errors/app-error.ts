@@ -69,3 +69,19 @@ export class ConflictError extends AppError {
     this.name = "ConflictError"
   }
 }
+
+export class InsufficientStockError extends AppError {
+  constructor(
+    message = "This adjustment would result in negative stock for one or more items."
+  ) {
+    super("CONFLICT", message)
+    this.name = "InsufficientStockError"
+  }
+}
+
+export class InventoryError extends AppError {
+  constructor(message = "Unable to complete the inventory operation.") {
+    super("UNKNOWN", message)
+    this.name = "InventoryError"
+  }
+}
