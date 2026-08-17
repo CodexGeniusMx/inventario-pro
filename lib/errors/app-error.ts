@@ -55,3 +55,17 @@ export class InactiveUserError extends AppError {
     this.name = "InactiveUserError"
   }
 }
+
+export class NotFoundError extends AppError {
+  constructor(message = "The requested resource was not found.") {
+    super("NOT_FOUND", message)
+    this.name = "NotFoundError"
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message = "This record conflicts with existing data.") {
+    super("CONFLICT", message)
+    this.name = "ConflictError"
+  }
+}

@@ -8,6 +8,7 @@ import type { AuthenticatedUser } from "@/lib/auth/types"
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/products": "Products",
+  "/products/new": "New product",
   "/inventory": "Inventory",
   "/purchases": "Purchases",
   "/sales": "Sales",
@@ -22,6 +23,14 @@ const pageTitles: Record<string, string> = {
 function getPageTitle(pathname: string): string {
   if (pageTitles[pathname]) {
     return pageTitles[pathname]
+  }
+
+  if (/^\/products\/[^/]+\/edit$/.test(pathname)) {
+    return "Edit product"
+  }
+
+  if (/^\/products\/[^/]+$/.test(pathname)) {
+    return "Product detail"
   }
 
   const match = Object.entries(pageTitles).find(([path]) =>
