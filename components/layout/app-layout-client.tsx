@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation"
 
 import { AppShell } from "@/components/layout/app-shell"
+import type { AuthenticatedUser } from "@/lib/auth/types"
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -31,12 +32,17 @@ function getPageTitle(pathname: string): string {
 }
 
 type AppLayoutClientProps = {
+  user: AuthenticatedUser
   children: React.ReactNode
 }
 
-export function AppLayoutClient({ children }: AppLayoutClientProps) {
+export function AppLayoutClient({ user, children }: AppLayoutClientProps) {
   const pathname = usePathname()
   const title = getPageTitle(pathname)
 
-  return <AppShell title={title}>{children}</AppShell>
+  return (
+    <AppShell title={title} user={user}>
+      {children}
+    </AppShell>
+  )
 }

@@ -17,6 +17,7 @@ export type NavItem = {
   href: string
   icon: LucideIcon
   badge?: number
+  adminOnly?: boolean
 }
 
 export const mainNavItems: NavItem[] = [
@@ -28,8 +29,8 @@ export const mainNavItems: NavItem[] = [
   { title: "Customers", href: "/customers", icon: Users },
   { title: "Suppliers", href: "/suppliers", icon: Building2 },
   { title: "Reports", href: "/reports", icon: BarChart3 },
-  { title: "Users", href: "/users", icon: UserCog },
-  { title: "Settings", href: "/settings", icon: Settings },
+  { title: "Users", href: "/users", icon: UserCog, adminOnly: true },
+  { title: "Settings", href: "/settings", icon: Settings, adminOnly: true },
 ]
 
 export function isNavItemActive(pathname: string, href: string): boolean {

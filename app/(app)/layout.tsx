@@ -1,9 +1,12 @@
 import { AppLayoutClient } from "@/components/layout/app-layout-client"
+import { requireUserOrRedirect } from "@/lib/auth/session"
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return <AppLayoutClient>{children}</AppLayoutClient>
+  const user = await requireUserOrRedirect("/login")
+
+  return <AppLayoutClient user={user}>{children}</AppLayoutClient>
 }

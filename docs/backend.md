@@ -177,7 +177,7 @@ types/
 
 ```typescript
 // createBrowserClient from @supabase/ssr
-// Uses NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY
+// Uses NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 ```
 
 **Allowed operations:**
@@ -924,7 +924,7 @@ See `/docs/testing.md` (to be populated).
 | Variable | Used by | Exposed |
 |----------|---------|---------|
 | `NEXT_PUBLIC_SUPABASE_URL` | All clients | Browser OK |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser + server user client | Browser OK |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Browser + server user client | Browser OK |
 | `SUPABASE_SERVICE_ROLE_KEY` | `admin.ts` only | **Server only** |
 
 Never prefix service role with `NEXT_PUBLIC_`.

@@ -3,12 +3,15 @@
 import { Package2, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 
 import { NavLink } from "@/components/layout/nav-link"
+import type { AuthenticatedUser } from "@/lib/auth/types"
+import { isAdmin } from "@/lib/auth/permissions"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { mainNavItems } from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 
 type SidebarProps = {
+  user: AuthenticatedUser
   collapsed?: boolean
   onToggleCollapse?: () => void
   onNavigate?: () => void
@@ -16,11 +19,16 @@ type SidebarProps = {
 }
 
 export function Sidebar({
+  user,
   collapsed = false,
   onToggleCollapse,
   onNavigate,
   className,
 }: SidebarProps) {
+  const navItems = mainNavItems.filter(
+    (item) => !item.adminOnly || isAdmin(user)
+  )
+
   return (
     <aside
       className={cn(
@@ -40,7 +48,7 @@ export function Sidebar({
           <div className="ml-3 min-w-0">
             <p className="truncate text-sm font-semibold">Inventario Pro</p>
             <p className="truncate text-xs text-muted-foreground">
-              Distribuidora El Punto
+              {user.organizationName}
             </p>
           </div>
         )}
@@ -50,7 +58,7 @@ export function Sidebar({
         className="flex-1 space-y-0.5 overflow-y-auto p-2"
         aria-label="Main navigation"
       >
-        {mainNavItems.map((item) => (
+        {navItems.map((item) => (
           <div key={item.href} className="relative">
             <NavLink
               href={item.href}

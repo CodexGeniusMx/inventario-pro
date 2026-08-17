@@ -8,6 +8,8 @@ import {
   ShoppingCart,
 } from "lucide-react"
 
+import type { AuthenticatedUser } from "@/lib/auth/types"
+import { UserMenu } from "@/components/layout/user-menu"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -21,41 +23,12 @@ import { cn } from "@/lib/utils"
 
 type HeaderProps = {
   title: string
+  user: AuthenticatedUser
   onMenuClick?: () => void
   className?: string
 }
 
-function UserAvatarMenu() {
-  return (
-    <DropdownMenuTrigger>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        className="rounded-full bg-muted font-medium"
-        aria-label="User menu"
-      >
-        AM
-      </Button>
-      <DropdownMenu placement="bottom end" className="w-56">
-        <DropdownMenuLabel>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium">Ana Martínez</span>
-            <span className="text-xs font-normal text-muted-foreground">
-              ana@elpunto.com · Admin
-            </span>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem id="profile">Profile</DropdownMenuItem>
-        <DropdownMenuItem id="settings">Settings</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem id="logout">Log out</DropdownMenuItem>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
-  )
-}
-
-export function Header({ title, onMenuClick, className }: HeaderProps) {
+export function Header({ title, user, onMenuClick, className }: HeaderProps) {
   return (
     <header
       className={cn(
@@ -100,21 +73,23 @@ export function Header({ title, onMenuClick, className }: HeaderProps) {
           New sale
         </Link>
 
-        <DropdownMenuTrigger>
-          <Button variant="outline" size="icon-sm" aria-label="More actions">
-            <Plus className="size-4" />
-          </Button>
-          <DropdownMenu placement="bottom end" className="w-48">
-            <DropdownMenuLabel>Quick actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem id="new-product">New product</DropdownMenuItem>
-            <DropdownMenuItem id="new-po">New purchase order</DropdownMenuItem>
-            <DropdownMenuItem id="adjust-stock">Adjust stock</DropdownMenuItem>
-            <DropdownMenuItem id="record-damage">Record damage/loss</DropdownMenuItem>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+        {user.role === "admin" && (
+          <DropdownMenuTrigger>
+            <Button variant="outline" size="icon-sm" aria-label="More actions">
+              <Plus className="size-4" />
+            </Button>
+            <DropdownMenu placement="bottom end" className="w-48">
+              <DropdownMenuLabel>Quick actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem id="new-product">New product</DropdownMenuItem>
+              <DropdownMenuItem id="new-po">New purchase order</DropdownMenuItem>
+              <DropdownMenuItem id="adjust-stock">Adjust stock</DropdownMenuItem>
+              <DropdownMenuItem id="record-damage">Record damage/loss</DropdownMenuItem>
+            </DropdownMenu>
+          </DropdownMenuTrigger>
+        )}
 
-        <UserAvatarMenu />
+        <UserMenu user={user} />
       </div>
     </header>
   )
