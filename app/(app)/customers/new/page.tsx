@@ -15,8 +15,8 @@ export default async function NewCustomerPage() {
   return (
     <>
       <PageHeader
-        title="New customer"
-        description="Add a customer record for future sales."
+        title="Nuevo cliente"
+        description="Agrega un registro de cliente para ventas futuras."
       />
 
       <CustomerForm mode="create" />

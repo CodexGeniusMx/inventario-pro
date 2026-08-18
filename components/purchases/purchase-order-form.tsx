@@ -16,6 +16,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { formatCurrency } from "@/lib/format"
+import {
+  shouldShowCurrencySelector,
+  type SupportedCurrency,
+} from "@/lib/currency/types"
 import { createPurchaseSchema } from "@/lib/validations/purchase.schema"
 import type { VariantOption, WarehouseRow } from "@/types/inventory"
 import type { SupplierOption } from "@/types/suppliers"
@@ -25,6 +29,8 @@ type PurchaseOrderFormProps = {
   warehouses: WarehouseRow[]
   variants: VariantOption[]
   defaultWarehouseId?: string
+  allowedCurrencies: SupportedCurrency[]
+  defaultCurrency: SupportedCurrency
 }
 
 type PurchaseLine = {
@@ -40,7 +46,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -60,12 +66,15 @@ export function PurchaseOrderForm({
   warehouses,
   variants,
   defaultWarehouseId,
+  allowedCurrencies,
+  defaultCurrency,
 }: PurchaseOrderFormProps) {
   const router = useRouter()
   const [supplierId, setSupplierId] = useState(suppliers[0]?.id ?? "")
   const [warehouseId, setWarehouseId] = useState(
     defaultWarehouseId ?? warehouses[0]?.id ?? ""
   )
+  const [currencyCode, setCurrencyCode] = useState(defaultCurrency)
   const [notes, setNotes] = useState("")
   const [lines, setLines] = useState<PurchaseLine[]>(() => [
     createEmptyLine(variants),
@@ -129,6 +138,9 @@ export function PurchaseOrderForm({
       supplierId,
       warehouseId,
       notes,
+      ...(shouldShowCurrencySelector(allowedCurrencies)
+        ? { currencyCode }
+        : {}),
       lines: lines.map((line) => ({
         productVariantId: line.productVariantId,
         quantityOrdered: line.quantityOrdered,
@@ -164,10 +176,10 @@ export function PurchaseOrderForm({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Cannot create purchase order</CardTitle>
+          <CardTitle>No se puede crear la orden de compra</CardTitle>
           <CardDescription>
-            You need at least one active supplier, warehouse, and product variant
-            before creating a purchase.
+            Necesitas al menos un proveedor, almacén y variante de producto activos
+            antes de crear una compra.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -178,16 +190,16 @@ export function PurchaseOrderForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Purchase details</CardTitle>
+          <CardTitle>Detalles de la compra</CardTitle>
           <CardDescription>
-            Creating a purchase order does not change inventory until goods are
-            received.
+            Crear una orden de compra no cambia el inventario hasta recibir la
+            mercancía.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="supplierId" className="mb-1 block text-sm font-medium">
-              Supplier
+              Proveedor
             </label>
             <select
               id="supplierId"
@@ -208,7 +220,7 @@ export function PurchaseOrderForm({
 
           <div>
             <label htmlFor="warehouseId" className="mb-1 block text-sm font-medium">
-              Warehouse
+              Almacén
             </label>
             <select
               id="warehouseId"
@@ -227,9 +239,31 @@ export function PurchaseOrderForm({
             )}
           </div>
 
+          {shouldShowCurrencySelector(allowedCurrencies) && (
+            <div>
+              <label htmlFor="currencyCode" className="mb-1 block text-sm font-medium">
+                Moneda
+              </label>
+              <select
+                id="currencyCode"
+                value={currencyCode}
+                onChange={(event) =>
+                  setCurrencyCode(event.target.value as SupportedCurrency)
+                }
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                {allowedCurrencies.map((currency) => (
+                  <option key={currency} value={currency}>
+                    {currency}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="sm:col-span-2">
             <label htmlFor="notes" className="mb-1 block text-sm font-medium">
-              Notes
+              Notas
             </label>
             <Textarea
               id="notes"
@@ -244,14 +278,14 @@ export function PurchaseOrderForm({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <div>
-            <CardTitle>Order lines</CardTitle>
+            <CardTitle>Líneas de orden</CardTitle>
             <CardDescription>
-              Add product variants, quantities, and unit costs.
+              Agrega variantes de producto, cantidades y costos unitarios.
             </CardDescription>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={addLine}>
             <Plus data-icon="inline-start" />
-            Add line
+            Agregar línea
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -270,7 +304,7 @@ export function PurchaseOrderForm({
               >
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Product variant
+                    Variante de producto
                   </label>
                   <select
                     value={line.productVariantId}
@@ -291,7 +325,7 @@ export function PurchaseOrderForm({
 
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Quantity
+                    Cantidad
                   </label>
                   <Input
                     type="number"
@@ -308,7 +342,7 @@ export function PurchaseOrderForm({
 
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Unit cost
+                    Costo unitario
                   </label>
                   <Input
                     type="number"
@@ -323,10 +357,10 @@ export function PurchaseOrderForm({
 
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Line total
+                    Total de línea
                   </label>
                   <p className="flex h-10 items-center font-medium tabular-nums">
-                    {formatCurrency(lineTotal)}
+                    {formatCurrency(lineTotal, currencyCode)}
                   </p>
                 </div>
 
@@ -337,7 +371,7 @@ export function PurchaseOrderForm({
                     size="icon"
                     onClick={() => removeLine(line.id)}
                     isDisabled={lines.length === 1}
-                    aria-label={`Remove line ${index + 1}`}
+                    aria-label={`Eliminar línea ${index + 1}`}
                   >
                     <Trash2 />
                   </Button>
@@ -355,12 +389,12 @@ export function PurchaseOrderForm({
       <Card>
         <CardContent className="flex items-center justify-between py-4">
           <div>
-            <p className="text-sm text-muted-foreground">Estimated total</p>
+            <p className="text-sm text-muted-foreground">Total estimado</p>
             <p className="text-2xl font-semibold tabular-nums">
-              {formatCurrency(totals.total)}
+              {formatCurrency(totals.total, currencyCode)}
             </p>
             <p className="text-xs text-muted-foreground">
-              Final totals are calculated server-side when saved.
+              Los totales finales se calculan en el servidor al guardar.
             </p>
           </div>
         </CardContent>
@@ -375,10 +409,10 @@ export function PurchaseOrderForm({
       <div className="flex flex-wrap gap-3">
         <Button type="submit" isDisabled={isSubmitting}>
           {isSubmitting && <Loader2 className="animate-spin" data-icon="inline-start" />}
-          Save purchase order
+          Guardar orden de compra
         </Button>
         <LinkButton href="/purchases" variant="outline">
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

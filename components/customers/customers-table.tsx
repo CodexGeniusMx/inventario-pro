@@ -19,23 +19,23 @@ type CustomersTableProps = {
 export function CustomersTable({ customers }: CustomersTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Customers">
+      <Table aria-label="Clientes">
         <TableHeader>
           <TableHead isRowHeader id="name">
-            Name
+            Nombre
           </TableHead>
           <TableHead id="email" className="hidden md:table-cell">
-            Email
+            Correo electrónico
           </TableHead>
           <TableHead id="phone" className="hidden lg:table-cell">
-            Phone
+            Teléfono
           </TableHead>
           <TableHead id="taxId" className="hidden xl:table-cell">
-            Tax ID
+            RFC / ID fiscal
           </TableHead>
-          <TableHead id="status">Status</TableHead>
+          <TableHead id="status">Estado</TableHead>
           <TableHead id="updated" className="hidden sm:table-cell">
-            Updated
+            Actualizado
           </TableHead>
         </TableHeader>
         <TableBody>
@@ -60,7 +60,7 @@ export function CustomersTable({ customers }: CustomersTableProps) {
               </TableCell>
               <TableCell>
                 <Badge variant={customer.isActive ? "default" : "secondary"}>
-                  {customer.isActive ? "Active" : "Inactive"}
+                  {customer.isActive ? "Activo" : "Inactivo"}
                 </Badge>
               </TableCell>
               <TableCell className="hidden text-muted-foreground sm:table-cell">

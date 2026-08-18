@@ -23,12 +23,12 @@ export function InventoryEmptyState({
     return (
       <Card className="border-dashed">
         <CardHeader className="items-center text-center">
-          <CardTitle>No warehouse configured</CardTitle>
+          <CardTitle>No hay almacén configurado</CardTitle>
           <CardDescription>
-            Create a warehouse before recording inventory or stock movements.
+            Crea un almacén antes de registrar inventario o movimientos de stock.
           </CardDescription>
           <LinkButton href="/inventory/warehouses/new" className="mt-4">
-            Create warehouse
+            Crear almacén
           </LinkButton>
         </CardHeader>
       </Card>
@@ -42,16 +42,16 @@ export function InventoryEmptyState({
           <PackageOpen className="size-6 text-muted-foreground" />
         </div>
         <CardTitle>
-          {hasFilters ? "No inventory matches your filters" : "No inventory recorded"}
+          {hasFilters ? "Ningún inventario coincide con tus filtros" : "Sin inventario registrado"}
         </CardTitle>
         <CardDescription>
           {hasFilters
-            ? "Try adjusting your search or filters."
-            : "Record initial stock to start tracking quantities."}
+            ? "Intenta ajustar tu búsqueda o filtros."
+            : "Registra stock inicial para comenzar a rastrear cantidades."}
         </CardDescription>
         {canAdjust && !hasFilters && (
           <LinkButton href="/inventory/adjustments/new" className="mt-4">
-            Record initial stock
+            Registrar stock inicial
           </LinkButton>
         )}
       </CardHeader>

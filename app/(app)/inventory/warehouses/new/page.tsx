@@ -16,8 +16,8 @@ export default async function NewWarehousePage() {
   return (
     <>
       <PageHeader
-        title="New warehouse"
-        description="Create a warehouse for inventory tracking. The first warehouse becomes the default."
+        title="Nuevo almacén"
+        description="Crea un almacén para rastrear inventario. El primer almacén será el predeterminado."
       />
 
       <InventorySubNav />

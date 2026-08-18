@@ -39,7 +39,7 @@ export function ProductsFilters({
       <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5 sm:col-span-2">
           <label htmlFor="q" className="text-sm font-medium">
-            Search
+            Buscar
           </label>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -47,7 +47,7 @@ export function ProductsFilters({
               id="q"
               name="q"
               defaultValue={initialQuery}
-              placeholder="Name, SKU, or barcode"
+              placeholder="Nombre, SKU o código de barras"
               className="pl-9"
             />
           </div>
@@ -55,7 +55,7 @@ export function ProductsFilters({
 
         <div className="space-y-1.5">
           <label htmlFor="categoryId" className="text-sm font-medium">
-            Category
+            Categoría
           </label>
           <select
             id="categoryId"
@@ -63,7 +63,7 @@ export function ProductsFilters({
             defaultValue={initialCategoryId}
             className="flex h-8 w-full rounded-2xl border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
           >
-            <option value="">All categories</option>
+            <option value="">Todas las categorías</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -74,7 +74,7 @@ export function ProductsFilters({
 
         <div className="space-y-1.5">
           <label htmlFor="status" className="text-sm font-medium">
-            Status
+            Estado
           </label>
           <select
             id="status"
@@ -82,19 +82,19 @@ export function ProductsFilters({
             defaultValue={initialStatus}
             className="flex h-8 w-full rounded-2xl border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
           >
-            <option value="active">Active</option>
-            <option value="archived">Archived</option>
-            <option value="all">All</option>
+            <option value="active">Activo</option>
+            <option value="archived">Archivado</option>
+            <option value="all">Todos</option>
           </select>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <Button type="submit">Apply</Button>
+        <Button type="submit">Aplicar</Button>
         {hasActiveFilters && (
           <Button type="button" variant="outline" onPress={handleReset}>
             <X data-icon="inline-start" />
-            Reset
+            Restablecer
           </Button>
         )}
       </div>

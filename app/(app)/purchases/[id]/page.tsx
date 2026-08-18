@@ -60,12 +60,12 @@ export default async function PurchaseDetailPage({
     <>
       <PageHeader
         title={purchase.documentNumber}
-        description="Purchase order detail, lines, and receipt history."
+        description="Detalle de orden de compra, líneas e historial de recepciones."
         actions={
           canReceiveNow ? (
             <LinkButton href={`/purchases/${purchase.id}/receive`}>
               <PackageCheck data-icon="inline-start" />
-              Receive goods
+              Recibir mercancía
             </LinkButton>
           ) : undefined
         }
@@ -74,14 +74,14 @@ export default async function PurchaseDetailPage({
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Purchase information</CardTitle>
+            <CardTitle>Información de la compra</CardTitle>
             <CardDescription>
               <PurchaseStatusBadge status={purchase.status} />
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Supplier</p>
+              <p className="text-sm text-muted-foreground">Proveedor</p>
               <p className="font-medium">
                 <Link
                   href={`/suppliers/${purchase.supplierId}`}
@@ -92,11 +92,11 @@ export default async function PurchaseDetailPage({
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Warehouse</p>
+              <p className="text-sm text-muted-foreground">Almacén</p>
               <p className="font-medium">{purchase.warehouseName}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Order date</p>
+              <p className="text-sm text-muted-foreground">Fecha de orden</p>
               <p className="font-medium">
                 {purchase.orderedAt
                   ? formatDateTime(purchase.orderedAt)
@@ -104,7 +104,7 @@ export default async function PurchaseDetailPage({
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Created by</p>
+              <p className="text-sm text-muted-foreground">Creado por</p>
               <p className="font-medium">{purchase.createdByName}</p>
             </div>
             <div>
@@ -121,7 +121,7 @@ export default async function PurchaseDetailPage({
             </div>
             {purchase.notes && (
               <div className="sm:col-span-2">
-                <p className="text-sm text-muted-foreground">Notes</p>
+                <p className="text-sm text-muted-foreground">Notas</p>
                 <p className="font-medium">{purchase.notes}</p>
               </div>
             )}
@@ -130,12 +130,12 @@ export default async function PurchaseDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Related</CardTitle>
+            <CardTitle>Relacionado</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p>
               <Link href="/purchases" className="text-primary hover:underline">
-                Back to purchases
+                Volver a compras
               </Link>
             </p>
             <p>
@@ -143,12 +143,12 @@ export default async function PurchaseDetailPage({
                 href={`/suppliers/${purchase.supplierId}`}
                 className="text-primary hover:underline"
               >
-                View supplier
+                Ver proveedor
               </Link>
             </p>
             <p>
               <Link href="/inventory/movements" className="text-primary hover:underline">
-                View inventory movements
+                Ver movimientos de inventario
               </Link>
             </p>
           </CardContent>
@@ -157,33 +157,33 @@ export default async function PurchaseDetailPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Purchase lines</CardTitle>
+          <CardTitle>Líneas de compra</CardTitle>
           <CardDescription>
-            Ordered, received, and remaining quantities per variant.
+            Cantidades ordenadas, recibidas y restantes por variante.
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <Table aria-label="Purchase order lines">
+          <Table aria-label="Líneas de orden de compra">
             <TableHeader>
               <TableHead isRowHeader id="product">
-                Product
+                Producto
               </TableHead>
-              <TableHead id="variant">Variant</TableHead>
+              <TableHead id="variant">Variante</TableHead>
               <TableHead id="sku">SKU</TableHead>
               <TableHead id="ordered" className="text-right">
-                Ordered
+                Ordenada
               </TableHead>
               <TableHead id="received" className="text-right">
-                Received
+                Recibida
               </TableHead>
               <TableHead id="remaining" className="text-right">
-                Remaining
+                Restante
               </TableHead>
               <TableHead id="unitCost" className="text-right">
-                Unit cost
+                Costo unitario
               </TableHead>
               <TableHead id="lineTotal" className="text-right">
-                Line total
+                Total de línea
               </TableHead>
             </TableHeader>
             <TableBody>
@@ -216,13 +216,13 @@ export default async function PurchaseDetailPage({
 
       {purchase.receipts.length > 0 && (
         <div className="mt-4 space-y-4">
-          <h2 className="text-lg font-semibold">Receipt history</h2>
+          <h2 className="text-lg font-semibold">Historial de recepciones</h2>
           {purchase.receipts.map((receipt) => (
             <Card key={receipt.id}>
               <CardHeader>
                 <CardTitle>{receipt.documentNumber}</CardTitle>
                 <CardDescription>
-                  Received {formatDateTime(receipt.receivedAt)} by{" "}
+                  Recibido {formatDateTime(receipt.receivedAt)} por{" "}
                   {receipt.createdByName}
                 </CardDescription>
               </CardHeader>
@@ -232,24 +232,24 @@ export default async function PurchaseDetailPage({
                     {receipt.notes}
                   </p>
                 )}
-                <Table aria-label={`Receipt ${receipt.documentNumber}`}>
+                <Table aria-label={`Recepción ${receipt.documentNumber}`}>
                   <TableHeader>
                     <TableHead isRowHeader id="product">
-                      Product
+                      Producto
                     </TableHead>
-                    <TableHead id="variant">Variant</TableHead>
+                    <TableHead id="variant">Variante</TableHead>
                     <TableHead id="sku">SKU</TableHead>
                     <TableHead id="qty" className="text-right">
-                      Received
+                      Recibida
                     </TableHead>
                     <TableHead id="cost" className="text-right">
-                      Unit cost
+                      Costo unitario
                     </TableHead>
                     <TableHead id="before" className="text-right">
-                      Stock before
+                      Stock antes
                     </TableHead>
                     <TableHead id="after" className="text-right">
-                      Stock after
+                      Stock después
                     </TableHead>
                   </TableHeader>
                   <TableBody>

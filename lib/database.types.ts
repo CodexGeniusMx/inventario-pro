@@ -462,33 +462,164 @@ export type Database = {
       }
       organizations: {
         Row: {
+          ai_allow_prepare: boolean
+          ai_allow_queries: boolean
+          ai_enabled: boolean
+          ai_require_confirmation: boolean
+          allowed_currencies: string[]
           created_at: string
           currency_code: string
+          default_warehouse_id: string | null
+          document_prefix_purchase_order: string
+          document_prefix_purchase_receipt: string
+          document_prefix_return: string
+          document_prefix_sale: string
+          document_prefix_stock_adjustment: string
           id: string
           name: string
           slug: string
           timezone: string
           updated_at: string
+          whatsapp_business_number: string | null
+          whatsapp_connected: boolean
+          whatsapp_daily_sales_summary: boolean
+          whatsapp_enabled: boolean
+          whatsapp_keep_ai_queries: boolean
+          whatsapp_low_stock_alerts: boolean
+          whatsapp_out_of_stock_alerts: boolean
+          whatsapp_pending_purchase_reminders: boolean
+          whatsapp_purchase_received_alerts: boolean
         }
         Insert: {
+          ai_allow_prepare?: boolean
+          ai_allow_queries?: boolean
+          ai_enabled?: boolean
+          ai_require_confirmation?: boolean
+          allowed_currencies?: string[]
           created_at?: string
           currency_code?: string
+          default_warehouse_id?: string | null
+          document_prefix_purchase_order?: string
+          document_prefix_purchase_receipt?: string
+          document_prefix_return?: string
+          document_prefix_sale?: string
+          document_prefix_stock_adjustment?: string
           id?: string
           name: string
           slug: string
           timezone?: string
           updated_at?: string
+          whatsapp_business_number?: string | null
+          whatsapp_connected?: boolean
+          whatsapp_daily_sales_summary?: boolean
+          whatsapp_enabled?: boolean
+          whatsapp_keep_ai_queries?: boolean
+          whatsapp_low_stock_alerts?: boolean
+          whatsapp_out_of_stock_alerts?: boolean
+          whatsapp_pending_purchase_reminders?: boolean
+          whatsapp_purchase_received_alerts?: boolean
         }
         Update: {
+          ai_allow_prepare?: boolean
+          ai_allow_queries?: boolean
+          ai_enabled?: boolean
+          ai_require_confirmation?: boolean
+          allowed_currencies?: string[]
           created_at?: string
           currency_code?: string
+          default_warehouse_id?: string | null
+          document_prefix_purchase_order?: string
+          document_prefix_purchase_receipt?: string
+          document_prefix_return?: string
+          document_prefix_sale?: string
+          document_prefix_stock_adjustment?: string
           id?: string
           name?: string
           slug?: string
           timezone?: string
           updated_at?: string
+          whatsapp_business_number?: string | null
+          whatsapp_connected?: boolean
+          whatsapp_daily_sales_summary?: boolean
+          whatsapp_enabled?: boolean
+          whatsapp_keep_ai_queries?: boolean
+          whatsapp_low_stock_alerts?: boolean
+          whatsapp_out_of_stock_alerts?: boolean
+          whatsapp_pending_purchase_reminders?: boolean
+          whatsapp_purchase_received_alerts?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_default_warehouse_id_fkey"
+            columns: ["default_warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_invitations: {
+        Row: {
+          accepted_at: string | null
+          branch_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          organization_id: string
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          updated_at: string
+          warehouse_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          branch_id?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          organization_id: string
+          revoked_at?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          branch_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          organization_id?: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+          warehouse_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       permissions: {
         Row: {
@@ -742,6 +873,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string
+          currency_code: string
           document_number: string
           id: string
           notes: string | null
@@ -757,6 +889,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by: string
+          currency_code?: string
           document_number: string
           id?: string
           notes?: string | null
@@ -1725,6 +1858,33 @@ export type Database = {
         }
         Returns: string
       }
+      complete_user_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: string
+      }
+      update_organization_settings: {
+        Args: {
+          p_ai_allow_prepare?: boolean
+          p_ai_allow_queries?: boolean
+          p_ai_enabled?: boolean
+          p_ai_require_confirmation?: boolean
+          p_allowed_currencies?: string[]
+          p_currency_code?: string
+          p_default_warehouse_id?: string
+          p_name?: string
+          p_timezone?: string
+          p_whatsapp_business_number?: string
+          p_whatsapp_connected?: boolean
+          p_whatsapp_daily_sales_summary?: boolean
+          p_whatsapp_enabled?: boolean
+          p_whatsapp_keep_ai_queries?: boolean
+          p_whatsapp_low_stock_alerts?: boolean
+          p_whatsapp_out_of_stock_alerts?: boolean
+          p_whatsapp_pending_purchase_reminders?: boolean
+          p_whatsapp_purchase_received_alerts?: boolean
+        }
+        Returns: Database["public"]["Tables"]["organizations"]["Row"]
+      }
       record_inventory_movement: {
         Args: {
           p_created_by: string
@@ -1749,7 +1909,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "employee"
+      app_role:
+        | "admin"
+        | "employee"
+        | "owner"
+        | "manager"
+        | "seller"
+        | "warehouse"
+        | "read_only"
       document_kind:
         | "sale"
         | "purchase_order"
@@ -1916,7 +2083,15 @@ export const Constants = {
   },
   public: {
     Enums: {
-      app_role: ["admin", "employee"],
+      app_role: [
+        "admin",
+        "employee",
+        "owner",
+        "manager",
+        "seller",
+        "warehouse",
+        "read_only",
+      ],
       document_kind: [
         "sale",
         "purchase_order",

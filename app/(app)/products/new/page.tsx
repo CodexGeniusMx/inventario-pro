@@ -18,8 +18,8 @@ export default async function NewProductPage() {
   return (
     <>
       <PageHeader
-        title="New product"
-        description="Create a product with a default variant to start selling and tracking inventory."
+        title="Nuevo producto"
+        description="Crea un producto con una variante predeterminada para comenzar a vender y rastrear inventario."
       />
       <ProductForm mode="create" categories={categories} />
     </>

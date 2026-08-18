@@ -53,7 +53,7 @@ export default async function AdjustmentDetailPage({
     <>
       <PageHeader
         title={adjustment.documentNumber}
-        description="Stock adjustment detail and linked inventory movements."
+        description="Detalle de ajuste de stock y movimientos de inventario vinculados."
       />
 
       <InventorySubNav />
@@ -61,33 +61,33 @@ export default async function AdjustmentDetailPage({
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Adjustment information</CardTitle>
+            <CardTitle>Información del ajuste</CardTitle>
             <CardDescription>
               {adjustmentTypeLabels[adjustment.adjustmentType]}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Warehouse</p>
+              <p className="text-sm text-muted-foreground">Almacén</p>
               <p className="font-medium">{adjustment.warehouseName}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Created by</p>
+              <p className="text-sm text-muted-foreground">Creado por</p>
               <p className="font-medium">{adjustment.createdByName}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Reason</p>
+              <p className="text-sm text-muted-foreground">Motivo</p>
               <p className="font-medium">{adjustment.reason}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Created</p>
+              <p className="text-sm text-muted-foreground">Creado</p>
               <p className="font-medium">
                 {formatDateTime(adjustment.createdAt)}
               </p>
             </div>
             {adjustment.notes && (
               <div className="sm:col-span-2">
-                <p className="text-sm text-muted-foreground">Notes</p>
+                <p className="text-sm text-muted-foreground">Notas</p>
                 <p className="font-medium">{adjustment.notes}</p>
               </div>
             )}
@@ -96,9 +96,9 @@ export default async function AdjustmentDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Related records</CardTitle>
+            <CardTitle>Registros relacionados</CardTitle>
             <CardDescription>
-              Movements linked to this adjustment are immutable.
+              Los movimientos vinculados a este ajuste son inmutables.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -107,7 +107,7 @@ export default async function AdjustmentDetailPage({
                 href="/inventory/movements"
                 className="text-primary hover:underline"
               >
-                View movement history
+                Ver historial de movimientos
               </Link>
             </p>
             <p>
@@ -115,7 +115,7 @@ export default async function AdjustmentDetailPage({
                 href="/inventory/adjustments"
                 className="text-primary hover:underline"
               >
-                Back to adjustments
+                Volver a ajustes
               </Link>
             </p>
           </CardContent>
@@ -124,28 +124,28 @@ export default async function AdjustmentDetailPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Adjustment lines</CardTitle>
+          <CardTitle>Líneas de ajuste</CardTitle>
           <CardDescription>
-            Each line created one inventory movement.
+            Cada línea creó un movimiento de inventario.
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <Table aria-label="Adjustment lines">
+          <Table aria-label="Líneas de ajuste">
             <TableHeader>
               <TableHead isRowHeader id="product">
-                Product
+                Producto
               </TableHead>
-              <TableHead id="variant">Variant</TableHead>
+              <TableHead id="variant">Variante</TableHead>
               <TableHead id="sku">SKU</TableHead>
               <TableHead id="quantity" className="text-right">
-                Quantity
+                Cantidad
               </TableHead>
-              <TableHead id="movementType">Movement</TableHead>
+              <TableHead id="movementType">Movimiento</TableHead>
               <TableHead id="before" className="text-right">
-                Before
+                Antes
               </TableHead>
               <TableHead id="after" className="text-right">
-                After
+                Después
               </TableHead>
             </TableHeader>
             <TableBody>

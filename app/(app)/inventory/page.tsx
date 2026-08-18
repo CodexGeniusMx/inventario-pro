@@ -57,7 +57,7 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
       items = await listInventoryStatus(user, filters)
     }
   } catch {
-    loadError = "Unable to load inventory from the database."
+    loadError = "No se pudieron cargar los datos de inventario desde la base de datos."
   }
 
   const hasWarehouse = warehouses.some((warehouse) => warehouse.isActive)
@@ -68,17 +68,17 @@ export default async function InventoryPage({ searchParams }: InventoryPageProps
   return (
     <>
       <PageHeader
-        title="Inventory"
-        description="Current stock levels by warehouse with low-stock visibility."
+        title="Inventario"
+        description="Niveles de stock actuales por almacén con visibilidad de stock bajo."
         actions={
           canAdjust && hasWarehouse ? (
             <div className="flex items-center gap-2">
               <LinkButton href="/inventory/adjustments/new" variant="outline">
-                Record adjustment
+                Registrar ajuste
               </LinkButton>
               <LinkButton href="/inventory/adjustments/new?type=initial_stock">
                 <Plus data-icon="inline-start" />
-                Initial stock
+                Stock inicial
               </LinkButton>
             </div>
           ) : undefined

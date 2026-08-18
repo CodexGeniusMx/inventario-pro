@@ -48,7 +48,7 @@ export function resolveReportDateRange(input: {
       to: inclusiveTo,
       preset,
       timeZone,
-      label: `${input.from} to ${input.to}`,
+      label: `${input.from} a ${input.to}`,
     }
   }
 
@@ -59,7 +59,7 @@ export function resolveReportDateRange(input: {
         to: tomorrowStart,
         preset,
         timeZone,
-        label: "Today",
+        label: "Hoy",
       }
     case "last_7_days":
       return {
@@ -67,7 +67,7 @@ export function resolveReportDateRange(input: {
         to: tomorrowStart,
         preset,
         timeZone,
-        label: "Last 7 days",
+        label: "Últimos 7 días",
       }
     case "this_month":
       return {
@@ -75,7 +75,7 @@ export function resolveReportDateRange(input: {
         to: startOfNextZonedMonth(now, timeZone),
         preset,
         timeZone,
-        label: "This month",
+        label: "Este mes",
       }
     case "last_30_days":
     default:
@@ -84,7 +84,7 @@ export function resolveReportDateRange(input: {
         to: tomorrowStart,
         preset: "last_30_days",
         timeZone,
-        label: "Last 30 days",
+        label: "Últimos 30 días",
       }
   }
 }

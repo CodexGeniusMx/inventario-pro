@@ -22,28 +22,28 @@ type MovementsTableProps = {
 export function MovementsTable({ movements }: MovementsTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Inventory movements">
+      <Table aria-label="Movimientos de inventario">
         <TableHeader>
           <TableHead isRowHeader id="date">
-            Date
+            Fecha
           </TableHead>
-          <TableHead id="product">Product</TableHead>
-          <TableHead id="variant">Variant</TableHead>
+          <TableHead id="product">Producto</TableHead>
+          <TableHead id="variant">Variante</TableHead>
           <TableHead id="sku">SKU</TableHead>
-          <TableHead id="warehouse">Warehouse</TableHead>
-          <TableHead id="type">Type</TableHead>
+          <TableHead id="warehouse">Almacén</TableHead>
+          <TableHead id="type">Tipo</TableHead>
           <TableHead id="change" className="text-right">
-            Change
+            Cambio
           </TableHead>
           <TableHead id="before" className="text-right">
-            Before
+            Antes
           </TableHead>
           <TableHead id="after" className="text-right">
-            After
+            Después
           </TableHead>
-          <TableHead id="reason">Reason</TableHead>
-          <TableHead id="user">User</TableHead>
-          <TableHead id="document">Document</TableHead>
+          <TableHead id="reason">Motivo</TableHead>
+          <TableHead id="user">Usuario</TableHead>
+          <TableHead id="document">Documento</TableHead>
         </TableHeader>
         <TableBody>
           {movements.map((movement) => (

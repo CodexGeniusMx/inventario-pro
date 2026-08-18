@@ -29,15 +29,17 @@ export default async function NewPurchasePage() {
   return (
     <>
       <PageHeader
-        title="New purchase order"
-        description="Order inventory from a supplier. Stock is not updated until receipt."
+        title="Nueva orden de compra"
+        description="Ordena inventario de un proveedor. El stock no se actualiza hasta la recepción."
       />
 
       <PurchaseOrderForm
         suppliers={suppliers}
         warehouses={warehouses}
         variants={variants}
-        defaultWarehouseId={defaultWarehouse?.id}
+        defaultWarehouseId={defaultWarehouse?.id ?? user.defaultWarehouseId ?? undefined}
+        allowedCurrencies={user.organizationAllowedCurrencies}
+        defaultCurrency={user.organizationBaseCurrency}
       />
     </>
   )

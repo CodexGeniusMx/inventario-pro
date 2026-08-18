@@ -5,6 +5,8 @@ export type PurchaseOrderStatus =
   | "received"
   | "cancelled"
 
+export type SupportedCurrency = "MXN" | "USD"
+
 export type PurchaseOrderListItem = {
   id: string
   documentNumber: string
@@ -16,6 +18,7 @@ export type PurchaseOrderListItem = {
   orderedAt: string | null
   createdAt: string
   total: number
+  currencyCode: SupportedCurrency
   quantityOrdered: number
   quantityReceived: number
   createdByName: string
@@ -68,6 +71,7 @@ export type PurchaseOrderDetail = {
   updatedAt: string
   subtotal: number
   total: number
+  currencyCode: SupportedCurrency
   notes: string | null
   createdByName: string
   lines: PurchaseOrderLine[]
@@ -89,6 +93,7 @@ export type CreatePurchaseLineInput = {
 export type CreatePurchaseInput = {
   supplierId: string
   warehouseId: string
+  currencyCode?: SupportedCurrency
   notes?: string | null
   lines: CreatePurchaseLineInput[]
 }

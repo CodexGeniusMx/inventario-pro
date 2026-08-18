@@ -35,8 +35,8 @@ export default async function EditCustomerPage({ params }: EditCustomerPageProps
   return (
     <>
       <PageHeader
-        title={`Edit ${customer.name}`}
-        description="Update customer contact details."
+        title={`Editar ${customer.name}`}
+        description="Actualiza los datos de contacto del cliente."
       />
 
       <CustomerForm mode="edit" customer={customer} />

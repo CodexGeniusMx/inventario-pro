@@ -511,12 +511,12 @@ export async function getDashboardSummary(
     .filter((row) => row.stock_status === "low_stock")
     .slice(0, 5)
     .map((row) => ({
-      product: row.product_name ?? "Unknown product",
+      product: row.product_name ?? "Producto desconocido",
       variant: row.variant_name ?? "Default",
       sku: row.sku ?? "—",
       onHand: row.quantity_on_hand ?? 0,
       reorderPoint: row.reorder_point ?? 0,
-      warehouseName: row.warehouse_name ?? "Unknown warehouse",
+      warehouseName: row.warehouse_name ?? "Almacén desconocido",
     }))
 
   const lowStockCount = inventoryStatusRows.filter(
@@ -529,7 +529,7 @@ export async function getDashboardSummary(
   const recentSales: RecentSale[] = recentSalesRows.map((row) => ({
     id: row.id,
     saleNumber: row.document_number,
-    customer: row.customers?.name ?? "Walk-in customer",
+    customer: row.customers?.name ?? "Cliente ocasional",
     total: Number(row.total),
     itemCount: row.sale_items?.length ?? 0,
     status: row.status,
@@ -540,10 +540,10 @@ export async function getDashboardSummary(
     (row) => ({
       id: row.id,
       type: mapMovementType(row.movement_type),
-      product: row.product_variants?.products?.name ?? "Unknown product",
+      product: row.product_variants?.products?.name ?? "Producto desconocido",
       variant: row.product_variants?.name ?? "Default",
       quantity: row.quantity,
-      user: row.profiles?.full_name ?? "Unknown user",
+      user: row.profiles?.full_name ?? "Usuario desconocido",
       reference: mapMovementReference(row),
       createdAt: row.created_at,
     })
@@ -571,7 +571,7 @@ export async function getDashboardSummary(
     (row) => ({
       id: row.id,
       documentNumber: row.document_number,
-      supplierName: row.suppliers?.name ?? "Unknown supplier",
+      supplierName: row.suppliers?.name ?? "Proveedor desconocido",
       total: Number(row.total),
       status: row.status,
       receivedAt: row.ordered_at,
@@ -581,7 +581,7 @@ export async function getDashboardSummary(
   const recentReturns: RecentReturnActivity[] = recentReturnRows.map((row) => ({
     id: row.id,
     documentNumber: row.document_number,
-    saleDocumentNumber: row.sales?.document_number ?? "Unknown sale",
+    saleDocumentNumber: row.sales?.document_number ?? "Venta desconocida",
     totalQuantity: (row.return_items ?? []).reduce(
       (sum, item) => sum + item.quantity,
       0
@@ -594,7 +594,7 @@ export async function getDashboardSummary(
     id: row.id,
     documentNumber: row.document_number,
     purchaseOrderNumber: row.purchase_orders?.document_number ?? "—",
-    warehouseName: row.warehouses?.name ?? "Unknown warehouse",
+    warehouseName: row.warehouses?.name ?? "Almacén desconocido",
     itemCount: row.purchase_receipt_items?.length ?? 0,
     receivedAt: row.received_at,
   }))
@@ -603,7 +603,7 @@ export async function getDashboardSummary(
     id: row.id,
     documentNumber: row.document_number,
     adjustmentType: row.adjustment_type,
-    warehouseName: row.warehouses?.name ?? "Unknown warehouse",
+    warehouseName: row.warehouses?.name ?? "Almacén desconocido",
     itemCount: row.stock_adjustment_items?.length ?? 0,
     createdAt: row.created_at,
   }))

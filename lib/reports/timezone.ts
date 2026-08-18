@@ -103,7 +103,7 @@ export function formatZonedDateLabel(
   const normalized = normalizeTimeZone(timeZone)
   const date = zonedMidnightToUtc(year, month, day, normalized)
 
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString("es-MX", {
     month: "short",
     day: "numeric",
     timeZone: normalized,
@@ -113,7 +113,7 @@ export function formatZonedDateLabel(
 export function formatZonedHeadingDate(now: Date, timeZone: string): string {
   const normalized = normalizeTimeZone(timeZone)
 
-  return now.toLocaleDateString("en-US", {
+  return now.toLocaleDateString("es-MX", {
     weekday: "long",
     month: "short",
     day: "numeric",

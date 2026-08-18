@@ -19,26 +19,26 @@ type SuppliersTableProps = {
 export function SuppliersTable({ suppliers }: SuppliersTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Suppliers">
+      <Table aria-label="Proveedores">
         <TableHeader>
           <TableHead isRowHeader id="name">
-            Name
+            Nombre
           </TableHead>
           <TableHead id="contact" className="hidden md:table-cell">
-            Contact
+            Contacto
           </TableHead>
           <TableHead id="email" className="hidden lg:table-cell">
-            Email
+            Correo electrónico
           </TableHead>
           <TableHead id="phone" className="hidden xl:table-cell">
-            Phone
+            Teléfono
           </TableHead>
           <TableHead id="paymentTerms" className="hidden lg:table-cell">
-            Payment terms
+            Condiciones de pago
           </TableHead>
-          <TableHead id="status">Status</TableHead>
+          <TableHead id="status">Estado</TableHead>
           <TableHead id="updated" className="hidden sm:table-cell">
-            Updated
+            Actualizado
           </TableHead>
         </TableHeader>
         <TableBody>
@@ -71,7 +71,7 @@ export function SuppliersTable({ suppliers }: SuppliersTableProps) {
               </TableCell>
               <TableCell>
                 <Badge variant={supplier.isActive ? "default" : "secondary"}>
-                  {supplier.isActive ? "Active" : "Inactive"}
+                  {supplier.isActive ? "Activo" : "Inactivo"}
                 </Badge>
               </TableCell>
               <TableCell className="hidden text-muted-foreground sm:table-cell">

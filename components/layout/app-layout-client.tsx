@@ -4,29 +4,30 @@ import { usePathname } from "next/navigation"
 
 import { AppShell } from "@/components/layout/app-shell"
 import type { AuthenticatedUser } from "@/lib/auth/types"
+import { APP_NAME } from "@/lib/i18n/branding"
 
 const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/products": "Products",
-  "/products/new": "New product",
-  "/inventory": "Inventory",
-  "/inventory/movements": "Movements",
-  "/inventory/adjustments": "Adjustments",
-  "/inventory/adjustments/new": "New adjustment",
-  "/inventory/warehouses": "Warehouses",
-  "/inventory/warehouses/new": "New warehouse",
-  "/purchases": "Purchases",
-  "/purchases/new": "New purchase",
-  "/sales": "Sales",
-  "/sales/new": "New sale",
-  "/returns": "Returns",
-  "/customers": "Customers",
-  "/customers/new": "New customer",
-  "/suppliers": "Suppliers",
-  "/suppliers/new": "New supplier",
-  "/reports": "Reports",
-  "/users": "Users",
-  "/settings": "Settings",
+  "/dashboard": "Panel",
+  "/products": "Productos",
+  "/products/new": "Nuevo producto",
+  "/inventory": "Inventario",
+  "/inventory/movements": "Movimientos",
+  "/inventory/adjustments": "Ajustes",
+  "/inventory/adjustments/new": "Nuevo ajuste",
+  "/inventory/warehouses": "Almacenes",
+  "/inventory/warehouses/new": "Nuevo almacén",
+  "/purchases": "Compras",
+  "/purchases/new": "Nueva compra",
+  "/sales": "Ventas",
+  "/sales/new": "Nueva venta",
+  "/returns": "Devoluciones",
+  "/customers": "Clientes",
+  "/customers/new": "Nuevo cliente",
+  "/suppliers": "Proveedores",
+  "/suppliers/new": "Nuevo proveedor",
+  "/reports": "Reportes",
+  "/users": "Usuarios",
+  "/settings": "Configuración",
 }
 
 function getPageTitle(pathname: string): string {
@@ -35,70 +36,70 @@ function getPageTitle(pathname: string): string {
   }
 
   if (/^\/products\/[^/]+\/edit$/.test(pathname)) {
-    return "Edit product"
+    return "Editar producto"
   }
 
   if (/^\/products\/[^/]+$/.test(pathname)) {
-    return "Product detail"
+    return "Detalle de producto"
   }
 
   if (/^\/inventory\/warehouses\/[^/]+\/edit$/.test(pathname)) {
-    return "Edit warehouse"
+    return "Editar almacén"
   }
 
   if (/^\/inventory\/adjustments\/[^/]+$/.test(pathname)) {
-    return "Adjustment detail"
+    return "Detalle de ajuste"
   }
 
   if (/^\/suppliers\/[^/]+\/edit$/.test(pathname)) {
-    return "Edit supplier"
+    return "Editar proveedor"
   }
 
   if (/^\/suppliers\/[^/]+$/.test(pathname)) {
-    return "Supplier detail"
+    return "Detalle de proveedor"
   }
 
   if (/^\/purchases\/[^/]+\/receive$/.test(pathname)) {
-    return "Receive purchase"
+    return "Recibir compra"
   }
 
   if (/^\/purchases\/[^/]+$/.test(pathname)) {
-    return "Purchase detail"
+    return "Detalle de compra"
   }
 
   if (/^\/customers\/[^/]+\/edit$/.test(pathname)) {
-    return "Edit customer"
+    return "Editar cliente"
   }
 
   if (/^\/customers\/[^/]+$/.test(pathname)) {
-    return "Customer detail"
+    return "Detalle de cliente"
   }
 
   if (/^\/customers\/new$/.test(pathname)) {
-    return "New customer"
+    return "Nuevo cliente"
   }
 
   if (/^\/sales\/[^/]+\/return$/.test(pathname)) {
-    return "Process return"
+    return "Procesar devolución"
   }
 
   if (/^\/sales\/[^/]+$/.test(pathname)) {
-    return "Sale detail"
+    return "Detalle de venta"
   }
 
   if (/^\/returns\/[^/]+$/.test(pathname)) {
-    return "Return detail"
+    return "Detalle de devolución"
   }
 
   if (/^\/reports\/[^/]+$/.test(pathname)) {
-    return "Report detail"
+    return "Detalle de reporte"
   }
 
   const match = Object.entries(pageTitles).find(([path]) =>
     pathname.startsWith(`${path}/`)
   )
 
-  return match?.[1] ?? "Inventario Pro"
+  return match?.[1] ?? APP_NAME
 }
 
 type AppLayoutClientProps = {

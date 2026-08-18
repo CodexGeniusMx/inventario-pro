@@ -16,7 +16,7 @@ export function ProductStatusBadge({ status, className }: ProductStatusBadgeProp
         className
       )}
     >
-      {status === "active" ? "Active" : "Archived"}
+      {status === "active" ? "Activo" : "Archivado"}
     </Badge>
   )
 }

@@ -2,8 +2,8 @@ import { z } from "zod"
 
 const moneySchema = z.coerce
   .number()
-  .min(0, "Price must be zero or greater.")
-  .multipleOf(0.01, "Use at most two decimal places.")
+  .min(0, "El precio debe ser cero o mayor.")
+  .multipleOf(0.01, "Usa como máximo dos decimales.")
 
 const optionalMoneySchema = z
   .union([moneySchema, z.literal(""), z.null()])
@@ -12,12 +12,12 @@ const optionalMoneySchema = z
 
 const reorderPointSchema = z.coerce
   .number()
-  .int("Reorder point must be a whole number.")
-  .min(0, "Reorder point must be zero or greater.")
+  .int("El punto de reorden debe ser un número entero.")
+  .min(0, "El punto de reorden debe ser cero o mayor.")
 
 export const productVariantInputSchema = z.object({
-  name: z.string().trim().min(1, "Variant name is required."),
-  sku: z.string().trim().min(1, "SKU is required."),
+  name: z.string().trim().min(1, "El nombre de la variante es obligatorio."),
+  sku: z.string().trim().min(1, "El SKU es obligatorio."),
   barcode: z
     .string()
     .trim()
@@ -27,7 +27,7 @@ export const productVariantInputSchema = z.object({
       (value) =>
         value === null ||
         (/^[A-Za-z0-9-]+$/.test(value) && value.length >= 4 && value.length <= 32),
-      "Barcode must be 4–32 characters and use letters, numbers, or hyphens."
+      "El código de barras debe tener entre 4 y 32 caracteres y usar letras, números o guiones."
     ),
   costPrice: optionalMoneySchema,
   salePrice: optionalMoneySchema,
@@ -35,7 +35,7 @@ export const productVariantInputSchema = z.object({
 })
 
 export const createProductSchema = z.object({
-  name: z.string().trim().min(1, "Product name is required."),
+  name: z.string().trim().min(1, "El nombre del producto es obligatorio."),
   description: z
     .string()
     .trim()
@@ -43,12 +43,12 @@ export const createProductSchema = z.object({
     .transform((value) => (value === "" ? null : value ?? null)),
   categoryId: z
     .string()
-    .uuid("Select a valid category.")
+    .uuid("Selecciona una categoría válida.")
     .optional()
     .nullable()
     .or(z.literal(""))
     .transform((value) => (value === "" || value === undefined ? null : value)),
-  unitOfMeasure: z.string().trim().min(1, "Unit of measure is required."),
+  unitOfMeasure: z.string().trim().min(1, "La unidad de medida es obligatoria."),
   baseCostPrice: moneySchema,
   baseSalePrice: moneySchema,
   variant: productVariantInputSchema,

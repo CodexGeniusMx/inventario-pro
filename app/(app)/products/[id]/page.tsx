@@ -61,13 +61,13 @@ export default async function ProductDetailPage({
     <>
       <PageHeader
         title={product.name}
-        description={product.description ?? "Product details and variants."}
+        description={product.description ?? "Detalles del producto y variantes."}
         actions={
           canWrite && product.status === "active" ? (
             <div className="flex items-center gap-2">
               <LinkButton href={`/products/${product.id}/edit`} variant="outline">
                 <Pencil data-icon="inline-start" />
-                Edit
+                Editar
               </LinkButton>
               <ArchiveProductButton
                 productId={product.id}
@@ -83,9 +83,9 @@ export default async function ProductDetailPage({
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle>Product information</CardTitle>
+                <CardTitle>Información del producto</CardTitle>
                 <CardDescription>
-                  Catalog metadata and base pricing.
+                  Metadatos del catálogo y precios base.
                 </CardDescription>
               </div>
               <ProductStatusBadge status={product.status} />
@@ -93,31 +93,31 @@ export default async function ProductDetailPage({
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Category</p>
+              <p className="text-sm text-muted-foreground">Categoría</p>
               <p className="font-medium">{product.categoryName ?? "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Unit of measure</p>
+              <p className="text-sm text-muted-foreground">Unidad de medida</p>
               <p className="font-medium">{product.unitOfMeasure}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Base cost price</p>
+              <p className="text-sm text-muted-foreground">Precio de costo base</p>
               <p className="font-medium tabular-nums">
                 {formatCurrency(product.baseCostPrice)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Base sale price</p>
+              <p className="text-sm text-muted-foreground">Precio de venta base</p>
               <p className="font-medium tabular-nums">
                 {formatCurrency(product.baseSalePrice)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Created</p>
+              <p className="text-sm text-muted-foreground">Creado</p>
               <p className="font-medium">{formatDateTime(product.createdAt)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Last updated</p>
+              <p className="text-sm text-muted-foreground">Última actualización</p>
               <p className="font-medium">{formatDateTime(product.updatedAt)}</p>
             </div>
           </CardContent>
@@ -125,7 +125,7 @@ export default async function ProductDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Summary</CardTitle>
+            <CardTitle>Resumen</CardTitle>
             <CardDescription>
               {product.variants.length} variant
               {product.variants.length === 1 ? "" : "s"}
@@ -134,7 +134,7 @@ export default async function ProductDetailPage({
           <CardContent className="space-y-2 text-sm">
             <p>
               <Link href="/products" className="text-primary hover:underline">
-                Back to products
+                Volver a productos
               </Link>
             </p>
           </CardContent>
@@ -143,29 +143,29 @@ export default async function ProductDetailPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Variants</CardTitle>
+          <CardTitle>Variantes</CardTitle>
           <CardDescription>
-            SKU, barcode, and pricing per variant. Stock is managed in Inventory.
+            SKU, código de barras y precios por variante. El stock se administra en Inventario.
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <Table aria-label="Product variants">
+          <Table aria-label="Variantes de producto">
             <TableHeader>
               <TableHead isRowHeader id="variant">
-                Variant
+                Variante
               </TableHead>
               <TableHead id="sku">SKU</TableHead>
-              <TableHead id="barcode">Barcode</TableHead>
+              <TableHead id="barcode">Código de barras</TableHead>
               <TableHead id="cost" className="text-right">
-                Cost
+                Costo
               </TableHead>
               <TableHead id="salePrice" className="text-right">
-                Sale price
+                Precio de venta
               </TableHead>
               <TableHead id="reorderPoint" className="text-right">
-                Reorder point
+                Punto de reorden
               </TableHead>
-              <TableHead id="status">Status</TableHead>
+              <TableHead id="status">Estado</TableHead>
             </TableHeader>
             <TableBody>
               {product.variants.map((variant) => (
@@ -191,7 +191,7 @@ export default async function ProductDetailPage({
                     {variant.reorderPoint}
                   </TableCell>
                   <TableCell>
-                    {variant.isActive ? "Active" : "Inactive"}
+                    {variant.isActive ? "Activo" : "Inactivo"}
                   </TableCell>
                 </TableRow>
               ))}

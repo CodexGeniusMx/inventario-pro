@@ -133,7 +133,7 @@ async function assertSkuAvailable(
   }
 
   if (data) {
-    throw new ConflictError("A product with this SKU already exists.")
+    throw new ConflictError("Ya existe un producto con este SKU.")
   }
 }
 
@@ -162,7 +162,7 @@ async function assertBarcodeAvailable(
   }
 
   if (data) {
-    throw new ConflictError("A product with this barcode already exists.")
+    throw new ConflictError("Ya existe un producto con este código de barras.")
   }
 }
 
@@ -299,7 +299,7 @@ export async function getProductById(
   }
 
   if (!data) {
-    throw new NotFoundError("Product not found.")
+    throw new NotFoundError("Producto no encontrado.")
   }
 
   const variants = (data.product_variants ?? [])
@@ -356,7 +356,7 @@ export async function createProduct(
 
   if (productError) {
     if (isUniqueViolation(productError)) {
-      throw new ConflictError("Unable to create product due to a duplicate value.")
+      throw new ConflictError("No se pudo crear el producto por un valor duplicado.")
     }
 
     throw productError
@@ -379,8 +379,8 @@ export async function createProduct(
 
     if (isUniqueViolation(variantError)) {
       const message = variantError.message.toLowerCase().includes("barcode")
-        ? "A product with this barcode already exists."
-        : "A product with this SKU already exists."
+        ? "Ya existe un producto con este código de barras."
+        : "Ya existe un producto con este SKU."
 
       throw new ConflictError(message)
     }
@@ -402,7 +402,7 @@ export async function updateProduct(
   const existing = await getProductById(user, productId)
 
   if (existing.status === "archived") {
-    throw new ConflictError("Archived products cannot be edited.")
+    throw new ConflictError("Los productos archivados no se pueden editar.")
   }
 
   const excludeVariantId = input.variant.id ?? existing.variants[0]?.id
@@ -437,7 +437,7 @@ export async function updateProduct(
   const variantId = input.variant.id ?? existing.variants[0]?.id
 
   if (!variantId) {
-    throw new NotFoundError("Product variant not found.")
+    throw new NotFoundError("Variante de producto no encontrada.")
   }
 
   const { error: variantError } = await supabase
@@ -457,8 +457,8 @@ export async function updateProduct(
   if (variantError) {
     if (isUniqueViolation(variantError)) {
       const message = variantError.message.toLowerCase().includes("barcode")
-        ? "A product with this barcode already exists."
-        : "A product with this SKU already exists."
+        ? "Ya existe un producto con este código de barras."
+        : "Ya existe un producto con este SKU."
 
       throw new ConflictError(message)
     }

@@ -48,7 +48,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -189,12 +189,12 @@ export function AdjustmentForm({
     return (
       <Card className="border-dashed">
         <CardHeader>
-          <CardTitle>No active warehouse</CardTitle>
+          <CardTitle>No hay almacén activo</CardTitle>
           <CardDescription>
-            Create and activate a warehouse before recording stock adjustments.
+            Crea y activa un almacén antes de registrar ajustes de stock.
           </CardDescription>
           <LinkButton href="/inventory/warehouses/new" className="mt-4">
-            Create warehouse
+            Crear almacén
           </LinkButton>
         </CardHeader>
       </Card>
@@ -214,15 +214,15 @@ export function AdjustmentForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Adjustment details</CardTitle>
+          <CardTitle>Detalles del ajuste</CardTitle>
           <CardDescription>
-            Stock changes are recorded as immutable inventory movements.
+            Los cambios de stock se registran como movimientos de inventario inmutables.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <label htmlFor="warehouseId" className="text-sm font-medium">
-              Warehouse
+              Almacén
             </label>
             <select
               id="warehouseId"
@@ -245,7 +245,7 @@ export function AdjustmentForm({
 
           <div className="space-y-2">
             <label htmlFor="adjustmentType" className="text-sm font-medium">
-              Adjustment type
+              Tipo de ajuste
             </label>
             <select
               id="adjustmentType"
@@ -269,13 +269,13 @@ export function AdjustmentForm({
 
           <div className="space-y-2 md:col-span-2">
             <label htmlFor="reason" className="text-sm font-medium">
-              Reason
+              Motivo
             </label>
             <Input
               id="reason"
               value={formState.reason}
               onChange={(event) => updateField("reason", event.target.value)}
-              placeholder="Why is this stock change being recorded?"
+              placeholder="¿Por qué se registra este cambio de stock?"
               aria-invalid={Boolean(fieldError("reason"))}
               disabled={isSubmitting}
             />
@@ -286,7 +286,7 @@ export function AdjustmentForm({
 
           <div className="space-y-2 md:col-span-2">
             <label htmlFor="notes" className="text-sm font-medium">
-              Notes
+              Notas
             </label>
             <Textarea
               id="notes"
@@ -301,15 +301,15 @@ export function AdjustmentForm({
 
       <Card>
         <CardHeader>
-          <CardTitle>Product line</CardTitle>
+          <CardTitle>Línea de producto</CardTitle>
           <CardDescription>
-            Select a variant and quantity. Negative adjustments cannot reduce stock below zero.
+            Selecciona una variante y cantidad. Los ajustes negativos no pueden reducir el stock por debajo de cero.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
             <label htmlFor="productVariantId" className="text-sm font-medium">
-              Product / variant
+              Producto / variante
             </label>
             <select
               id="productVariantId"
@@ -321,7 +321,7 @@ export function AdjustmentForm({
               disabled={isSubmitting || variants.length === 0}
             >
               {variants.length === 0 ? (
-                <option value="">No active variants available</option>
+                <option value="">No hay variantes activas disponibles</option>
               ) : (
                 variants.map((variant) => (
                   <option key={variant.id} value={variant.id}>
@@ -339,7 +339,7 @@ export function AdjustmentForm({
 
           <div className="space-y-2">
             <label htmlFor="quantity" className="text-sm font-medium">
-              Quantity
+              Cantidad
             </label>
             <Input
               id="quantity"
@@ -359,21 +359,21 @@ export function AdjustmentForm({
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium">Stock impact</p>
+            <p className="text-sm font-medium">Impacto en stock</p>
             <div className="rounded-2xl border bg-muted/30 px-3 py-2 text-sm">
               {isLoadingBalance ? (
-                <span className="text-muted-foreground">Loading current stock…</span>
+                <span className="text-muted-foreground">Cargando stock actual…</span>
               ) : (
                 <>
                   <p>
-                    Current on hand:{" "}
+                    Disponible actual:{" "}
                     <span className="font-medium tabular-nums">
                       {currentBalance ?? 0}
                     </span>
                   </p>
                   {projectedBalance !== null && (
                     <p>
-                      After adjustment:{" "}
+                      Después del ajuste:{" "}
                       <span
                         className={
                           projectedBalance < 0
@@ -402,14 +402,14 @@ export function AdjustmentForm({
           {isSubmitting ? (
             <>
               <Loader2 className="animate-spin" data-icon="inline-start" />
-              Saving…
+              Guardando…
             </>
           ) : (
-            "Create adjustment"
+            "Crear ajuste"
           )}
         </Button>
         <LinkButton href="/inventory/adjustments" variant="outline">
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

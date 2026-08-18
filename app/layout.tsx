@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { APP_NAME, APP_COMPANY, APP_DESCRIPTION } from "@/lib/i18n/branding";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -17,16 +18,18 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Inventario Pro",
-    template: "%s · Inventario Pro",
+    default: APP_NAME,
+    template: `%s · ${APP_NAME}`,
   },
-  description: "Professional inventory management for real businesses",
+  description: APP_DESCRIPTION,
+  applicationName: APP_NAME,
+  authors: [{ name: APP_COMPANY }],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang="es"
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", inter.variable)}
     >
       <body className="min-h-full flex flex-col">{children}</body>

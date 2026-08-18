@@ -55,7 +55,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -123,13 +123,13 @@ export function CustomerForm({ mode, customer }: CustomerFormProps) {
     <form onSubmit={handleSubmit} className="max-w-3xl space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Customer information</CardTitle>
-          <CardDescription>Contact details for this customer.</CardDescription>
+          <CardTitle>Información del cliente</CardTitle>
+          <CardDescription>Datos de contacto de este cliente.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label htmlFor="name" className="mb-1 block text-sm font-medium">
-              Name
+              Nombre
             </label>
             <Input
               id="name"
@@ -144,7 +144,7 @@ export function CustomerForm({ mode, customer }: CustomerFormProps) {
 
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium">
-              Email
+              Correo electrónico
             </label>
             <Input
               id="email"
@@ -160,7 +160,7 @@ export function CustomerForm({ mode, customer }: CustomerFormProps) {
 
           <div>
             <label htmlFor="phone" className="mb-1 block text-sm font-medium">
-              Phone
+              Teléfono
             </label>
             <Input
               id="phone"
@@ -171,7 +171,7 @@ export function CustomerForm({ mode, customer }: CustomerFormProps) {
 
           <div className="sm:col-span-2">
             <label htmlFor="taxId" className="mb-1 block text-sm font-medium">
-              Tax ID
+              RFC / ID fiscal
             </label>
             <Input
               id="taxId"
@@ -182,7 +182,7 @@ export function CustomerForm({ mode, customer }: CustomerFormProps) {
 
           <div className="sm:col-span-2">
             <label htmlFor="notes" className="mb-1 block text-sm font-medium">
-              Notes
+              Notas
             </label>
             <Textarea
               id="notes"
@@ -200,7 +200,7 @@ export function CustomerForm({ mode, customer }: CustomerFormProps) {
                 onChange={(event) => updateField("isActive", event.target.checked)}
                 className="size-4 rounded border-input"
               />
-              Active customer
+              Cliente activo
             </label>
           </div>
         </CardContent>
@@ -215,13 +215,13 @@ export function CustomerForm({ mode, customer }: CustomerFormProps) {
       <div className="flex flex-wrap gap-3">
         <Button type="submit" isDisabled={isSubmitting}>
           {isSubmitting && <Loader2 className="animate-spin" data-icon="inline-start" />}
-          {mode === "create" ? "Create customer" : "Save changes"}
+          {mode === "create" ? "Crear cliente" : "Guardar cambios"}
         </Button>
         <LinkButton
           href={mode === "edit" ? `/customers/${customer!.id}` : "/customers"}
           variant="outline"
         >
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

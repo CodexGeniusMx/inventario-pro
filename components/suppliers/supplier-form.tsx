@@ -59,7 +59,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -129,15 +129,15 @@ export function SupplierForm({ mode, supplier }: SupplierFormProps) {
     <form onSubmit={handleSubmit} className="max-w-3xl space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Supplier information</CardTitle>
+          <CardTitle>Información del proveedor</CardTitle>
           <CardDescription>
-            Contact and billing details for this supplier.
+            Datos de contacto y facturación de este proveedor.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label htmlFor="name" className="mb-1 block text-sm font-medium">
-              Name
+              Nombre
             </label>
             <Input
               id="name"
@@ -152,7 +152,7 @@ export function SupplierForm({ mode, supplier }: SupplierFormProps) {
 
           <div>
             <label htmlFor="contactName" className="mb-1 block text-sm font-medium">
-              Contact name
+              Nombre de contacto
             </label>
             <Input
               id="contactName"
@@ -163,7 +163,7 @@ export function SupplierForm({ mode, supplier }: SupplierFormProps) {
 
           <div>
             <label htmlFor="email" className="mb-1 block text-sm font-medium">
-              Email
+              Correo electrónico
             </label>
             <Input
               id="email"
@@ -179,7 +179,7 @@ export function SupplierForm({ mode, supplier }: SupplierFormProps) {
 
           <div>
             <label htmlFor="phone" className="mb-1 block text-sm font-medium">
-              Phone
+              Teléfono
             </label>
             <Input
               id="phone"
@@ -190,7 +190,7 @@ export function SupplierForm({ mode, supplier }: SupplierFormProps) {
 
           <div>
             <label htmlFor="taxId" className="mb-1 block text-sm font-medium">
-              Tax ID
+              RFC / ID fiscal
             </label>
             <Input
               id="taxId"
@@ -201,19 +201,19 @@ export function SupplierForm({ mode, supplier }: SupplierFormProps) {
 
           <div className="sm:col-span-2">
             <label htmlFor="paymentTerms" className="mb-1 block text-sm font-medium">
-              Payment terms
+              Condiciones de pago
             </label>
             <Input
               id="paymentTerms"
               value={formState.paymentTerms}
               onChange={(event) => updateField("paymentTerms", event.target.value)}
-              placeholder="Net 30, COD, etc."
+              placeholder="Neto 30, contra entrega, etc."
             />
           </div>
 
           <div className="sm:col-span-2">
             <label htmlFor="notes" className="mb-1 block text-sm font-medium">
-              Notes
+              Notas
             </label>
             <Textarea
               id="notes"
@@ -231,7 +231,7 @@ export function SupplierForm({ mode, supplier }: SupplierFormProps) {
                 onChange={(event) => updateField("isActive", event.target.checked)}
                 className="size-4 rounded border-input"
               />
-              Active supplier
+              Proveedor activo
             </label>
           </div>
         </CardContent>
@@ -246,10 +246,10 @@ export function SupplierForm({ mode, supplier }: SupplierFormProps) {
       <div className="flex flex-wrap gap-3">
         <Button type="submit" isDisabled={isSubmitting}>
           {isSubmitting && <Loader2 className="animate-spin" data-icon="inline-start" />}
-          {mode === "create" ? "Create supplier" : "Save changes"}
+          {mode === "create" ? "Crear proveedor" : "Guardar cambios"}
         </Button>
         <LinkButton href={mode === "edit" ? `/suppliers/${supplier!.id}` : "/suppliers"} variant="outline">
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

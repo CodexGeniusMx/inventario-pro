@@ -12,7 +12,7 @@ type InventoryErrorStateProps = {
 }
 
 export function InventoryErrorState({
-  message = "Unable to load inventory data. Please refresh and try again.",
+  message = "No se pudieron cargar los datos de inventario. Actualiza la página e inténtalo de nuevo.",
 }: InventoryErrorStateProps) {
   return (
     <Card className="border-destructive/30 bg-destructive/5">
@@ -21,7 +21,7 @@ export function InventoryErrorState({
           <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
           <div className="space-y-1">
             <CardTitle className="text-base text-destructive">
-              Something went wrong
+              Algo salió mal
             </CardTitle>
             <CardDescription className="text-destructive/80">
               {message}

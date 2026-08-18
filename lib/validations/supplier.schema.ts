@@ -13,7 +13,7 @@ const optionalEmail = z
   .transform((value) => (value === "" ? null : value ?? null))
   .refine(
     (value) => value === null || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-    "Enter a valid email address."
+    "Ingresa un correo electrónico válido."
   )
 
 export const supplierListFiltersSchema = z.object({
@@ -22,7 +22,7 @@ export const supplierListFiltersSchema = z.object({
 })
 
 export const createSupplierSchema = z.object({
-  name: z.string().trim().min(1, "Supplier name is required."),
+  name: z.string().trim().min(1, "El nombre del proveedor es obligatorio."),
   contactName: optionalText,
   email: optionalEmail,
   phone: optionalText,

@@ -16,8 +16,8 @@ export default async function ReportsPage() {
   return (
     <>
       <PageHeader
-        title="Reports"
-        description="Business reporting with filters and CSV export."
+        title="Reportes"
+        description="Reportes de negocio con filtros y exportación CSV."
       />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

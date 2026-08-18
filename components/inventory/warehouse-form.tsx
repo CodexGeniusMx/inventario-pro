@@ -53,7 +53,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -140,15 +140,15 @@ export function WarehouseForm({ mode, warehouse }: WarehouseFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Warehouse details</CardTitle>
+          <CardTitle>Detalles del almacén</CardTitle>
           <CardDescription>
-            Warehouses scope all inventory balances and movements.
+            Los almacenes delimitan todos los saldos y movimientos de inventario.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium">
-              Name
+              Nombre
             </label>
             <Input
               id="name"
@@ -164,7 +164,7 @@ export function WarehouseForm({ mode, warehouse }: WarehouseFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="code" className="text-sm font-medium">
-              Code
+              Código
             </label>
             <Input
               id="code"
@@ -180,7 +180,7 @@ export function WarehouseForm({ mode, warehouse }: WarehouseFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="address" className="text-sm font-medium">
-              Address
+              Dirección
             </label>
             <Textarea
               id="address"
@@ -198,7 +198,7 @@ export function WarehouseForm({ mode, warehouse }: WarehouseFormProps) {
               onChange={(event) => updateField("isDefault", event.target.checked)}
               disabled={isSubmitting}
             />
-            Set as default warehouse
+            Establecer como almacén predeterminado
           </label>
 
           <label className="flex items-center gap-2 text-sm">
@@ -208,7 +208,7 @@ export function WarehouseForm({ mode, warehouse }: WarehouseFormProps) {
               onChange={(event) => updateField("isActive", event.target.checked)}
               disabled={isSubmitting || (warehouse?.isDefault ?? false)}
             />
-            Active
+            Activo
           </label>
         </CardContent>
       </Card>
@@ -218,16 +218,16 @@ export function WarehouseForm({ mode, warehouse }: WarehouseFormProps) {
           {isSubmitting ? (
             <>
               <Loader2 className="animate-spin" data-icon="inline-start" />
-              Saving…
+              Guardando…
             </>
           ) : mode === "create" ? (
-            "Create warehouse"
+            "Crear almacén"
           ) : (
-            "Save changes"
+            "Guardar cambios"
           )}
         </Button>
         <LinkButton href="/inventory/warehouses" variant="outline">
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

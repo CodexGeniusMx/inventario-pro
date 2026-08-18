@@ -15,14 +15,14 @@ function mapAuthErrorMessage(message: string): string {
     normalized.includes("invalid login credentials") ||
     normalized.includes("invalid email or password")
   ) {
-    return "Invalid email or password."
+    return "Correo electrónico o contraseña incorrectos."
   }
 
   if (normalized.includes("email not confirmed")) {
-    return "Please confirm your email before signing in."
+    return "Confirma tu correo electrónico antes de iniciar sesión."
   }
 
-  return "Unable to sign in. Please try again."
+  return "No se pudo iniciar sesión. Inténtalo de nuevo."
 }
 
 export async function loginAction(

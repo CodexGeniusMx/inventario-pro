@@ -31,6 +31,7 @@ import { RecentMovementsTable } from "@/components/dashboard/recent-movements-ta
 import { RecentSalesTable } from "@/components/dashboard/recent-sales-table"
 import { TopProductsTable } from "@/components/dashboard/top-products-table"
 import { PageHeader } from "@/components/layout/page-header"
+import { APP_NAME } from "@/lib/i18n/branding"
 import { formatDashboardHeadingDate } from "@/lib/reports/date-ranges"
 import { requireUser } from "@/lib/auth/session"
 import { formatNumber, formatPercent } from "@/lib/format"
@@ -50,8 +51,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   return (
     <>
       <PageHeader
-        title="Dashboard"
-        description={`Overview for ${summary.organizationName} · ${formatDashboardHeadingDate(new Date(summary.generatedAt), user.organizationTimezone)}`}
+        title="Panel"
+        description={`Resumen de ${APP_NAME} · ${formatDashboardHeadingDate(new Date(summary.generatedAt), user.organizationTimezone)}`}
       />
 
       <LowStockAlert
@@ -64,60 +65,60 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         {canViewFinancials ? (
           <>
             <MetricCardCurrency
-              title="Revenue today"
+              title="Ingresos de hoy"
               amount={metrics.revenueToday}
-              subtitle={`${formatNumber(metrics.salesTodayCount)} sales`}
+              subtitle={`${formatNumber(metrics.salesTodayCount)} ventas`}
               change={metrics.salesTodayChange ?? undefined}
               icon={ShoppingCart}
             />
             <MetricCardCurrency
-              title="Revenue this month"
+              title="Ingresos del mes"
               amount={metrics.revenueMonth}
-              subtitle={`${formatNumber(metrics.salesMonthCount)} sales`}
+              subtitle={`${formatNumber(metrics.salesMonthCount)} ventas`}
               change={metrics.revenueMonthChange ?? undefined}
               icon={TrendingUp}
             />
             <MetricCardCurrency
-              title="Estimated gross profit"
+              title="Utilidad bruta estimada"
               amount={metrics.estimatedGrossProfitMonth}
               subtitle={
                 metrics.estimatedGrossProfitMargin !== null
-                  ? `${formatPercent(metrics.estimatedGrossProfitMargin).replace("+", "")} margin this month`
-                  : "This month · net revenue minus estimated COGS"
+                  ? `${formatPercent(metrics.estimatedGrossProfitMargin).replace("+", "")} de margen este mes`
+                  : "Este mes · ingresos netos menos costo de ventas estimado"
               }
               icon={DollarSign}
             />
             <MetricCardCurrency
-              title="Inventory value"
+              title="Valor de inventario"
               amount={metrics.inventoryValue}
-              subtitle="Active products at resolved cost"
+              subtitle="Productos activos al costo resuelto"
               icon={Warehouse}
             />
           </>
         ) : (
           <>
             <MetricCardCount
-              title="Sales today"
+              title="Ventas de hoy"
               count={metrics.salesTodayCount}
-              subtitle="Completed sales"
+              subtitle="Ventas completadas"
               icon={ShoppingCart}
             />
             <MetricCardCount
-              title="Sales this month"
+              title="Ventas del mes"
               count={metrics.salesMonthCount}
-              subtitle="Completed sales"
+              subtitle="Ventas completadas"
               icon={TrendingUp}
             />
             <MetricCardCurrency
-              title="Inventory value"
+              title="Valor de inventario"
               amount={metrics.inventoryValue}
-              subtitle="Active products at resolved cost"
+              subtitle="Productos activos al costo resuelto"
               icon={Warehouse}
             />
             <MetricCardCount
-              title="Units in stock"
+              title="Unidades en stock"
               count={metrics.totalUnitsInStock}
-              subtitle="Across active variants"
+              subtitle="En variantes activas"
               icon={Boxes}
             />
           </>
@@ -126,30 +127,30 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCardCount
-          title="Active products"
+          title="Productos activos"
           count={metrics.activeProductsCount}
-          subtitle="Catalog products"
+          subtitle="Productos del catálogo"
           icon={Package}
         />
         {canViewFinancials ? (
           <MetricCardCount
-            title="Units in stock"
+            title="Unidades en stock"
             count={metrics.totalUnitsInStock}
-            subtitle="Across active variants"
+            subtitle="En variantes activas"
             icon={Boxes}
           />
         ) : null}
         <MetricCardCount
-          title="Low-stock items"
+          title="Artículos con stock bajo"
           count={metrics.lowStockCount}
-          subtitle="At or below reorder point"
+          subtitle="En o por debajo del punto de reorden"
           icon={AlertTriangle}
           variant="warning"
         />
         <MetricCardCount
-          title="Out-of-stock items"
+          title="Artículos sin stock"
           count={metrics.outOfStockCount}
-          subtitle="Zero units available"
+          subtitle="Cero unidades disponibles"
           icon={PackageX}
           variant="danger"
         />

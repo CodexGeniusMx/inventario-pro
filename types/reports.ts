@@ -82,6 +82,7 @@ export type PurchaseReportRow = {
   status: string
   orderedAt: string | null
   total: number
+  currencyCode: string
   unitsOrdered: number
   unitsReceived: number
   lastReceivedAt: string | null
@@ -115,27 +116,27 @@ export const REPORT_DEFINITIONS: Array<{
 }> = [
   {
     slug: "sales",
-    title: "Sales report",
-    description: "Completed sales, revenue, discounts, returns, and estimated gross profit.",
+    title: "Reporte de ventas",
+    description: "Ventas completadas, ingresos, descuentos, devoluciones y utilidad bruta estimada.",
   },
   {
     slug: "inventory",
-    title: "Inventory report",
-    description: "On-hand stock, reorder points, status, and inventory value at cost.",
+    title: "Reporte de inventario",
+    description: "Stock disponible, puntos de reorden, estado y valor de inventario al costo.",
   },
   {
     slug: "movements",
-    title: "Inventory movements",
-    description: "Immutable ledger entries with before/after quantities and references.",
+    title: "Movimientos de inventario",
+    description: "Registros inmutables con cantidades antes/después y referencias.",
   },
   {
     slug: "purchases",
-    title: "Purchases report",
-    description: "Purchase orders, received quantities, supplier totals, and status.",
+    title: "Reporte de compras",
+    description: "Órdenes de compra, cantidades recibidas, totales por proveedor y estado.",
   },
   {
     slug: "products",
-    title: "Products report",
-    description: "Top sellers, returns, low stock, and out-of-stock variants.",
+    title: "Reporte de productos",
+    description: "Más vendidos, devoluciones, stock bajo y variantes sin stock.",
   },
 ]

@@ -20,16 +20,16 @@ type WarehousesTableProps = {
 export function WarehousesTable({ warehouses, canManage }: WarehousesTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Warehouses">
+      <Table aria-label="Almacenes">
         <TableHeader>
           <TableHead isRowHeader id="name">
-            Name
+            Nombre
           </TableHead>
-          <TableHead id="code">Code</TableHead>
-          <TableHead id="address">Address</TableHead>
-          <TableHead id="status">Status</TableHead>
-          <TableHead id="updated">Updated</TableHead>
-          {canManage && <TableHead id="actions">Actions</TableHead>}
+          <TableHead id="code">Código</TableHead>
+          <TableHead id="address">Dirección</TableHead>
+          <TableHead id="status">Estado</TableHead>
+          <TableHead id="updated">Actualizado</TableHead>
+          {canManage && <TableHead id="actions">Acciones</TableHead>}
         </TableHeader>
         <TableBody>
           {warehouses.map((warehouse) => (
@@ -51,7 +51,7 @@ export function WarehousesTable({ warehouses, canManage }: WarehousesTableProps)
                     href={`/inventory/warehouses/${warehouse.id}/edit`}
                     className="text-primary hover:underline"
                   >
-                    Edit
+                    Editar
                   </Link>
                 </TableCell>
               )}

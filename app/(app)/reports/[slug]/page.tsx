@@ -91,38 +91,38 @@ export default async function ReportDetailPage({
           )}
         >
           <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard label="Sales count" value={formatNumber(summary.salesCount)} />
-            <SummaryCard label="Units sold (net)" value={formatNumber(summary.unitsSold)} />
-            <SummaryCard label="Net revenue" value={formatCurrency(summary.netRevenue)} />
+            <SummaryCard label="Cantidad de ventas" value={formatNumber(summary.salesCount)} />
+            <SummaryCard label="Unidades vendidas (netas)" value={formatNumber(summary.unitsSold)} />
+            <SummaryCard label="Ingresos netos" value={formatCurrency(summary.netRevenue)} />
             <SummaryCard
-              label="Estimated gross profit"
+              label="Utilidad bruta estimada"
               value={formatCurrency(summary.estimatedGrossProfit)}
             />
           </div>
 
           <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard label="Discounts" value={formatCurrency(summary.discountTotal)} />
-            <SummaryCard label="Return units" value={formatNumber(summary.returnUnits)} />
-            <SummaryCard label="Return revenue" value={formatCurrency(summary.returnRevenue)} />
-            <SummaryCard label="Estimated COGS" value={formatCurrency(summary.estimatedCogs)} />
+            <SummaryCard label="Descuentos" value={formatCurrency(summary.discountTotal)} />
+            <SummaryCard label="Unidades devueltas" value={formatNumber(summary.returnUnits)} />
+            <SummaryCard label="Ingresos por devoluciones" value={formatCurrency(summary.returnRevenue)} />
+            <SummaryCard label="Costo de ventas estimado" value={formatCurrency(summary.estimatedCogs)} />
           </div>
 
           <DataTable
             headers={[
-              "Sale #",
-              "Completed",
-              "Customer",
-              "Warehouse",
-              "Items",
-              "Units",
-              "Net total",
-              "Discount",
-              "Status",
+              "Venta #",
+              "Completada",
+              "Cliente",
+              "Almacén",
+              "Artículos",
+              "Unidades",
+              "Total neto",
+              "Descuento",
+              "Estado",
             ]}
             rows={rows.map((row) => [
               row.documentNumber,
               row.completedAt ? formatDateTime(row.completedAt) : "—",
-              row.customerName ?? "Walk-in",
+              row.customerName ?? "Cliente ocasional",
               row.warehouseName,
               row.itemCount,
               row.unitsSold,
@@ -143,7 +143,7 @@ export default async function ReportDetailPage({
         <ReportLayout
           slug={slug}
           title={definition.title}
-          description={`${definition.description} · total value ${formatCurrency(totalValue)}`}
+          description={`${definition.description} · valor total ${formatCurrency(totalValue)}`}
           filters={filters}
           filterOptions={filterOptions}
           searchParams={Object.fromEntries(
@@ -156,15 +156,15 @@ export default async function ReportDetailPage({
         >
           <DataTable
             headers={[
-              "Product",
-              "Variant",
+              "Producto",
+              "Variante",
               "SKU",
-              "Warehouse",
+              "Almacén",
               "Stock",
-              "Reorder",
-              "Status",
-              "Unit cost",
-              "Value",
+              "Reorden",
+              "Estado",
+              "Costo unitario",
+              "Valor",
             ]}
             rows={rows.map((row) => [
               row.productName,
@@ -203,18 +203,18 @@ export default async function ReportDetailPage({
         >
           <DataTable
             headers={[
-              "Date",
-              "Type",
-              "Product",
-              "Variant",
+              "Fecha",
+              "Tipo",
+              "Producto",
+              "Variante",
               "SKU",
-              "Warehouse",
-              "Qty",
-              "Before",
-              "After",
-              "User",
-              "Reference",
-              "Reason",
+              "Almacén",
+              "Cant.",
+              "Antes",
+              "Después",
+              "Usuario",
+              "Referencia",
+              "Motivo",
             ]}
             rows={rows.map((row) => [
               formatDateTime(row.createdAt),
@@ -237,12 +237,22 @@ export default async function ReportDetailPage({
 
     if (slug === "purchases") {
       const rows = await getPurchaseReport(user, filters)
+      const totalsByCurrency = rows.reduce<Record<string, number>>((acc, row) => {
+        acc[row.currencyCode] = (acc[row.currencyCode] ?? 0) + row.total
+        return acc
+      }, {})
+      const totalsLabel = Object.entries(totalsByCurrency)
+        .map(
+          ([currency, total]) =>
+            `${formatCurrency(total, currency as "MXN" | "USD")} ${currency}`
+        )
+        .join(" · ")
 
       return (
         <ReportLayout
           slug={slug}
           title={definition.title}
-          description={`${definition.description} · ${range.label}`}
+          description={`${definition.description} · ${range.label}${totalsLabel ? ` · ${totalsLabel}` : ""}`}
           filters={filters}
           filterOptions={filterOptions}
           searchParams={Object.fromEntries(
@@ -256,15 +266,15 @@ export default async function ReportDetailPage({
         >
           <DataTable
             headers={[
-              "PO #",
-              "Supplier",
-              "Warehouse",
-              "Status",
-              "Ordered",
+              "OC #",
+              "Proveedor",
+              "Almacén",
+              "Estado",
+              "Ordenada",
               "Total",
-              "Ordered qty",
-              "Received qty",
-              "Last received",
+              "Cant. ordenada",
+              "Cant. recibida",
+              "Última recepción",
             ]}
             rows={rows.map((row) => [
               row.documentNumber,
@@ -272,7 +282,7 @@ export default async function ReportDetailPage({
               row.warehouseName,
               row.status,
               row.orderedAt ? formatDateTime(row.orderedAt) : "—",
-              formatCurrency(row.total),
+              formatCurrency(row.total, row.currencyCode as "MXN" | "USD"),
               row.unitsOrdered,
               row.unitsReceived,
               row.lastReceivedAt ? formatDateTime(row.lastReceivedAt) : "—",
@@ -297,16 +307,16 @@ export default async function ReportDetailPage({
       >
         <DataTable
           headers={[
-            "Product",
-            "Variant",
+            "Producto",
+            "Variante",
             "SKU",
-            "Units sold",
-            "Return units",
-            "Net revenue",
-            "Return revenue",
-            "On hand",
-            "Stock status",
-            "Last movement",
+            "Unidades vendidas",
+            "Unidades devueltas",
+            "Ingresos netos",
+            "Ingresos por devoluciones",
+            "Disponible",
+            "Estado de stock",
+            "Último movimiento",
           ]}
           rows={rows.map((row) => [
             row.productName,
@@ -324,7 +334,7 @@ export default async function ReportDetailPage({
       </ReportLayout>
     )
   } catch {
-    loadError = "Unable to load this report from the database."
+    loadError = "No se pudo cargar este reporte desde la base de datos."
   }
 
   return (
@@ -332,7 +342,7 @@ export default async function ReportDetailPage({
       <PageHeader title={definition.title} description={definition.description} />
       <Card>
         <CardHeader>
-          <CardTitle>Unable to load report</CardTitle>
+          <CardTitle>No se pudo cargar el reporte</CardTitle>
           <CardDescription>{loadError}</CardDescription>
         </CardHeader>
       </Card>
@@ -362,8 +372,8 @@ function DataTable({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>No data found</CardTitle>
-          <CardDescription>Try adjusting the filters for this report.</CardDescription>
+          <CardTitle>No se encontraron datos</CardTitle>
+          <CardDescription>Intenta ajustar los filtros de este reporte.</CardDescription>
         </CardHeader>
       </Card>
     )
@@ -440,7 +450,7 @@ function ReportLayout({
         actions={
           <div className="flex items-center gap-2">
             <Link href="/reports" className="text-sm text-primary hover:underline">
-              All reports
+              Todos los reportes
             </Link>
             <ReportExportButton slug={slug} searchParams={searchParams} />
           </div>

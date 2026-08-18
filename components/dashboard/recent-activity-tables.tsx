@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency, formatRelativeTime } from "@/lib/format"
+import { adjustmentTypeLabel, purchaseOrderStatusLabel } from "@/lib/i18n/status-labels"
 import type {
   RecentAdjustmentActivity,
   RecentPurchaseActivity,
@@ -26,20 +27,20 @@ export function RecentPurchasesTable({ purchases }: RecentPurchasesTableProps) {
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Recent purchase orders</CardTitle>
+        <CardTitle>Órdenes de compra recientes</CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
-                <th className="px-4 py-2 font-medium">PO #</th>
-                <th className="px-2 py-2 font-medium">Supplier</th>
+                <th className="px-4 py-2 font-medium">OC #</th>
+                <th className="px-2 py-2 font-medium">Proveedor</th>
                 <th className="px-2 py-2 text-right font-medium">Total</th>
                 <th className="hidden px-2 py-2 font-medium md:table-cell">
-                  Status
+                  Estado
                 </th>
-                <th className="px-4 py-2 text-right font-medium">Updated</th>
+                <th className="px-4 py-2 text-right font-medium">Actualizado</th>
               </tr>
             </thead>
             <tbody>
@@ -59,8 +60,8 @@ export function RecentPurchasesTable({ purchases }: RecentPurchasesTableProps) {
                   <td className="px-2 py-2 text-right tabular-nums font-medium">
                     {formatCurrency(purchase.total)}
                   </td>
-                  <td className="hidden px-2 py-2 capitalize md:table-cell">
-                    {purchase.status.replaceAll("_", " ")}
+                  <td className="hidden px-2 py-2 md:table-cell">
+                    {purchaseOrderStatusLabel(purchase.status)}
                   </td>
                   <td className="px-4 py-2 text-right text-xs text-muted-foreground">
                     {purchase.receivedAt
@@ -89,18 +90,18 @@ export function RecentReceiptsTable({
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Recent purchase receipts</CardTitle>
+        <CardTitle>Recepciones de compra recientes</CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
-                <th className="px-4 py-2 font-medium">Receipt #</th>
-                <th className="px-2 py-2 font-medium">PO #</th>
-                <th className="px-2 py-2 font-medium">Warehouse</th>
-                <th className="px-2 py-2 text-right font-medium">Lines</th>
-                <th className="px-4 py-2 text-right font-medium">Received</th>
+                <th className="px-4 py-2 font-medium">Recepción #</th>
+                <th className="px-2 py-2 font-medium">OC #</th>
+                <th className="px-2 py-2 font-medium">Almacén</th>
+                <th className="px-2 py-2 text-right font-medium">Líneas</th>
+                <th className="px-4 py-2 text-right font-medium">Recibida</th>
               </tr>
             </thead>
             <tbody>
@@ -141,18 +142,18 @@ export function RecentAdjustmentsTable({
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Recent stock adjustments</CardTitle>
+        <CardTitle>Ajustes de stock recientes</CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
-                <th className="px-4 py-2 font-medium">Adjustment #</th>
-                <th className="px-2 py-2 font-medium">Type</th>
-                <th className="px-2 py-2 font-medium">Warehouse</th>
-                <th className="px-2 py-2 text-right font-medium">Lines</th>
-                <th className="px-4 py-2 text-right font-medium">Created</th>
+                <th className="px-4 py-2 font-medium">Ajuste #</th>
+                <th className="px-2 py-2 font-medium">Tipo</th>
+                <th className="px-2 py-2 font-medium">Almacén</th>
+                <th className="px-2 py-2 text-right font-medium">Líneas</th>
+                <th className="px-4 py-2 text-right font-medium">Creado</th>
               </tr>
             </thead>
             <tbody>
@@ -169,8 +170,8 @@ export function RecentAdjustmentsTable({
                       {adjustment.documentNumber}
                     </Link>
                   </td>
-                  <td className="px-2 py-2 capitalize">
-                    {adjustment.adjustmentType.replaceAll("_", " ")}
+                  <td className="px-2 py-2">
+                    {adjustmentTypeLabel(adjustment.adjustmentType)}
                   </td>
                   <td className="px-2 py-2">{adjustment.warehouseName}</td>
                   <td className="px-2 py-2 text-right tabular-nums">
@@ -201,20 +202,20 @@ export function RecentReturnsTable({ returns }: RecentReturnsTableProps) {
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Recent returns</CardTitle>
+        <CardTitle>Devoluciones recientes</CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
-                <th className="px-4 py-2 font-medium">Return #</th>
-                <th className="px-2 py-2 font-medium">Sale</th>
-                <th className="px-2 py-2 text-right font-medium">Qty</th>
+                <th className="px-4 py-2 font-medium">Devolución #</th>
+                <th className="px-2 py-2 font-medium">Venta</th>
+                <th className="px-2 py-2 text-right font-medium">Cant.</th>
                 <th className="hidden px-2 py-2 font-medium md:table-cell">
-                  Reason
+                  Motivo
                 </th>
-                <th className="px-4 py-2 text-right font-medium">Time</th>
+                <th className="px-4 py-2 text-right font-medium">Hora</th>
               </tr>
             </thead>
             <tbody>

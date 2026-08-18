@@ -14,8 +14,8 @@ export default async function NewSupplierPage() {
   return (
     <>
       <PageHeader
-        title="New supplier"
-        description="Add a supplier with contact and payment details."
+        title="Nuevo proveedor"
+        description="Agrega un proveedor con datos de contacto y pago."
       />
 
       <SupplierForm mode="create" />

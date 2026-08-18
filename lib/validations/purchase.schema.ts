@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { SUPPORTED_CURRENCIES } from "@/lib/currency/types"
+
 const purchaseOrderStatusSchema = z.enum([
   "draft",
   "ordered",
@@ -15,15 +17,15 @@ export const purchaseListFiltersSchema = z.object({
 })
 
 export const createPurchaseLineSchema = z.object({
-  productVariantId: z.string().uuid("Select a valid product variant."),
+  productVariantId: z.string().uuid("Selecciona una variante de producto válida."),
   quantityOrdered: z.coerce
     .number()
-    .int("Quantity must be a whole number.")
-    .positive("Quantity must be greater than zero."),
+    .int("La cantidad debe ser un número entero.")
+    .positive("La cantidad debe ser mayor que cero."),
   unitCost: z.coerce
     .number()
-    .min(0, "Unit cost cannot be negative.")
-    .multipleOf(0.01, "Unit cost must have at most two decimal places."),
+    .min(0, "El costo unitario no puede ser negativo.")
+    .multipleOf(0.01, "El costo unitario debe tener como máximo dos decimales."),
 })
 
 const optionalNotesSchema = z
@@ -39,31 +41,32 @@ const optionalNotesSchema = z
   })
 
 export const createPurchaseSchema = z.object({
-  supplierId: z.string().uuid("Select a supplier."),
-  warehouseId: z.string().uuid("Select a warehouse."),
+  supplierId: z.string().uuid("Selecciona un proveedor."),
+  warehouseId: z.string().uuid("Selecciona un almacén."),
+  currencyCode: z.enum(SUPPORTED_CURRENCIES).optional(),
   notes: optionalNotesSchema,
   lines: z
     .array(createPurchaseLineSchema)
-    .min(1, "Add at least one product line."),
+    .min(1, "Agrega al menos una línea de producto."),
 })
 
 export const receivePurchaseLineSchema = z.object({
-  purchaseOrderItemId: z.string().uuid("Invalid purchase line."),
+  purchaseOrderItemId: z.string().uuid("Línea de compra no válida."),
   quantityReceived: z.coerce
     .number()
-    .int("Quantity must be a whole number.")
-    .positive("Quantity must be greater than zero."),
+    .int("La cantidad debe ser un número entero.")
+    .positive("La cantidad debe ser mayor que cero."),
   unitCost: z.coerce
     .number()
-    .min(0, "Unit cost cannot be negative.")
+    .min(0, "El costo unitario no puede ser negativo.")
     .optional(),
 })
 
 export const receivePurchaseSchema = z.object({
-  purchaseOrderId: z.string().uuid("Invalid purchase order."),
+  purchaseOrderId: z.string().uuid("Orden de compra no válida."),
   notes: optionalNotesSchema,
   lines: z
     .array(receivePurchaseLineSchema)
-    .min(1, "Add at least one line to receive."),
+    .min(1, "Agrega al menos una línea para recibir."),
   idempotencyKey: z.string().uuid().optional(),
 })

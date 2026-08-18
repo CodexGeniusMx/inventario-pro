@@ -55,7 +55,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       listProducts(user, filters),
     ])
   } catch {
-    loadError = "Unable to load products from the database."
+    loadError = "No se pudieron cargar los productos desde la base de datos."
   }
 
   const hasFilters = Boolean(
@@ -65,13 +65,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   return (
     <>
       <PageHeader
-        title="Products"
-        description="Manage your product catalog, variants, SKU, and barcodes."
+        title="Productos"
+        description="Administra tu catálogo de productos, variantes, SKU y códigos de barras."
         actions={
           canWrite ? (
             <LinkButton href="/products/new">
               <Plus data-icon="inline-start" />
-              New product
+              Nuevo producto
             </LinkButton>
           ) : undefined
         }

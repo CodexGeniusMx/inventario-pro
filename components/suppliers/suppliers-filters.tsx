@@ -33,14 +33,14 @@ export function SuppliersFilters({
     <div className="mb-4 flex flex-col gap-3 rounded-2xl border bg-card p-4 sm:flex-row sm:items-end">
       <div className="flex-1">
         <label htmlFor="supplier-search" className="mb-1 block text-sm font-medium">
-          Search
+          Buscar
         </label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="supplier-search"
             defaultValue={initialQuery}
-            placeholder="Search by name, contact, email, phone, or tax ID"
+            placeholder="Buscar por nombre, contacto, correo, teléfono o RFC"
             className="pl-9"
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -58,7 +58,7 @@ export function SuppliersFilters({
 
       <div className="sm:w-48">
         <label htmlFor="supplier-status" className="mb-1 block text-sm font-medium">
-          Status
+          Estado
         </label>
         <select
           id="supplier-status"
@@ -66,9 +66,9 @@ export function SuppliersFilters({
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           onChange={(event) => updateFilters("status", event.target.value)}
         >
-          <option value="all">All</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
+          <option value="all">Todos</option>
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
         </select>
       </div>
     </div>

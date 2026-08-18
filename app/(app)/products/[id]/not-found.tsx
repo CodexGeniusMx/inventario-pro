@@ -10,12 +10,12 @@ export default function ProductNotFound() {
   return (
     <Card className="mx-auto max-w-lg border-dashed">
       <CardHeader className="text-center">
-        <CardTitle>Product not found</CardTitle>
+        <CardTitle>Producto no encontrado</CardTitle>
         <CardDescription>
-          This product may have been removed or you do not have access to it.
+          Este producto puede haber sido eliminado o no tienes acceso a él.
         </CardDescription>
         <LinkButton href="/products" className="mt-4">
-          Back to products
+          Volver a productos
         </LinkButton>
       </CardHeader>
     </Card>

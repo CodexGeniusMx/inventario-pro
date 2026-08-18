@@ -17,20 +17,20 @@ export const returnListFiltersSchema = z.object({
 })
 
 export const processReturnLineSchema = z.object({
-  saleItemId: z.string().uuid("Select a valid sale line."),
+  saleItemId: z.string().uuid("Selecciona una línea de venta válida."),
   quantity: z.coerce
     .number()
-    .int("Quantity must be a whole number.")
-    .positive("Quantity must be greater than zero."),
+    .int("La cantidad debe ser un número entero.")
+    .positive("La cantidad debe ser mayor que cero."),
   isRestockable: z.boolean().optional().default(true),
 })
 
 export const processReturnSchema = z.object({
-  saleId: z.string().uuid("Select a valid sale."),
-  reason: z.string().trim().min(1, "Enter a return reason."),
+  saleId: z.string().uuid("Selecciona una venta válida."),
+  reason: z.string().trim().min(1, "Ingresa un motivo de devolución."),
   notes: optionalNotesSchema,
   lines: z
     .array(processReturnLineSchema)
-    .min(1, "Add at least one line to return."),
+    .min(1, "Agrega al menos una línea para devolver."),
   idempotencyKey: z.string().uuid().optional(),
 })

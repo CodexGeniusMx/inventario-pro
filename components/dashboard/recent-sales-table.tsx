@@ -10,11 +10,11 @@ import { formatCurrency, formatRelativeTime } from "@/lib/format"
 import type { RecentSale } from "@/types/dashboard"
 
 const saleStatusLabels: Record<RecentSale["status"], string> = {
-  completed: "Completed",
-  draft: "Draft",
-  partially_returned: "Partial return",
-  fully_returned: "Fully returned",
-  cancelled: "Cancelled",
+  completed: "Completada",
+  draft: "Borrador",
+  partially_returned: "Devolución parcial",
+  fully_returned: "Totalmente devuelta",
+  cancelled: "Cancelada",
 }
 
 const saleStatusVariants: Record<
@@ -36,23 +36,23 @@ export function RecentSalesTable({ sales }: RecentSalesTableProps) {
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Recent sales</CardTitle>
+        <CardTitle>Ventas recientes</CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
-                <th className="px-4 py-2 font-medium">Sale #</th>
-                <th className="px-2 py-2 font-medium">Customer</th>
+                <th className="px-4 py-2 font-medium">Venta #</th>
+                <th className="px-2 py-2 font-medium">Cliente</th>
                 <th className="hidden px-2 py-2 font-medium sm:table-cell">
-                  Items
+                  Artículos
                 </th>
                 <th className="px-2 py-2 text-right font-medium">Total</th>
                 <th className="hidden px-2 py-2 font-medium md:table-cell">
-                  Status
+                  Estado
                 </th>
-                <th className="px-4 py-2 text-right font-medium">Time</th>
+                <th className="px-4 py-2 text-right font-medium">Hora</th>
               </tr>
             </thead>
             <tbody>

@@ -28,27 +28,27 @@ function formatReceivingProgress(ordered: number, received: number): string {
 export function PurchasesTable({ purchases }: PurchasesTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Purchase orders">
+      <Table aria-label="Órdenes de compra">
         <TableHeader>
           <TableHead isRowHeader id="document">
-            PO number
+            Número de OC
           </TableHead>
-          <TableHead id="supplier">Supplier</TableHead>
-          <TableHead id="status">Status</TableHead>
+          <TableHead id="supplier">Proveedor</TableHead>
+          <TableHead id="status">Estado</TableHead>
           <TableHead id="orderedAt" className="hidden md:table-cell">
-            Order date
+            Fecha de orden
           </TableHead>
           <TableHead id="warehouse" className="hidden lg:table-cell">
-            Warehouse
+            Almacén
           </TableHead>
           <TableHead id="progress" className="hidden sm:table-cell">
-            Receiving
+            Recepción
           </TableHead>
           <TableHead id="total" className="text-right">
             Total
           </TableHead>
           <TableHead id="createdBy" className="hidden xl:table-cell">
-            Created by
+            Creado por
           </TableHead>
         </TableHeader>
         <TableBody>
@@ -81,7 +81,7 @@ export function PurchasesTable({ purchases }: PurchasesTableProps) {
                 )}
               </TableCell>
               <TableCell className="text-right tabular-nums">
-                {formatCurrency(purchase.total)}
+                {formatCurrency(purchase.total, purchase.currencyCode)}
               </TableCell>
               <TableCell className="hidden text-muted-foreground xl:table-cell">
                 {purchase.createdByName}

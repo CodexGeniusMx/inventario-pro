@@ -14,11 +14,11 @@ export const saleListFiltersSchema = z.object({
 })
 
 export const createSaleLineSchema = z.object({
-  productVariantId: z.string().uuid("Select a valid product variant."),
+  productVariantId: z.string().uuid("Selecciona una variante de producto válida."),
   quantity: z.coerce
     .number()
-    .int("Quantity must be a whole number.")
-    .positive("Quantity must be greater than zero."),
+    .int("La cantidad debe ser un número entero.")
+    .positive("La cantidad debe ser mayor que cero."),
 })
 
 const optionalNotesSchema = z
@@ -34,7 +34,7 @@ const optionalNotesSchema = z
   })
 
 export const createSaleSchema = z.object({
-  warehouseId: z.string().uuid("Select a warehouse."),
+  warehouseId: z.string().uuid("Selecciona un almacén."),
   customerId: z
     .union([z.string().uuid(), z.null()])
     .optional()
@@ -42,9 +42,9 @@ export const createSaleSchema = z.object({
   notes: optionalNotesSchema,
   discountAmount: z.coerce
     .number()
-    .min(0, "Discount cannot be negative.")
+    .min(0, "El descuento no puede ser negativo.")
     .optional()
     .default(0),
-  lines: z.array(createSaleLineSchema).min(1, "Add at least one product line."),
+  lines: z.array(createSaleLineSchema).min(1, "Agrega al menos una línea de producto."),
   idempotencyKey: z.string().uuid().optional(),
 })

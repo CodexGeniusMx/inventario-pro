@@ -39,12 +39,12 @@ export default async function SaleReturnPage({ params }: SaleReturnPageProps) {
       return (
         <>
           <PageHeader
-            title="Process return"
-            description="Return items from a completed sale."
+            title="Procesar devolución"
+            description="Devuelve artículos de una venta completada."
           />
           <Card>
             <CardHeader>
-              <CardTitle>Return not available</CardTitle>
+              <CardTitle>Devolución no disponible</CardTitle>
               <CardDescription>{error.message}</CardDescription>
             </CardHeader>
           </Card>
@@ -59,15 +59,15 @@ export default async function SaleReturnPage({ params }: SaleReturnPageProps) {
     return (
       <>
         <PageHeader
-          title="Process return"
-          description="Return items from a completed sale."
+          title="Procesar devolución"
+          description="Devuelve artículos de una venta completada."
         />
         <Card>
           <CardHeader>
-            <CardTitle>Nothing left to return</CardTitle>
+            <CardTitle>No queda nada por devolver</CardTitle>
             <CardDescription>
-              All items on sale {sale.documentNumber} have already been fully
-              returned.
+              Todos los artículos de la venta {sale.documentNumber} ya fueron
+              devueltos por completo.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -78,8 +78,8 @@ export default async function SaleReturnPage({ params }: SaleReturnPageProps) {
   return (
     <>
       <PageHeader
-        title={`Return ${sale.documentNumber}`}
-        description="Select sale lines, quantities, and restock options. Inventory and totals are validated server-side."
+        title={`Devolución ${sale.documentNumber}`}
+        description="Selecciona líneas de venta, cantidades y opciones de reintegración. Inventario y totales se validan en el servidor."
       />
 
       <ReturnForm sale={sale} />

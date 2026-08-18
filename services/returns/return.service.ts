@@ -37,7 +37,7 @@ function mapRpcError(error: PostgrestError): never {
     message.includes("lines_required") ||
     message.includes("reason_required")
   ) {
-    throw new ValidationError("Return quantity or details are invalid.")
+    throw new ValidationError("La cantidad o los detalles de la devolución no son válidos.")
   }
 
   if (
@@ -46,7 +46,7 @@ function mapRpcError(error: PostgrestError): never {
     message.includes("invalid_line_item") ||
     message.includes("invalid_warehouse")
   ) {
-    throw new ValidationError("This sale cannot be returned.")
+    throw new ValidationError("Esta venta no se puede devolver.")
   }
 
   if (
@@ -54,7 +54,7 @@ function mapRpcError(error: PostgrestError): never {
     error.code === "PGRST202"
   ) {
     throw new ConflictError(
-      "Return processing is not available. Apply the latest database migrations."
+      "El procesamiento de devoluciones no está disponible. Aplica las últimas migraciones de base de datos."
     )
   }
 
@@ -106,13 +106,13 @@ export async function listReturns(
       id: row.id,
       documentNumber: row.document_number,
       saleId: row.sale_id,
-      saleDocumentNumber: row.sales?.document_number ?? "Unknown sale",
-      warehouseName: row.warehouses?.name ?? "Unknown warehouse",
+      saleDocumentNumber: row.sales?.document_number ?? "Venta desconocida",
+      warehouseName: row.warehouses?.name ?? "Almacén desconocido",
       reason: row.reason ?? "—",
       itemCount: items.length,
       totalQuantity,
       createdAt: row.created_at,
-      createdByName: row.profiles?.full_name ?? "Unknown user",
+      createdByName: row.profiles?.full_name ?? "Usuario desconocido",
     }
   })
 }
@@ -166,20 +166,20 @@ export async function getReturnById(
   }
 
   if (!data) {
-    throw new NotFoundError("Return not found.")
+    throw new NotFoundError("Devolución no encontrada.")
   }
 
   return {
     id: data.id,
     documentNumber: data.document_number,
     saleId: data.sale_id,
-    saleDocumentNumber: data.sales?.document_number ?? "Unknown sale",
+    saleDocumentNumber: data.sales?.document_number ?? "Venta desconocida",
     warehouseId: data.warehouse_id,
-    warehouseName: data.warehouses?.name ?? "Unknown warehouse",
+    warehouseName: data.warehouses?.name ?? "Almacén desconocido",
     reason: data.reason ?? "—",
     notes: data.notes,
     createdAt: data.created_at,
-    createdByName: data.profiles?.full_name ?? "Unknown user",
+    createdByName: data.profiles?.full_name ?? "Usuario desconocido",
     lines: (data.return_items ?? []).map((line) => {
       const restockMovement = Array.isArray(line.inventory_movements)
         ? line.inventory_movements[0]
@@ -189,7 +189,7 @@ export async function getReturnById(
         id: line.id,
         saleItemId: line.sale_item_id,
         productVariantId: line.product_variant_id,
-        productName: line.product_variants?.products?.name ?? "Unknown product",
+        productName: line.product_variants?.products?.name ?? "Producto desconocido",
         variantName: line.product_variants?.name ?? "Default",
         sku: line.product_variants?.sku ?? "—",
         quantity: line.quantity,
@@ -242,18 +242,18 @@ export async function getSaleReturnContext(
   }
 
   if (!data) {
-    throw new NotFoundError("Sale not found.")
+    throw new NotFoundError("Venta no encontrada.")
   }
 
   if (data.status !== "completed" && data.status !== "partially_returned") {
-    throw new ValidationError("Only completed sales can be returned.")
+    throw new ValidationError("Solo las ventas completadas se pueden devolver.")
   }
 
   const lines = (data.sale_items ?? [])
     .map((line) => ({
       id: line.id,
       productVariantId: line.product_variant_id,
-      productName: line.product_variants?.products?.name ?? "Unknown product",
+      productName: line.product_variants?.products?.name ?? "Producto desconocido",
       variantName: line.product_variants?.name ?? "Default",
       sku: line.product_variants?.sku ?? "—",
       quantitySold: line.quantity,
@@ -268,7 +268,7 @@ export async function getSaleReturnContext(
     documentNumber: data.document_number,
     status: data.status,
     warehouseId: data.warehouse_id,
-    warehouseName: data.warehouses?.name ?? "Unknown warehouse",
+    warehouseName: data.warehouses?.name ?? "Almacén desconocido",
     customerName: data.customers?.name ?? null,
     lines,
   }
@@ -358,7 +358,7 @@ export async function processReturn(
   }
 
   if (!data) {
-    throw new ConflictError("Return was not created.")
+    throw new ConflictError("La devolución no fue creada.")
   }
 
   return { id: data as string }

@@ -34,7 +34,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -135,9 +135,9 @@ export function ReceivePurchaseForm({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Nothing left to receive</CardTitle>
+          <CardTitle>No queda nada por recibir</CardTitle>
           <CardDescription>
-            All lines on this purchase order have been fully received.
+            Todas las líneas de esta orden de compra ya fueron recibidas por completo.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -148,10 +148,10 @@ export function ReceivePurchaseForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Receive merchandise</CardTitle>
+          <CardTitle>Recibir mercancía</CardTitle>
           <CardDescription>
-            Receiving updates inventory balances and creates immutable movement
-            records linked to this purchase receipt.
+            La recepción actualiza saldos de inventario y crea registros de
+            movimiento inmutables vinculados a esta recepción de compra.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -168,7 +168,7 @@ export function ReceivePurchaseForm({
                     updateLineState(line.id, { enabled: event.target.checked })
                   }
                   className="size-4 rounded border-input"
-                  aria-label={`Receive ${line.productName}`}
+                  aria-label={`Recibir ${line.productName}`}
                 />
               </div>
 
@@ -178,14 +178,14 @@ export function ReceivePurchaseForm({
                   {line.variantName} · {line.sku}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Ordered {line.quantityOrdered} · Received {line.quantityReceived} ·
-                  Remaining {line.quantityRemaining}
+                  Ordenado {line.quantityOrdered} · Recibido {line.quantityReceived} ·
+                  Restante {line.quantityRemaining}
                 </p>
               </div>
 
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  Quantity to receive
+                  Cantidad a recibir
                 </label>
                 <Input
                   type="number"
@@ -204,7 +204,7 @@ export function ReceivePurchaseForm({
 
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  Unit cost
+                  Costo unitario
                 </label>
                 <p className="flex h-10 items-center tabular-nums">
                   ${line.unitCost.toFixed(2)}
@@ -219,7 +219,7 @@ export function ReceivePurchaseForm({
 
           <div>
             <label htmlFor="receive-notes" className="mb-1 block text-sm font-medium">
-              Receipt notes
+              Notas de recepción
             </label>
             <Textarea
               id="receive-notes"
@@ -240,10 +240,10 @@ export function ReceivePurchaseForm({
       <div className="flex flex-wrap gap-3">
         <Button type="submit" isDisabled={isSubmitting}>
           {isSubmitting && <Loader2 className="animate-spin" data-icon="inline-start" />}
-          Confirm receipt
+          Confirmar recepción
         </Button>
         <LinkButton href={`/purchases/${purchaseOrder.id}`} variant="outline">
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

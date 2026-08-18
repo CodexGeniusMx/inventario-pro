@@ -17,8 +17,8 @@ import * as purchaseService from "@/services/purchasing/purchase.service"
 export async function createPurchaseAction(
   input: unknown
 ): Promise<ActionResult<{ id: string }>> {
-  try {
-    const user = await requireAdmin()
+    try {
+    const user = await requirePermission("purchases", "write")
     const parsed = createPurchaseSchema.parse(input)
     const purchase = await purchaseService.createPurchaseOrder(user, parsed)
     revalidatePath("/purchases")

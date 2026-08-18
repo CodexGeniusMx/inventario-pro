@@ -48,17 +48,17 @@ export default async function ReturnDetailPage({
     <>
       <PageHeader
         title={returnDoc.documentNumber}
-        description="Return detail and linked inventory movements."
+        description="Detalle de devolución y movimientos de inventario vinculados."
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Return information</CardTitle>
+            <CardTitle>Información de la devolución</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Sale</p>
+              <p className="text-sm text-muted-foreground">Venta</p>
               <p className="font-medium">
                 <Link
                   href={`/sales/${returnDoc.saleId}`}
@@ -69,24 +69,24 @@ export default async function ReturnDetailPage({
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Warehouse</p>
+              <p className="text-sm text-muted-foreground">Almacén</p>
               <p className="font-medium">{returnDoc.warehouseName}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Date</p>
+              <p className="text-sm text-muted-foreground">Fecha</p>
               <p className="font-medium">{formatDateTime(returnDoc.createdAt)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Created by</p>
+              <p className="text-sm text-muted-foreground">Creado por</p>
               <p className="font-medium">{returnDoc.createdByName}</p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-sm text-muted-foreground">Reason</p>
+              <p className="text-sm text-muted-foreground">Motivo</p>
               <p className="font-medium">{returnDoc.reason}</p>
             </div>
             {returnDoc.notes ? (
               <div className="sm:col-span-2">
-                <p className="text-sm text-muted-foreground">Notes</p>
+                <p className="text-sm text-muted-foreground">Notas</p>
                 <p className="whitespace-pre-wrap font-medium">{returnDoc.notes}</p>
               </div>
             ) : null}
@@ -95,12 +95,12 @@ export default async function ReturnDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Related</CardTitle>
+            <CardTitle>Relacionado</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p>
               <Link href="/returns" className="text-primary hover:underline">
-                Back to returns
+                Volver a devoluciones
               </Link>
             </p>
             <p>
@@ -108,7 +108,7 @@ export default async function ReturnDetailPage({
                 href="/inventory/movements"
                 className="text-primary hover:underline"
               >
-                View inventory movements
+                Ver movimientos de inventario
               </Link>
             </p>
           </CardContent>
@@ -117,29 +117,29 @@ export default async function ReturnDetailPage({
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Return lines</CardTitle>
+          <CardTitle>Líneas de devolución</CardTitle>
           <CardDescription>
-            Restockable lines increased sellable inventory via sale_return
+            Las líneas reintegrables aumentaron el inventario vendible mediante movimientos sale_return.
             movements.
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <Table aria-label="Return lines">
+          <Table aria-label="Líneas de devolución">
             <TableHeader>
               <TableHead isRowHeader id="product">
-                Product
+                Producto
               </TableHead>
-              <TableHead id="variant">Variant</TableHead>
+              <TableHead id="variant">Variante</TableHead>
               <TableHead id="sku">SKU</TableHead>
               <TableHead id="quantity" className="text-right">
-                Qty
+                Cant.
               </TableHead>
-              <TableHead id="restockable">Restockable</TableHead>
+              <TableHead id="restockable">Reintegrable</TableHead>
               <TableHead id="before" className="text-right">
-                Stock before
+                Stock antes
               </TableHead>
               <TableHead id="after" className="text-right">
-                Stock after
+                Stock después
               </TableHead>
             </TableHeader>
             <TableBody>
@@ -151,7 +151,7 @@ export default async function ReturnDetailPage({
                   <TableCell className="text-right tabular-nums">
                     {line.quantity}
                   </TableCell>
-                  <TableCell>{line.isRestockable ? "Yes" : "Damaged"}</TableCell>
+                  <TableCell>{line.isRestockable ? "Sí" : "Dañado"}</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {line.quantityBefore ?? "—"}
                   </TableCell>

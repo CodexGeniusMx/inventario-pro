@@ -43,20 +43,20 @@ function SalesFilters({
     >
       <div className="flex-1">
         <label htmlFor="sale-search" className="mb-1 block text-sm font-medium">
-          Search
+          Buscar
         </label>
         <input
           id="sale-search"
           name="q"
           defaultValue={initialQuery}
-          placeholder="Search by sale number"
+          placeholder="Buscar por número de venta"
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         />
       </div>
 
       <div className="sm:w-48">
         <label htmlFor="sale-status" className="mb-1 block text-sm font-medium">
-          Status
+          Estado
         </label>
         <select
           id="sale-status"
@@ -64,10 +64,10 @@ function SalesFilters({
           defaultValue={initialStatus}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
-          <option value="all">All</option>
-          <option value="completed">Completed</option>
-          <option value="draft">Draft</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="all">Todos</option>
+          <option value="completed">Completada</option>
+          <option value="draft">Borrador</option>
+          <option value="cancelled">Cancelada</option>
         </select>
       </div>
 
@@ -75,7 +75,7 @@ function SalesFilters({
         type="submit"
         className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
       >
-        Apply
+        Aplicar
       </button>
     </form>
   )
@@ -105,7 +105,7 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
   try {
     sales = await listSales(user, filters)
   } catch {
-    loadError = "Unable to load sales from the database."
+    loadError = "No se pudieron cargar las ventas desde la base de datos."
   }
 
   const hasFilters = Boolean(filters.q || filters.status !== "all")
@@ -113,13 +113,13 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
   return (
     <>
       <PageHeader
-        title="Sales"
-        description="Browse completed sales and open the point-of-sale flow."
+        title="Ventas"
+        description="Explora ventas completadas y abre el flujo de punto de venta."
         actions={
           canWrite && canComplete ? (
             <LinkButton href="/sales/new">
               <Plus data-icon="inline-start" />
-              New sale
+              Nueva venta
             </LinkButton>
           ) : undefined
         }
@@ -132,18 +132,18 @@ export default async function SalesPage({ searchParams }: SalesPageProps) {
       {loadError ? (
         <Card>
           <CardHeader>
-            <CardTitle>Unable to load sales</CardTitle>
+            <CardTitle>No se pudieron cargar las ventas</CardTitle>
             <CardDescription>{loadError}</CardDescription>
           </CardHeader>
         </Card>
       ) : sales.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No sales found</CardTitle>
+            <CardTitle>No se encontraron ventas</CardTitle>
             <CardDescription>
               {hasFilters
-                ? "Try adjusting your search or filters."
-                : "Record your first sale to start tracking revenue and inventory impact."}
+                ? "Intenta ajustar tu búsqueda o filtros."
+                : "Registra tu primera venta para comenzar a rastrear ingresos e impacto en inventario."}
             </CardDescription>
           </CardHeader>
         </Card>

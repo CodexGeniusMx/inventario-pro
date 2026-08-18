@@ -48,16 +48,16 @@ export function ArchiveProductButton({
   return (
     <>
       <Button variant="destructive" onPress={() => setOpen(true)}>
-        Archive product
+        Archivar producto
       </Button>
 
       {open && (
         <Dialog isOpen={open} onOpenChange={setOpen}>
           <DialogHeader>
-            <DialogTitle>Archive {productName}?</DialogTitle>
+            <DialogTitle>¿Archivar {productName}?</DialogTitle>
             <DialogDescription>
-              This product will be marked as archived and hidden from the default
-              product list. Inventory history is preserved.
+              Este producto se marcará como archivado y se ocultará de la lista
+              predeterminada. El historial de inventario se conserva.
             </DialogDescription>
           </DialogHeader>
 
@@ -73,7 +73,7 @@ export function ArchiveProductButton({
               onPress={() => setOpen(false)}
               isDisabled={isSubmitting}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button
               variant="destructive"
@@ -83,10 +83,10 @@ export function ArchiveProductButton({
               {isSubmitting ? (
                 <>
                   <Loader2 className="animate-spin" data-icon="inline-start" />
-                  Archiving…
+                  Archivando…
                 </>
               ) : (
-                "Archive product"
+                "Archivar producto"
               )}
             </Button>
           </DialogFooter>

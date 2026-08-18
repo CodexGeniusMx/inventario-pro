@@ -18,27 +18,27 @@ type ReturnsTableProps = {
 export function ReturnsTable({ returns }: ReturnsTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Returns">
+      <Table aria-label="Devoluciones">
         <TableHeader>
           <TableHead isRowHeader id="document">
-            Return #
+            Devolución #
           </TableHead>
-          <TableHead id="sale">Sale</TableHead>
+          <TableHead id="sale">Venta</TableHead>
           <TableHead id="warehouse" className="hidden md:table-cell">
-            Warehouse
+            Almacén
           </TableHead>
-          <TableHead id="reason">Reason</TableHead>
+          <TableHead id="reason">Motivo</TableHead>
           <TableHead id="items" className="hidden sm:table-cell">
-            Items
+            Artículos
           </TableHead>
           <TableHead id="qty" className="hidden sm:table-cell text-right">
-            Qty
+            Cant.
           </TableHead>
           <TableHead id="date" className="hidden lg:table-cell">
-            Date
+            Fecha
           </TableHead>
           <TableHead id="createdBy" className="hidden lg:table-cell">
-            Created by
+            Creado por
           </TableHead>
         </TableHeader>
         <TableBody>

@@ -36,17 +36,17 @@ export const movementListFiltersSchema = z.object({
 })
 
 export const adjustmentLineSchema = z.object({
-  productVariantId: z.string().uuid("Select a valid variant."),
+  productVariantId: z.string().uuid("Selecciona una variante válida."),
   quantity: z.coerce
     .number()
-    .int("Quantity must be a whole number.")
-    .positive("Quantity must be greater than zero."),
+    .int("La cantidad debe ser un número entero.")
+    .positive("La cantidad debe ser mayor que cero."),
 })
 
 export const createStockAdjustmentSchema = z.object({
-  warehouseId: z.string().uuid("Select a warehouse."),
+  warehouseId: z.string().uuid("Selecciona un almacén."),
   adjustmentType: adjustmentTypeSchema,
-  reason: z.string().trim().min(1, "Reason is required."),
+  reason: z.string().trim().min(1, "El motivo es obligatorio."),
   notes: z
     .string()
     .trim()
@@ -54,20 +54,20 @@ export const createStockAdjustmentSchema = z.object({
     .transform((value) => (value === "" ? null : value ?? null)),
   lines: z
     .array(adjustmentLineSchema)
-    .min(1, "Add at least one product line."),
+    .min(1, "Agrega al menos una línea de producto."),
   idempotencyKey: z.string().uuid().optional(),
 })
 
 export const createWarehouseSchema = z.object({
-  name: z.string().trim().min(1, "Warehouse name is required."),
+  name: z.string().trim().min(1, "El nombre del almacén es obligatorio."),
   code: z
     .string()
     .trim()
-    .min(1, "Warehouse code is required.")
-    .max(20, "Code must be 20 characters or fewer.")
+    .min(1, "El código del almacén es obligatorio.")
+    .max(20, "El código debe tener 20 caracteres o menos.")
     .regex(
       /^[A-Za-z0-9_-]+$/,
-      "Code may only contain letters, numbers, hyphens, and underscores."
+      "El código solo puede contener letras, números, guiones y guiones bajos."
     ),
   address: z
     .string()

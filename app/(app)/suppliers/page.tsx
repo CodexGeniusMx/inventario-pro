@@ -52,7 +52,7 @@ export default async function SuppliersPage({ searchParams }: SuppliersPageProps
   try {
     suppliers = await listSuppliers(user, filters)
   } catch {
-    loadError = "Unable to load suppliers from the database."
+    loadError = "No se pudieron cargar los proveedores desde la base de datos."
   }
 
   const hasFilters = Boolean(filters.q || filters.status !== "all")
@@ -60,13 +60,13 @@ export default async function SuppliersPage({ searchParams }: SuppliersPageProps
   return (
     <>
       <PageHeader
-        title="Suppliers"
-        description="Manage supplier contacts, payment terms, and status."
+        title="Proveedores"
+        description="Administra contactos de proveedores, condiciones de pago y estado."
         actions={
           canWrite ? (
             <LinkButton href="/suppliers/new">
               <Plus data-icon="inline-start" />
-              New supplier
+              Nuevo proveedor
             </LinkButton>
           ) : undefined
         }
@@ -82,18 +82,18 @@ export default async function SuppliersPage({ searchParams }: SuppliersPageProps
       {loadError ? (
         <Card>
           <CardHeader>
-            <CardTitle>Unable to load suppliers</CardTitle>
+            <CardTitle>No se pudieron cargar los proveedores</CardTitle>
             <CardDescription>{loadError}</CardDescription>
           </CardHeader>
         </Card>
       ) : suppliers.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No suppliers found</CardTitle>
+            <CardTitle>No se encontraron proveedores</CardTitle>
             <CardDescription>
               {hasFilters
-                ? "Try adjusting your search or filters."
-                : "Create your first supplier to start purchasing inventory."}
+                ? "Intenta ajustar tu búsqueda o filtros."
+                : "Crea tu primer proveedor para comenzar a comprar inventario."}
             </CardDescription>
           </CardHeader>
         </Card>

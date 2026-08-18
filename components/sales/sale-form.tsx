@@ -42,7 +42,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -195,10 +195,10 @@ export function SaleForm({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Cannot create sale</CardTitle>
+          <CardTitle>No se puede crear la venta</CardTitle>
           <CardDescription>
-            You need at least one active warehouse and product variant before
-            recording a sale.
+            Necesitas al menos un almacén activo y una variante de producto antes
+            de registrar una venta.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -209,16 +209,16 @@ export function SaleForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Sale details</CardTitle>
+          <CardTitle>Detalles de la venta</CardTitle>
           <CardDescription>
-            Prices are loaded from the catalog on the server when you confirm the
-            sale.
+            Los precios se cargan del catálogo en el servidor al confirmar la
+            venta.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="warehouseId" className="mb-1 block text-sm font-medium">
-              Warehouse
+              Almacén
             </label>
             <select
               id="warehouseId"
@@ -236,7 +236,7 @@ export function SaleForm({
 
           <div>
             <label htmlFor="customerId" className="mb-1 block text-sm font-medium">
-              Customer (optional)
+              Cliente (opcional)
             </label>
             <select
               id="customerId"
@@ -244,7 +244,7 @@ export function SaleForm({
               onChange={(event) => setCustomerId(event.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
-              <option value="">Walk-in customer</option>
+              <option value="">Cliente ocasional</option>
               {customers.map((customer) => (
                 <option key={customer.id} value={customer.id}>
                   {customer.name}
@@ -255,7 +255,7 @@ export function SaleForm({
 
           <div>
             <label htmlFor="discountAmount" className="mb-1 block text-sm font-medium">
-              Discount
+              Descuento
             </label>
             <Input
               id="discountAmount"
@@ -269,13 +269,13 @@ export function SaleForm({
 
           <div className="sm:col-span-2">
             <label htmlFor="notes" className="mb-1 block text-sm font-medium">
-              Notes
+              Notas
             </label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              placeholder="Optional sale notes"
+              placeholder="Notas opcionales de la venta"
               rows={3}
             />
           </div>
@@ -285,14 +285,14 @@ export function SaleForm({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <div>
-            <CardTitle>Sale lines</CardTitle>
+            <CardTitle>Líneas de venta</CardTitle>
             <CardDescription>
-              Add products and quantities. Unit prices come from the server.
+              Agrega productos y cantidades. Los precios unitarios provienen del servidor.
             </CardDescription>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={addLine}>
             <Plus data-icon="inline-start" />
-            Add line
+            Agregar línea
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -311,7 +311,7 @@ export function SaleForm({
               >
                 <div>
                   <label className="mb-1 block text-sm font-medium">
-                    Product variant
+                    Variante de producto
                   </label>
                   <select
                     value={line.productVariantId}
@@ -331,7 +331,7 @@ export function SaleForm({
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Quantity</label>
+                  <label className="mb-1 block text-sm font-medium">Cantidad</label>
                   <Input
                     type="number"
                     min="1"
@@ -344,14 +344,14 @@ export function SaleForm({
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Unit price</label>
+                  <label className="mb-1 block text-sm font-medium">Precio unitario</label>
                   <p className="flex h-10 items-center tabular-nums">
                     {isLoadingPrices ? "…" : formatCurrency(unitPrice)}
                   </p>
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Line total</label>
+                  <label className="mb-1 block text-sm font-medium">Total de línea</label>
                   <p className="flex h-10 items-center font-medium tabular-nums">
                     {formatCurrency(lineTotal)}
                   </p>
@@ -364,7 +364,7 @@ export function SaleForm({
                     size="icon"
                     onClick={() => removeLine(line.id)}
                     isDisabled={lines.length === 1}
-                    aria-label={`Remove line ${index + 1}`}
+                    aria-label={`Eliminar línea ${index + 1}`}
                   >
                     <Trash2 />
                   </Button>
@@ -382,14 +382,14 @@ export function SaleForm({
       <Card>
         <CardContent className="flex items-center justify-between py-4">
           <div>
-            <p className="text-sm text-muted-foreground">Estimated total</p>
+            <p className="text-sm text-muted-foreground">Total estimado</p>
             <p className="text-2xl font-semibold tabular-nums">
               {formatCurrency(totals.total)}
             </p>
             <p className="text-xs text-muted-foreground">
               Subtotal {formatCurrency(totals.subtotal)}
-              {totals.discount > 0 ? ` · Discount ${formatCurrency(totals.discount)}` : ""}
-              {" · "}Final totals are calculated server-side when confirmed.
+              {totals.discount > 0 ? ` · Descuento ${formatCurrency(totals.discount)}` : ""}
+              {" · "}Los totales finales se calculan en el servidor al confirmar.
             </p>
           </div>
         </CardContent>
@@ -404,10 +404,10 @@ export function SaleForm({
       <div className="flex flex-wrap gap-3">
         <Button type="submit" isDisabled={isSubmitting || isLoadingPrices}>
           {isSubmitting && <Loader2 className="animate-spin" data-icon="inline-start" />}
-          Confirm sale
+          Confirmar venta
         </Button>
         <LinkButton href="/sales" variant="outline">
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

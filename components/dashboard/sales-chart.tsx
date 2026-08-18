@@ -21,16 +21,19 @@ export function SalesChart({ data, rangeDays, description }: SalesChartProps) {
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Sales trend</CardTitle>
+        <CardTitle>Tendencia de ventas</CardTitle>
         <CardDescription>
-          {description ?? `Daily net revenue · last ${rangeDays} days`}
+          {description ??
+            (rangeDays === 7
+              ? "Ingresos netos diarios · últimos 7 días"
+              : "Ingresos netos diarios · últimos 30 días")}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div
           className="flex items-end justify-between gap-2"
           role="img"
-          aria-label="Bar chart of daily sales for the current week"
+          aria-label="Gráfico de barras de ventas diarias de la semana actual"
         >
           {data.map((point) => {
             const barHeight = Math.max(8, (point.sales / maxSales) * chartHeight)

@@ -45,12 +45,12 @@ export default async function CustomerDetailPage({
     <>
       <PageHeader
         title={customer.name}
-        description="Customer profile and contact information."
+        description="Perfil del cliente e información de contacto."
         actions={
           canWrite ? (
             <LinkButton href={`/customers/${customer.id}/edit`} variant="outline">
               <Pencil data-icon="inline-start" />
-              Edit
+              Editar
             </LinkButton>
           ) : undefined
         }
@@ -59,29 +59,29 @@ export default async function CustomerDetailPage({
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Customer details</CardTitle>
+            <CardTitle>Detalles del cliente</CardTitle>
             <CardDescription>
               <Badge variant={customer.isActive ? "default" : "secondary"}>
-                {customer.isActive ? "Active" : "Inactive"}
+                {customer.isActive ? "Activo" : "Inactivo"}
               </Badge>
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="text-sm text-muted-foreground">Correo electrónico</p>
               <p className="font-medium">{customer.email ?? "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Phone</p>
+              <p className="text-sm text-muted-foreground">Teléfono</p>
               <p className="font-medium">{customer.phone ?? "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Tax ID</p>
+              <p className="text-sm text-muted-foreground">RFC / ID fiscal</p>
               <p className="font-medium">{customer.taxId ?? "—"}</p>
             </div>
             {customer.notes && (
               <div className="sm:col-span-2">
-                <p className="text-sm text-muted-foreground">Notes</p>
+                <p className="text-sm text-muted-foreground">Notas</p>
                 <p className="font-medium">{customer.notes}</p>
               </div>
             )}
@@ -90,22 +90,22 @@ export default async function CustomerDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Related</CardTitle>
+            <CardTitle>Relacionado</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p>
               <Link href="/customers" className="text-primary hover:underline">
-                Back to customers
+                Volver a clientes
               </Link>
             </p>
             <p>
               <Link href="/sales" className="text-primary hover:underline">
-                View sales
+                Ver ventas
               </Link>
             </p>
             <div className="pt-2 text-muted-foreground">
-              <p>Created {formatDateTime(customer.createdAt)}</p>
-              <p>Updated {formatDateTime(customer.updatedAt)}</p>
+              <p>Creado {formatDateTime(customer.createdAt)}</p>
+              <p>Actualizado {formatDateTime(customer.updatedAt)}</p>
             </div>
           </CardContent>
         </Card>

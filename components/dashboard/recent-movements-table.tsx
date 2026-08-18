@@ -10,16 +10,16 @@ import { formatRelativeTime } from "@/lib/format"
 import type { RecentInventoryMovement } from "@/types/dashboard"
 
 const movementLabels: Record<RecentInventoryMovement["type"], string> = {
-  sale: "Sale",
-  purchase_receipt: "Receipt",
-  adjustment_increase: "Adjust +",
-  adjustment_decrease: "Adjust -",
-  damage: "Damage",
-  loss: "Loss",
-  sale_return: "Return",
-  initial_stock: "Initial",
-  transfer_in: "Transfer in",
-  transfer_out: "Transfer out",
+  sale: "Venta",
+  purchase_receipt: "Recepción",
+  adjustment_increase: "Ajuste +",
+  adjustment_decrease: "Ajuste -",
+  damage: "Daño",
+  loss: "Pérdida",
+  sale_return: "Devolución",
+  initial_stock: "Inicial",
+  transfer_in: "Transferencia entrante",
+  transfer_out: "Transferencia saliente",
 }
 
 const movementVariants: Record<
@@ -46,23 +46,23 @@ export function RecentMovementsTable({ movements }: RecentMovementsTableProps) {
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Recent inventory movements</CardTitle>
+        <CardTitle>Movimientos recientes de inventario</CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
-                <th className="px-4 py-2 font-medium">Type</th>
-                <th className="px-2 py-2 font-medium">Product</th>
+                <th className="px-4 py-2 font-medium">Tipo</th>
+                <th className="px-2 py-2 font-medium">Producto</th>
                 <th className="hidden px-2 py-2 font-medium lg:table-cell">
-                  Reference
+                  Referencia
                 </th>
-                <th className="px-2 py-2 text-right font-medium">Qty</th>
+                <th className="px-2 py-2 text-right font-medium">Cant.</th>
                 <th className="hidden px-2 py-2 font-medium md:table-cell">
-                  User
+                  Usuario
                 </th>
-                <th className="px-4 py-2 text-right font-medium">Time</th>
+                <th className="px-4 py-2 text-right font-medium">Hora</th>
               </tr>
             </thead>
             <tbody>

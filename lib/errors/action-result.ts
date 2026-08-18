@@ -39,7 +39,7 @@ export function toActionResult(error: unknown): ActionResult<never> {
       success: false,
       error: {
         code: "VALIDATION_ERROR",
-        message: "Please check the form and try again.",
+        message: "Revisa el formulario e inténtalo de nuevo.",
         fieldErrors,
       },
     }
@@ -49,7 +49,7 @@ export function toActionResult(error: unknown): ActionResult<never> {
     success: false,
     error: {
       code: "UNKNOWN",
-      message: "Something went wrong. Please try again.",
+      message: "Algo salió mal. Inténtalo de nuevo.",
     },
   }
 }

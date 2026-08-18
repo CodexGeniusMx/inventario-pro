@@ -122,7 +122,7 @@ export async function getCustomerById(
   }
 
   if (!data) {
-    throw new NotFoundError("Customer not found.")
+    throw new NotFoundError("Cliente no encontrado.")
   }
 
   return mapCustomer(data)
@@ -150,7 +150,7 @@ export async function createCustomer(
 
   if (error) {
     if (isUniqueViolation(error)) {
-      throw new ConflictError("A customer with this name already exists.")
+      throw new ConflictError("Ya existe un cliente con este nombre.")
     }
 
     throw error
@@ -183,7 +183,7 @@ export async function updateCustomer(
 
   if (error) {
     if (isUniqueViolation(error)) {
-      throw new ConflictError("A customer with this name already exists.")
+      throw new ConflictError("Ya existe un cliente con este nombre.")
     }
 
     throw error

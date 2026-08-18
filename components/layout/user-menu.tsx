@@ -41,7 +41,7 @@ export function UserMenu({ user }: UserMenuProps) {
         variant="ghost"
         size="icon-sm"
         className="rounded-full bg-muted font-medium"
-        aria-label="User menu"
+        aria-label="Menú de usuario"
         isDisabled={isPending}
       >
         {isPending ? (
@@ -55,16 +55,16 @@ export function UserMenu({ user }: UserMenuProps) {
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-medium">{user.fullName}</span>
             <span className="text-xs font-normal text-muted-foreground">
-              {user.email} · {user.role === "admin" ? "Admin" : "Employee"}
+              {user.email} · {user.role === "admin" ? "Administrador" : "Empleado"}
             </span>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem id="profile" isDisabled>
-          Profile
+          Perfil
         </DropdownMenuItem>
         <DropdownMenuItem id="settings" isDisabled={user.role !== "admin"}>
-          Settings
+          Configuración
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -77,7 +77,7 @@ export function UserMenu({ user }: UserMenuProps) {
             })
           }}
         >
-          Log out
+          Cerrar sesión
         </DropdownMenuItem>
       </DropdownMenu>
     </DropdownMenuTrigger>

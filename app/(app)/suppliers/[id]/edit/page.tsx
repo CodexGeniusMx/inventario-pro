@@ -36,8 +36,8 @@ export default async function EditSupplierPage({ params }: EditSupplierPageProps
   return (
     <>
       <PageHeader
-        title={`Edit ${supplier.name}`}
-        description="Update supplier contact and billing details."
+        title={`Editar ${supplier.name}`}
+        description="Actualiza datos de contacto y facturación del proveedor."
       />
 
       <SupplierForm mode="edit" supplier={supplier} />

@@ -44,8 +44,8 @@ export default async function ReceivePurchasePage({
   return (
     <>
       <PageHeader
-        title={`Receive ${purchase.documentNumber}`}
-        description="Record received quantities and update inventory atomically."
+        title={`Recibir ${purchase.documentNumber}`}
+        description="Registra cantidades recibidas y actualiza el inventario de forma atómica."
       />
 
       <ReceivePurchaseForm purchaseOrder={purchase} />

@@ -23,7 +23,7 @@ export function DashboardChartSection({
               : "bg-background text-muted-foreground"
           }`}
         >
-          7 days
+          7 días
         </Link>
         <Link
           href="/dashboard?chart=30"
@@ -33,7 +33,7 @@ export function DashboardChartSection({
               : "bg-background text-muted-foreground"
           }`}
         >
-          30 days
+          30 días
         </Link>
       </div>
       <SalesChart data={data} rangeDays={chartRangeDays} />

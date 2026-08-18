@@ -126,7 +126,7 @@ export async function getSupplierById(
   }
 
   if (!data) {
-    throw new NotFoundError("Supplier not found.")
+    throw new NotFoundError("Proveedor no encontrado.")
   }
 
   return mapSupplier(data)
@@ -156,7 +156,7 @@ export async function createSupplier(
 
   if (error) {
     if (isUniqueViolation(error)) {
-      throw new ConflictError("A supplier with this name already exists.")
+      throw new ConflictError("Ya existe un proveedor con este nombre.")
     }
 
     throw error
@@ -191,7 +191,7 @@ export async function updateSupplier(
 
   if (error) {
     if (isUniqueViolation(error)) {
-      throw new ConflictError("A supplier with this name already exists.")
+      throw new ConflictError("Ya existe un proveedor con este nombre.")
     }
 
     throw error

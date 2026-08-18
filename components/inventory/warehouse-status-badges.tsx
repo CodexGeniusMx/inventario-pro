@@ -8,9 +8,9 @@ type WarehouseStatusBadgesProps = {
 export function WarehouseStatusBadges({ warehouse }: WarehouseStatusBadgesProps) {
   return (
     <div className="flex flex-wrap gap-2">
-      {warehouse.isDefault && <Badge variant="secondary">Default</Badge>}
+      {warehouse.isDefault && <Badge variant="secondary">Predeterminado</Badge>}
       <Badge variant={warehouse.isActive ? "secondary" : "outline"}>
-        {warehouse.isActive ? "Active" : "Inactive"}
+        {warehouse.isActive ? "Activo" : "Inactivo"}
       </Badge>
     </div>
   )

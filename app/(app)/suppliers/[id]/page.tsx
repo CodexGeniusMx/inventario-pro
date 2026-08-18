@@ -45,12 +45,12 @@ export default async function SupplierDetailPage({
     <>
       <PageHeader
         title={supplier.name}
-        description="Supplier profile and contact information."
+        description="Perfil del proveedor e información de contacto."
         actions={
           canWrite ? (
             <LinkButton href={`/suppliers/${supplier.id}/edit`} variant="outline">
               <Pencil data-icon="inline-start" />
-              Edit
+              Editar
             </LinkButton>
           ) : undefined
         }
@@ -59,37 +59,37 @@ export default async function SupplierDetailPage({
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Supplier details</CardTitle>
+            <CardTitle>Detalles del proveedor</CardTitle>
             <CardDescription>
               <Badge variant={supplier.isActive ? "default" : "secondary"}>
-                {supplier.isActive ? "Active" : "Inactive"}
+                {supplier.isActive ? "Activo" : "Inactivo"}
               </Badge>
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Contact name</p>
+              <p className="text-sm text-muted-foreground">Nombre de contacto</p>
               <p className="font-medium">{supplier.contactName ?? "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="text-sm text-muted-foreground">Correo electrónico</p>
               <p className="font-medium">{supplier.email ?? "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Phone</p>
+              <p className="text-sm text-muted-foreground">Teléfono</p>
               <p className="font-medium">{supplier.phone ?? "—"}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Tax ID</p>
+              <p className="text-sm text-muted-foreground">RFC / ID fiscal</p>
               <p className="font-medium">{supplier.taxId ?? "—"}</p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-sm text-muted-foreground">Payment terms</p>
+              <p className="text-sm text-muted-foreground">Condiciones de pago</p>
               <p className="font-medium">{supplier.paymentTerms ?? "—"}</p>
             </div>
             {supplier.notes && (
               <div className="sm:col-span-2">
-                <p className="text-sm text-muted-foreground">Notes</p>
+                <p className="text-sm text-muted-foreground">Notas</p>
                 <p className="font-medium">{supplier.notes}</p>
               </div>
             )}
@@ -98,22 +98,22 @@ export default async function SupplierDetailPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Related</CardTitle>
+            <CardTitle>Relacionado</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p>
               <Link href="/suppliers" className="text-primary hover:underline">
-                Back to suppliers
+                Volver a proveedores
               </Link>
             </p>
             <p>
               <Link href="/purchases" className="text-primary hover:underline">
-                View purchase orders
+                Ver órdenes de compra
               </Link>
             </p>
             <div className="pt-2 text-muted-foreground">
-              <p>Created {formatDateTime(supplier.createdAt)}</p>
-              <p>Updated {formatDateTime(supplier.updatedAt)}</p>
+              <p>Creado {formatDateTime(supplier.createdAt)}</p>
+              <p>Actualizado {formatDateTime(supplier.updatedAt)}</p>
             </div>
           </CardContent>
         </Card>

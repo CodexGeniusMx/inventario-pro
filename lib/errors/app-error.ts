@@ -20,21 +20,21 @@ export class AppError extends Error {
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = "You must be signed in to continue.") {
+  constructor(message = "Debes iniciar sesión para continuar.") {
     super("UNAUTHORIZED", message)
     this.name = "UnauthorizedError"
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = "You do not have permission to perform this action.") {
+  constructor(message = "No tienes permiso para realizar esta acción.") {
     super("FORBIDDEN", message)
     this.name = "ForbiddenError"
   }
 }
 
 export class ValidationError extends AppError {
-  constructor(message = "Please check the form and try again.") {
+  constructor(message = "Revisa el formulario e inténtalo de nuevo.") {
     super("VALIDATION_ERROR", message)
     this.name = "ValidationError"
   }
@@ -42,7 +42,7 @@ export class ValidationError extends AppError {
 
 export class MissingProfileError extends AppError {
   constructor(
-    message = "Your account is not fully set up. Contact an administrator."
+    message = "Tu cuenta no está completamente configurada. Contacta a un administrador."
   ) {
     super("MISSING_PROFILE", message)
     this.name = "MissingProfileError"
@@ -50,21 +50,21 @@ export class MissingProfileError extends AppError {
 }
 
 export class InactiveUserError extends AppError {
-  constructor(message = "Your account has been deactivated.") {
+  constructor(message = "Tu cuenta ha sido desactivada.") {
     super("INACTIVE_USER", message)
     this.name = "InactiveUserError"
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(message = "The requested resource was not found.") {
+  constructor(message = "El recurso solicitado no fue encontrado.") {
     super("NOT_FOUND", message)
     this.name = "NotFoundError"
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(message = "This record conflicts with existing data.") {
+  constructor(message = "Este registro entra en conflicto con datos existentes.") {
     super("CONFLICT", message)
     this.name = "ConflictError"
   }
@@ -72,7 +72,7 @@ export class ConflictError extends AppError {
 
 export class InsufficientStockError extends AppError {
   constructor(
-    message = "This adjustment would result in negative stock for one or more items."
+    message = "Este ajuste resultaría en stock negativo para uno o más artículos."
   ) {
     super("CONFLICT", message)
     this.name = "InsufficientStockError"
@@ -80,7 +80,7 @@ export class InsufficientStockError extends AppError {
 }
 
 export class InventoryError extends AppError {
-  constructor(message = "Unable to complete the inventory operation.") {
+  constructor(message = "No se pudo completar la operación de inventario.") {
     super("UNKNOWN", message)
     this.name = "InventoryError"
   }

@@ -42,8 +42,8 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
   return (
     <>
       <PageHeader
-        title={`Edit ${product.name}`}
-        description="Update product details and variant pricing. Stock changes belong in Inventory."
+        title={`Editar ${product.name}`}
+        description="Actualiza detalles del producto y precios de variantes. Los cambios de stock pertenecen a Inventario."
       />
       <ProductForm mode="edit" categories={categories} product={product} />
     </>

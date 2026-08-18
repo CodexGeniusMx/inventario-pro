@@ -19,23 +19,23 @@ type InventoryTableProps = {
 export function InventoryTable({ items }: InventoryTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Inventory overview">
+      <Table aria-label="Resumen de inventario">
         <TableHeader>
           <TableHead isRowHeader id="product">
-            Product
+            Producto
           </TableHead>
-          <TableHead id="variant">Variant</TableHead>
+          <TableHead id="variant">Variante</TableHead>
           <TableHead id="sku">SKU</TableHead>
-          <TableHead id="warehouse">Warehouse</TableHead>
+          <TableHead id="warehouse">Almacén</TableHead>
           <TableHead id="quantity" className="text-right">
-            On hand
+            Disponible
           </TableHead>
           <TableHead id="reorderPoint" className="text-right">
-            Reorder point
+            Punto de reorden
           </TableHead>
-          <TableHead id="status">Status</TableHead>
+          <TableHead id="status">Estado</TableHead>
           <TableHead id="updated" className="hidden lg:table-cell">
-            Updated
+            Actualizado
           </TableHead>
         </TableHeader>
         <TableBody>

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server"
 
 import { requirePermission } from "@/lib/auth/session"
+import { movementTypeLabels, stockStatusLabels } from "@/lib/inventory/labels"
+import { purchaseOrderStatusLabels } from "@/lib/purchasing/labels"
 import { buildCsv } from "@/lib/reports/csv"
+import { saleStatusLabels } from "@/lib/sales/labels"
 import { reportFiltersSchema } from "@/lib/validations/report.schema"
 import {
   getInventoryReport,
@@ -10,6 +13,9 @@ import {
   getPurchaseReport,
   getSalesReport,
 } from "@/services/reporting/report.service"
+import type { SaleStatus } from "@/types/sales"
+import type { PurchaseOrderStatus } from "@/types/purchasing"
+import type { MovementType, StockStatus } from "@/types/inventory"
 import { REPORT_DEFINITIONS, type ReportSlug } from "@/types/reports"
 
 type RouteContext = {
@@ -20,6 +26,22 @@ function isReportSlug(value: string): value is ReportSlug {
   return REPORT_DEFINITIONS.some((report) => report.slug === value)
 }
 
+function labelSaleStatus(status: string): string {
+  return saleStatusLabels[status as SaleStatus] ?? status
+}
+
+function labelPurchaseStatus(status: string): string {
+  return purchaseOrderStatusLabels[status as PurchaseOrderStatus] ?? status
+}
+
+function labelStockStatus(status: string): string {
+  return stockStatusLabels[status as StockStatus] ?? status
+}
+
+function labelMovementType(type: string): string {
+  return movementTypeLabels[type as MovementType] ?? type
+}
+
 export async function GET(
   request: Request,
   context: RouteContext
@@ -28,7 +50,7 @@ export async function GET(
   const { slug } = await context.params
 
   if (!isReportSlug(slug)) {
-    return NextResponse.json({ error: "Report not found." }, { status: 404 })
+    return NextResponse.json({ error: "Reporte no encontrado." }, { status: 404 })
   }
 
   const url = new URL(request.url)
@@ -51,32 +73,29 @@ export async function GET(
   if (slug === "sales") {
     const { summary, rows } = await getSalesReport(user, filters)
     csv = buildCsv(
+      ["metrica", "valor"],
       [
-        "metric",
-        "value",
-      ],
-      [
-        ["sales_count", summary.salesCount],
-        ["units_sold", summary.unitsSold],
-        ["net_revenue", summary.netRevenue],
-        ["discount_total", summary.discountTotal],
-        ["return_units", summary.returnUnits],
-        ["return_revenue", summary.returnRevenue],
-        ["estimated_cogs", summary.estimatedCogs],
-        ["estimated_gross_profit", summary.estimatedGrossProfit],
+        ["cantidad_ventas", summary.salesCount],
+        ["unidades_vendidas", summary.unitsSold],
+        ["ingresos_netos", summary.netRevenue],
+        ["descuentos", summary.discountTotal],
+        ["unidades_devueltas", summary.returnUnits],
+        ["ingresos_devoluciones", summary.returnRevenue],
+        ["costo_ventas_estimado", summary.estimatedCogs],
+        ["utilidad_bruta_estimada", summary.estimatedGrossProfit],
       ]
     )
     csv += buildCsv(
       [
-        "sale_number",
-        "completed_at",
-        "customer",
-        "warehouse",
-        "items",
-        "units",
-        "net_total",
-        "discount",
-        "status",
+        "numero_venta",
+        "fecha_completada",
+        "cliente",
+        "almacen",
+        "articulos",
+        "unidades",
+        "total_neto",
+        "descuento",
+        "estado",
       ],
       rows.map((row) => [
         row.documentNumber,
@@ -87,7 +106,7 @@ export async function GET(
         row.unitsSold,
         row.netTotal,
         row.discountAmount,
-        row.status,
+        labelSaleStatus(row.status),
       ])
     )
   }
@@ -96,15 +115,15 @@ export async function GET(
     const rows = await getInventoryReport(user, filters)
     csv = buildCsv(
       [
-        "product",
-        "variant",
+        "producto",
+        "variante",
         "sku",
-        "warehouse",
+        "almacen",
         "stock",
-        "reorder_point",
-        "stock_status",
-        "unit_cost",
-        "inventory_value",
+        "punto_reorden",
+        "estado_stock",
+        "costo_unitario",
+        "valor_inventario",
       ],
       rows.map((row) => [
         row.productName,
@@ -113,7 +132,7 @@ export async function GET(
         row.warehouseName,
         row.quantityOnHand,
         row.reorderPoint,
-        row.stockStatus,
+        labelStockStatus(row.stockStatus),
         row.unitCost,
         row.inventoryValue,
       ])
@@ -124,22 +143,22 @@ export async function GET(
     const rows = await getMovementReport(user, filters)
     csv = buildCsv(
       [
-        "date",
-        "type",
-        "product",
-        "variant",
+        "fecha",
+        "tipo",
+        "producto",
+        "variante",
         "sku",
-        "warehouse",
-        "quantity",
-        "quantity_before",
-        "quantity_after",
-        "user",
-        "reference",
-        "reason",
+        "almacen",
+        "cantidad",
+        "cantidad_antes",
+        "cantidad_despues",
+        "usuario",
+        "referencia",
+        "motivo",
       ],
       rows.map((row) => [
         row.createdAt,
-        row.movementType,
+        labelMovementType(row.movementType),
         row.productName,
         row.variantName,
         row.sku,
@@ -158,21 +177,21 @@ export async function GET(
     const rows = await getPurchaseReport(user, filters)
     csv = buildCsv(
       [
-        "po_number",
-        "supplier",
-        "warehouse",
-        "status",
-        "ordered_at",
+        "numero_oc",
+        "proveedor",
+        "almacen",
+        "estado",
+        "fecha_orden",
         "total",
-        "ordered_qty",
-        "received_qty",
-        "last_received_at",
+        "cantidad_ordenada",
+        "cantidad_recibida",
+        "ultima_recepcion",
       ],
       rows.map((row) => [
         row.documentNumber,
         row.supplierName,
         row.warehouseName,
-        row.status,
+        labelPurchaseStatus(row.status),
         row.orderedAt ?? "",
         row.total,
         row.unitsOrdered,
@@ -186,16 +205,16 @@ export async function GET(
     const rows = await getProductReport(user, filters)
     csv = buildCsv(
       [
-        "product",
-        "variant",
+        "producto",
+        "variante",
         "sku",
-        "units_sold",
-        "return_units",
-        "net_revenue",
-        "return_revenue",
-        "on_hand",
-        "stock_status",
-        "last_movement_at",
+        "unidades_vendidas",
+        "unidades_devueltas",
+        "ingresos_netos",
+        "ingresos_devoluciones",
+        "en_existencia",
+        "estado_stock",
+        "ultimo_movimiento",
       ],
       rows.map((row) => [
         row.productName,
@@ -206,7 +225,7 @@ export async function GET(
         row.netRevenue,
         row.returnRevenue,
         row.quantityOnHand,
-        row.stockStatus ?? "",
+        labelStockStatus(row.stockStatus ?? ""),
         row.lastMovementAt ?? "",
       ])
     )

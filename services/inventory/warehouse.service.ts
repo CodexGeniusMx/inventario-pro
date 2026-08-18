@@ -79,7 +79,7 @@ export async function getWarehouseById(
   }
 
   if (!data) {
-    throw new NotFoundError("Warehouse not found.")
+    throw new NotFoundError("Almacén no encontrado.")
   }
 
   return mapWarehouse(data)
@@ -158,7 +158,7 @@ export async function createWarehouse(
 
   if (error) {
     if (isUniqueViolation(error)) {
-      throw new ConflictError("A warehouse with this code already exists.")
+      throw new ConflictError("Ya existe un almacén con este código.")
     }
 
     throw error
@@ -179,7 +179,7 @@ export async function updateWarehouse(
 
   if (existing.isDefault && input.isActive === false) {
     throw new ConflictError(
-      "The default warehouse cannot be deactivated. Set another warehouse as default first."
+      "El almacén predeterminado no se puede desactivar. Establece otro almacén como predeterminado primero."
     )
   }
 
@@ -201,7 +201,7 @@ export async function updateWarehouse(
 
   if (error) {
     if (isUniqueViolation(error)) {
-      throw new ConflictError("A warehouse with this code already exists.")
+      throw new ConflictError("Ya existe un almacén con este código.")
     }
 
     throw error

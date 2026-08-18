@@ -19,27 +19,27 @@ type SalesTableProps = {
 export function SalesTable({ sales }: SalesTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Sales">
+      <Table aria-label="Ventas">
         <TableHeader>
           <TableHead isRowHeader id="document">
-            Sale #
+            Venta #
           </TableHead>
-          <TableHead id="customer">Customer</TableHead>
-          <TableHead id="status">Status</TableHead>
+          <TableHead id="customer">Cliente</TableHead>
+          <TableHead id="status">Estado</TableHead>
           <TableHead id="date" className="hidden md:table-cell">
-            Date
+            Fecha
           </TableHead>
           <TableHead id="warehouse" className="hidden lg:table-cell">
-            Warehouse
+            Almacén
           </TableHead>
           <TableHead id="items" className="hidden sm:table-cell">
-            Items
+            Artículos
           </TableHead>
           <TableHead id="total" className="text-right">
             Total
           </TableHead>
           <TableHead id="createdBy" className="hidden lg:table-cell">
-            Created by
+            Creado por
           </TableHead>
         </TableHeader>
         <TableBody>
@@ -54,7 +54,7 @@ export function SalesTable({ sales }: SalesTableProps) {
                 </Link>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {sale.customerName ?? "Walk-in"}
+                {sale.customerName ?? "Cliente ocasional"}
               </TableCell>
               <TableCell>
                 <SaleStatusBadge status={sale.status} />

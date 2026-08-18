@@ -36,7 +36,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -130,34 +130,34 @@ export function ReturnForm({ sale }: ReturnFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Return details</CardTitle>
+          <CardTitle>Detalles de la devolución</CardTitle>
           <CardDescription>
-            Return stock to {sale.warehouseName}. Quantities are validated
-            server-side against the original sale.
+            Devuelve stock a {sale.warehouseName}. Las cantidades se validan en el
+            servidor contra la venta original.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
-            <p className="text-sm text-muted-foreground">Sale</p>
+            <p className="text-sm text-muted-foreground">Venta</p>
             <p className="font-medium">{sale.documentNumber}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Customer</p>
-            <p className="font-medium">{sale.customerName ?? "Walk-in"}</p>
+            <p className="text-sm text-muted-foreground">Cliente</p>
+            <p className="font-medium">{sale.customerName ?? "Cliente ocasional"}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Warehouse</p>
+            <p className="text-sm text-muted-foreground">Almacén</p>
             <p className="font-medium">{sale.warehouseName}</p>
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="reason" className="mb-1 block text-sm font-medium">
-              Reason
+              Motivo
             </label>
             <Input
               id="reason"
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Customer return, defective item, etc."
+              placeholder="Devolución de cliente, artículo defectuoso, etc."
             />
             {fieldErrors.reason && (
               <p className="mt-1 text-sm text-destructive">{fieldErrors.reason}</p>
@@ -165,13 +165,13 @@ export function ReturnForm({ sale }: ReturnFormProps) {
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="notes" className="mb-1 block text-sm font-medium">
-              Notes
+              Notas
             </label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              placeholder="Optional notes"
+              placeholder="Notas opcionales"
               rows={3}
             />
           </div>
@@ -180,10 +180,10 @@ export function ReturnForm({ sale }: ReturnFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Return lines</CardTitle>
+          <CardTitle>Líneas de devolución</CardTitle>
           <CardDescription>
-            Select items and quantities to return. Restockable items increase
-            sellable inventory.
+            Selecciona artículos y cantidades a devolver. Los artículos reintegrables
+            aumentan el inventario vendible.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -199,7 +199,7 @@ export function ReturnForm({ sale }: ReturnFormProps) {
                   onChange={(event) =>
                     updateLineState(line.id, { enabled: event.target.checked })
                   }
-                  aria-label={`Include ${line.productName}`}
+                  aria-label={`Incluir ${line.productName}`}
                 />
               </div>
 
@@ -209,17 +209,17 @@ export function ReturnForm({ sale }: ReturnFormProps) {
                   {line.variantName} · {line.sku}
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Sold {line.quantitySold} · Returned {line.quantityReturned} ·
-                  Remaining {line.quantityReturnable}
+                  Vendido {line.quantitySold} · Devuelto {line.quantityReturned} ·
+                  Restante {line.quantityReturnable}
                 </p>
                 <p className="text-sm tabular-nums">
-                  Unit price {formatCurrency(line.unitPrice)}
+                  Precio unitario {formatCurrency(line.unitPrice)}
                 </p>
               </div>
 
               <div>
                 <label className="mb-1 block text-sm font-medium">
-                  Return qty
+                  Cant. devuelta
                 </label>
                 <Input
                   type="number"
@@ -246,7 +246,7 @@ export function ReturnForm({ sale }: ReturnFormProps) {
                     }
                     disabled={!line.state?.enabled}
                   />
-                  Restockable
+                  Reintegrable
                 </label>
               </div>
             </div>
@@ -269,14 +269,14 @@ export function ReturnForm({ sale }: ReturnFormProps) {
           {isSubmitting ? (
             <>
               <Loader2 className="animate-spin" data-icon="inline-start" />
-              Processing return…
+              Procesando devolución…
             </>
           ) : (
-            "Process return"
+            "Procesar devolución"
           )}
         </Button>
         <LinkButton href={`/sales/${sale.id}`} variant="outline">
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

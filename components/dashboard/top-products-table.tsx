@@ -15,7 +15,7 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Top-selling products</CardTitle>
+        <CardTitle>Productos más vendidos</CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0">
         <div className="overflow-x-auto">
@@ -23,12 +23,12 @@ export function TopProductsTable({ products }: TopProductsTableProps) {
             <thead>
               <tr className="border-b text-left text-muted-foreground">
                 <th className="px-4 py-2 font-medium">#</th>
-                <th className="px-2 py-2 font-medium">Product</th>
+                <th className="px-2 py-2 font-medium">Producto</th>
                 <th className="hidden px-2 py-2 font-medium sm:table-cell">
                   SKU
                 </th>
-                <th className="px-2 py-2 text-right font-medium">Units</th>
-                <th className="px-4 py-2 text-right font-medium">Revenue</th>
+                <th className="px-2 py-2 text-right font-medium">Unidades</th>
+                <th className="px-4 py-2 text-right font-medium">Ingresos</th>
               </tr>
             </thead>
             <tbody>

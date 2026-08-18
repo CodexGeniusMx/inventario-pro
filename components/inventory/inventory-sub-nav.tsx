@@ -6,10 +6,10 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const inventoryLinks = [
-  { href: "/inventory", label: "Overview", exact: true },
-  { href: "/inventory/movements", label: "Movements" },
-  { href: "/inventory/adjustments", label: "Adjustments" },
-  { href: "/inventory/warehouses", label: "Warehouses" },
+  { href: "/inventory", label: "Resumen", exact: true },
+  { href: "/inventory/movements", label: "Movimientos" },
+  { href: "/inventory/adjustments", label: "Ajustes" },
+  { href: "/inventory/warehouses", label: "Almacenes" },
 ]
 
 export function InventorySubNav() {
@@ -17,7 +17,7 @@ export function InventorySubNav() {
 
   return (
     <nav
-      aria-label="Inventory sections"
+      aria-label="Secciones de inventario"
       className="mb-6 flex flex-wrap gap-2 border-b pb-4"
     >
       {inventoryLinks.map((link) => {

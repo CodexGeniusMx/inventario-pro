@@ -38,8 +38,8 @@ export default async function EditWarehousePage({
   return (
     <>
       <PageHeader
-        title={`Edit ${warehouse.name}`}
-        description="Update warehouse details, default status, and active state."
+        title={`Editar ${warehouse.name}`}
+        description="Actualiza detalles del almacén, estado predeterminado y estado activo."
       />
 
       <InventorySubNav />

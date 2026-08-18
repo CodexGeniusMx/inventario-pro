@@ -16,7 +16,7 @@ type MovementsFiltersProps = {
 }
 
 const movementOptions: Array<{ value: MovementType | "all"; label: string }> = [
-  { value: "all", label: "All types" },
+  { value: "all", label: "Todos los tipos" },
   ...Object.entries(movementTypeLabels).map(([value, label]) => ({
     value: value as MovementType,
     label,
@@ -44,7 +44,7 @@ export function MovementsFilters({
       <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5 sm:col-span-2">
           <label htmlFor="q" className="text-sm font-medium">
-            Search
+            Buscar
           </label>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -52,7 +52,7 @@ export function MovementsFilters({
               id="q"
               name="q"
               defaultValue={initialQuery}
-              placeholder="Product name or SKU"
+              placeholder="Nombre de producto o SKU"
               className="pl-9"
             />
           </div>
@@ -60,7 +60,7 @@ export function MovementsFilters({
 
         <div className="space-y-1.5">
           <label htmlFor="warehouseId" className="text-sm font-medium">
-            Warehouse
+            Almacén
           </label>
           <select
             id="warehouseId"
@@ -68,7 +68,7 @@ export function MovementsFilters({
             defaultValue={initialWarehouseId}
             className="flex h-8 w-full rounded-2xl border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
           >
-            <option value="">All warehouses</option>
+            <option value="">Todos los almacenes</option>
             {warehouses.map((warehouse) => (
               <option key={warehouse.id} value={warehouse.id}>
                 {warehouse.name}
@@ -79,7 +79,7 @@ export function MovementsFilters({
 
         <div className="space-y-1.5">
           <label htmlFor="movementType" className="text-sm font-medium">
-            Movement type
+            Tipo de movimiento
           </label>
           <select
             id="movementType"
@@ -97,7 +97,7 @@ export function MovementsFilters({
       </div>
 
       <div className="flex items-center gap-2">
-        <Button type="submit">Apply</Button>
+        <Button type="submit">Aplicar</Button>
         {hasActiveFilters && (
           <Button
             type="button"
@@ -105,7 +105,7 @@ export function MovementsFilters({
             onPress={() => router.push("/inventory/movements")}
           >
             <X data-icon="inline-start" />
-            Reset
+            Restablecer
           </Button>
         )}
       </div>

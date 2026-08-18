@@ -4,11 +4,12 @@ import Link from "next/link"
 import {
   Menu,
   Plus,
-  Search,
   ShoppingCart,
 } from "lucide-react"
 
+import { GlobalSearch } from "@/components/layout/global-search"
 import type { AuthenticatedUser } from "@/lib/auth/types"
+import { hasPermission, isAdmin } from "@/lib/auth/permissions"
 import { UserMenu } from "@/components/layout/user-menu"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -18,7 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
 type HeaderProps = {
@@ -29,6 +29,11 @@ type HeaderProps = {
 }
 
 export function Header({ title, user, onMenuClick, className }: HeaderProps) {
+  const canCreateSale =
+    hasPermission(user, "sales", "complete") ||
+    hasPermission(user, "sales", "create") ||
+    hasPermission(user, "sales", "write")
+
   return (
     <header
       className={cn(
@@ -41,7 +46,7 @@ export function Header({ title, user, onMenuClick, className }: HeaderProps) {
         size="icon-sm"
         className="lg:hidden"
         onPress={onMenuClick}
-        aria-label="Open navigation menu"
+        aria-label="Abrir menú de navegación"
       >
         <Menu className="size-4" />
       </Button>
@@ -51,40 +56,31 @@ export function Header({ title, user, onMenuClick, className }: HeaderProps) {
       </h1>
 
       <div className="ml-auto flex items-center gap-2">
-        <div className="relative hidden md:block">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            readOnly
-            placeholder="Search… ⌘K"
-            className="h-8 w-52 cursor-pointer pl-8 lg:w-64"
-            aria-label="Global search"
-          />
-        </div>
+        <GlobalSearch />
+        <GlobalSearch compact />
 
-        <Button variant="ghost" size="icon-sm" className="md:hidden" aria-label="Search">
-          <Search className="size-4" />
-        </Button>
+        {canCreateSale && (
+          <Link
+            href="/sales/new"
+            className={buttonVariants({ size: "sm" })}
+          >
+            <ShoppingCart data-icon="inline-start" />
+            Nueva venta
+          </Link>
+        )}
 
-        <Link
-          href="/sales/new"
-          className={buttonVariants({ size: "sm" })}
-        >
-          <ShoppingCart data-icon="inline-start" />
-          New sale
-        </Link>
-
-        {user.role === "admin" && (
+        {isAdmin(user) && (
           <DropdownMenuTrigger>
-            <Button variant="outline" size="icon-sm" aria-label="More actions">
+            <Button variant="outline" size="icon-sm" aria-label="Más acciones">
               <Plus className="size-4" />
             </Button>
             <DropdownMenu placement="bottom end" className="w-48">
-              <DropdownMenuLabel>Quick actions</DropdownMenuLabel>
+              <DropdownMenuLabel>Acciones rápidas</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem id="new-product">New product</DropdownMenuItem>
-              <DropdownMenuItem id="new-po">New purchase order</DropdownMenuItem>
-              <DropdownMenuItem id="adjust-stock">Adjust stock</DropdownMenuItem>
-              <DropdownMenuItem id="record-damage">Record damage/loss</DropdownMenuItem>
+              <DropdownMenuItem href="/products/new">Nuevo producto</DropdownMenuItem>
+              <DropdownMenuItem href="/purchases/new">Nueva orden de compra</DropdownMenuItem>
+              <DropdownMenuItem href="/inventory/adjustments/new">Ajustar stock</DropdownMenuItem>
+              <DropdownMenuItem href="/inventory/adjustments/new">Registrar daño/pérdida</DropdownMenuItem>
             </DropdownMenu>
           </DropdownMenuTrigger>
         )}

@@ -51,14 +51,14 @@ export default async function MovementsPage({ searchParams }: MovementsPageProps
       listMovements(user, filters),
     ])
   } catch {
-    loadError = "Unable to load inventory movements."
+    loadError = "No se pudieron cargar los movimientos de inventario."
   }
 
   return (
     <>
       <PageHeader
-        title="Inventory movements"
-        description="Immutable movement history for traceability and audit."
+        title="Movimientos de inventario"
+        description="Historial inmutable de movimientos para trazabilidad y auditoría."
       />
 
       <InventorySubNav />
@@ -76,7 +76,7 @@ export default async function MovementsPage({ searchParams }: MovementsPageProps
         <InventoryErrorState message={loadError} />
       ) : movements.length === 0 ? (
         <div className="rounded-2xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
-          No movements yet.
+          Aún no hay movimientos.
         </div>
       ) : (
         <MovementsTable movements={movements} />

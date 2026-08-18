@@ -12,7 +12,7 @@ type ProductsErrorStateProps = {
 }
 
 export function ProductsErrorState({
-  message = "Unable to load products. Please refresh and try again.",
+  message = "No se pudieron cargar los productos. Actualiza la página e inténtalo de nuevo.",
 }: ProductsErrorStateProps) {
   return (
     <Card className="border-destructive/30 bg-destructive/5">
@@ -21,7 +21,7 @@ export function ProductsErrorState({
           <AlertCircle className="mt-0.5 size-5 shrink-0 text-destructive" />
           <div className="space-y-1">
             <CardTitle className="text-base text-destructive">
-              Something went wrong
+              Algo salió mal
             </CardTitle>
             <CardDescription className="text-destructive/80">
               {message}

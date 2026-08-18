@@ -1,16 +1,11 @@
 import { Badge } from "@/components/ui/badge"
+import { stockStatusLabels } from "@/lib/inventory/labels"
 import type { StockStatus } from "@/types/inventory"
 import { cn } from "@/lib/utils"
 
 type StockStatusBadgeProps = {
   status: StockStatus
   className?: string
-}
-
-const labels: Record<StockStatus, string> = {
-  in_stock: "In stock",
-  low_stock: "Low stock",
-  out_of_stock: "Out of stock",
 }
 
 export function StockStatusBadge({ status, className }: StockStatusBadgeProps) {
@@ -25,7 +20,7 @@ export function StockStatusBadge({ status, className }: StockStatusBadgeProps) {
       }
       className={cn(className)}
     >
-      {labels[status]}
+      {stockStatusLabels[status]}
     </Badge>
   )
 }

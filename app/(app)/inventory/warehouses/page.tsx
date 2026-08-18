@@ -19,19 +19,19 @@ export default async function WarehousesPage() {
   try {
     warehouses = await listWarehouses(user)
   } catch {
-    loadError = "Unable to load warehouses."
+    loadError = "No se pudieron cargar los almacenes."
   }
 
   return (
     <>
       <PageHeader
-        title="Warehouses"
-        description="Manage warehouse locations used for inventory balances and movements."
+        title="Almacenes"
+        description="Administra ubicaciones de almacén usadas para saldos y movimientos de inventario."
         actions={
           canManage ? (
             <LinkButton href="/inventory/warehouses/new">
               <Plus data-icon="inline-start" />
-              New warehouse
+              Nuevo almacén
             </LinkButton>
           ) : undefined
         }
@@ -43,11 +43,11 @@ export default async function WarehousesPage() {
         <InventoryErrorState message={loadError} />
       ) : warehouses.length === 0 ? (
         <div className="rounded-2xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
-          No warehouses configured yet.
+          Aún no hay almacenes configurados.
           {canManage && (
             <div className="mt-4">
               <LinkButton href="/inventory/warehouses/new">
-                Create warehouse
+                Crear almacén
               </LinkButton>
             </div>
           )}

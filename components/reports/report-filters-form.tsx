@@ -63,7 +63,7 @@ export function ReportFiltersForm({
     >
       <div>
         <label htmlFor="preset" className="mb-1 block text-sm font-medium">
-          Date range
+          Rango de fechas
         </label>
         <select
           id="preset"
@@ -71,17 +71,17 @@ export function ReportFiltersForm({
           defaultValue={values.preset}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
-          <option value="today">Today</option>
-          <option value="last_7_days">Last 7 days</option>
-          <option value="last_30_days">Last 30 days</option>
-          <option value="this_month">This month</option>
-          <option value="custom">Custom range</option>
+          <option value="today">Hoy</option>
+          <option value="last_7_days">Últimos 7 días</option>
+          <option value="last_30_days">Últimos 30 días</option>
+          <option value="this_month">Este mes</option>
+          <option value="custom">Rango personalizado</option>
         </select>
       </div>
 
       <div>
         <label htmlFor="from" className="mb-1 block text-sm font-medium">
-          From
+          Desde
         </label>
         <input
           id="from"
@@ -94,7 +94,7 @@ export function ReportFiltersForm({
 
       <div>
         <label htmlFor="to" className="mb-1 block text-sm font-medium">
-          To
+          Hasta
         </label>
         <input
           id="to"
@@ -108,7 +108,7 @@ export function ReportFiltersForm({
       {showWarehouse ? (
         <div>
           <label htmlFor="warehouseId" className="mb-1 block text-sm font-medium">
-            Warehouse
+            Almacén
           </label>
           <select
             id="warehouseId"
@@ -116,7 +116,7 @@ export function ReportFiltersForm({
             defaultValue={values.warehouseId ?? ""}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="">All warehouses</option>
+            <option value="">Todos los almacenes</option>
             {warehouses.map((warehouse) => (
               <option key={warehouse.id} value={warehouse.id}>
                 {warehouse.name}
@@ -129,7 +129,7 @@ export function ReportFiltersForm({
       {showSupplier ? (
         <div>
           <label htmlFor="supplierId" className="mb-1 block text-sm font-medium">
-            Supplier
+            Proveedor
           </label>
           <select
             id="supplierId"
@@ -137,7 +137,7 @@ export function ReportFiltersForm({
             defaultValue={values.supplierId ?? ""}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="">All suppliers</option>
+            <option value="">Todos los proveedores</option>
             {suppliers.map((supplier) => (
               <option key={supplier.id} value={supplier.id}>
                 {supplier.name}
@@ -150,7 +150,7 @@ export function ReportFiltersForm({
       {showCustomer ? (
         <div>
           <label htmlFor="customerId" className="mb-1 block text-sm font-medium">
-            Customer
+            Cliente
           </label>
           <select
             id="customerId"
@@ -158,7 +158,7 @@ export function ReportFiltersForm({
            defaultValue={values.customerId ?? ""}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="">All customers</option>
+            <option value="">Todos los clientes</option>
             {customers.map((customer) => (
               <option key={customer.id} value={customer.id}>
                 {customer.name}
@@ -171,7 +171,7 @@ export function ReportFiltersForm({
       {showMovementType ? (
         <div>
           <label htmlFor="movementType" className="mb-1 block text-sm font-medium">
-            Movement type
+            Tipo de movimiento
           </label>
           <select
             id="movementType"
@@ -179,7 +179,7 @@ export function ReportFiltersForm({
             defaultValue={values.movementType ?? ""}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="">All types</option>
+            <option value="">Todos los tipos</option>
             {movementTypes.map((type) => (
               <option key={type} value={type}>
                 {type.replaceAll("_", " ")}
@@ -191,7 +191,7 @@ export function ReportFiltersForm({
 
       <div className="flex items-end">
         <Button type="submit" className="w-full">
-          Apply filters
+          Aplicar filtros
         </Button>
       </div>
     </form>

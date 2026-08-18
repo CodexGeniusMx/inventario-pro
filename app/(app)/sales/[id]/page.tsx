@@ -61,12 +61,12 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
     <>
       <PageHeader
         title={sale.documentNumber}
-        description="Sale detail, line items, and linked inventory movements."
+        description="Detalle de venta, líneas y movimientos de inventario vinculados."
         actions={
           showReturnAction ? (
             <LinkButton href={`/sales/${sale.id}/return`}>
               <RotateCcw data-icon="inline-start" />
-              Process return
+              Procesar devolución
             </LinkButton>
           ) : undefined
         }
@@ -75,14 +75,14 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Sale information</CardTitle>
+            <CardTitle>Información de la venta</CardTitle>
             <CardDescription>
               <SaleStatusBadge status={sale.status} />
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-sm text-muted-foreground">Customer</p>
+              <p className="text-sm text-muted-foreground">Cliente</p>
               <p className="font-medium">
                 {sale.customerId ? (
                   <Link
@@ -92,22 +92,22 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                     {sale.customerName}
                   </Link>
                 ) : (
-                  "Walk-in"
+                  "Cliente ocasional"
                 )}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Warehouse</p>
+              <p className="text-sm text-muted-foreground">Almacén</p>
               <p className="font-medium">{sale.warehouseName}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Date</p>
+              <p className="text-sm text-muted-foreground">Fecha</p>
               <p className="font-medium">
                 {formatDateTime(sale.completedAt ?? sale.createdAt)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Created by</p>
+              <p className="text-sm text-muted-foreground">Creado por</p>
               <p className="font-medium">{sale.createdByName}</p>
             </div>
             <div>
@@ -117,7 +117,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Discount</p>
+              <p className="text-sm text-muted-foreground">Descuento</p>
               <p className="font-medium tabular-nums">
                 {formatCurrency(sale.discountAmount)}
               </p>
@@ -130,7 +130,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
             </div>
             {sale.notes ? (
               <div className="sm:col-span-2">
-                <p className="text-sm text-muted-foreground">Notes</p>
+                <p className="text-sm text-muted-foreground">Notas</p>
                 <p className="whitespace-pre-wrap font-medium">{sale.notes}</p>
               </div>
             ) : null}
@@ -139,17 +139,17 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Related</CardTitle>
+            <CardTitle>Relacionado</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p>
               <Link href="/sales" className="text-primary hover:underline">
-                Back to sales
+                Volver a ventas
               </Link>
             </p>
             <p>
               <Link href="/returns" className="text-primary hover:underline">
-                View returns
+                Ver devoluciones
               </Link>
             </p>
             <p>
@@ -157,7 +157,7 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
                 href="/inventory/movements"
                 className="text-primary hover:underline"
               >
-                View inventory movements
+                Ver movimientos de inventario
               </Link>
             </p>
           </CardContent>
@@ -166,37 +166,37 @@ export default async function SaleDetailPage({ params }: SaleDetailPageProps) {
 
       <Card className="mt-4">
         <CardHeader>
-          <CardTitle>Sale lines</CardTitle>
+          <CardTitle>Líneas de venta</CardTitle>
           <CardDescription>
             Each completed line created an inventory movement when stock was
             deducted.
           </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
-          <Table aria-label="Sale lines">
+          <Table aria-label="Líneas de venta">
             <TableHeader>
               <TableHead isRowHeader id="product">
-                Product
+                Producto
               </TableHead>
-              <TableHead id="variant">Variant</TableHead>
+              <TableHead id="variant">Variante</TableHead>
               <TableHead id="sku">SKU</TableHead>
               <TableHead id="quantity" className="text-right">
-                Qty
+                Cant.
               </TableHead>
               <TableHead id="returned" className="text-right">
-                Returned
+                Devuelto
               </TableHead>
               <TableHead id="unitPrice" className="text-right">
-                Unit price
+                Precio unitario
               </TableHead>
               <TableHead id="lineTotal" className="text-right">
-                Line total
+                Total de línea
               </TableHead>
               <TableHead id="before" className="text-right">
-                Stock before
+                Stock antes
               </TableHead>
               <TableHead id="after" className="text-right">
-                Stock after
+                Stock después
               </TableHead>
             </TableHeader>
             <TableBody>

@@ -35,7 +35,7 @@ export function InventoryFilters({
       <div className="grid flex-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5 sm:col-span-2">
           <label htmlFor="q" className="text-sm font-medium">
-            Search
+            Buscar
           </label>
           <div className="relative">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -43,7 +43,7 @@ export function InventoryFilters({
               id="q"
               name="q"
               defaultValue={initialQuery}
-              placeholder="Product name or SKU"
+              placeholder="Nombre de producto o SKU"
               className="pl-9"
             />
           </div>
@@ -51,7 +51,7 @@ export function InventoryFilters({
 
         <div className="space-y-1.5">
           <label htmlFor="warehouseId" className="text-sm font-medium">
-            Warehouse
+            Almacén
           </label>
           <select
             id="warehouseId"
@@ -59,7 +59,7 @@ export function InventoryFilters({
             defaultValue={initialWarehouseId}
             className="flex h-8 w-full rounded-2xl border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
           >
-            <option value="">All warehouses</option>
+            <option value="">Todos los almacenes</option>
             {warehouses.map((warehouse) => (
               <option key={warehouse.id} value={warehouse.id}>
                 {warehouse.name}
@@ -70,7 +70,7 @@ export function InventoryFilters({
 
         <div className="space-y-1.5">
           <label htmlFor="stockStatus" className="text-sm font-medium">
-            Stock status
+            Estado de stock
           </label>
           <select
             id="stockStatus"
@@ -78,20 +78,20 @@ export function InventoryFilters({
             defaultValue={initialStockStatus}
             className="flex h-8 w-full rounded-2xl border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
           >
-            <option value="all">All statuses</option>
-            <option value="in_stock">In stock</option>
-            <option value="low_stock">Low stock</option>
-            <option value="out_of_stock">Out of stock</option>
+            <option value="all">Todos los estados</option>
+            <option value="in_stock">En stock</option>
+            <option value="low_stock">Stock bajo</option>
+            <option value="out_of_stock">Sin stock</option>
           </select>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
-        <Button type="submit">Apply</Button>
+        <Button type="submit">Aplicar</Button>
         {hasActiveFilters && (
           <Button type="button" variant="outline" onPress={() => router.push("/inventory")}>
             <X data-icon="inline-start" />
-            Reset
+            Restablecer
           </Button>
         )}
       </div>

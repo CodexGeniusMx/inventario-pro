@@ -15,11 +15,12 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { loginSchema, type LoginInput } from "@/lib/validations/auth.schema"
+import { APP_NAME } from "@/lib/i18n/branding"
 
 const queryErrorMessages: Record<string, string> = {
   missing_profile:
-    "Your account exists but is not linked to an organization yet. Contact an administrator.",
-  inactive: "Your account has been deactivated.",
+    "Tu cuenta existe pero aún no está vinculada a una organización. Contacta a un administrador.",
+  inactive: "Tu cuenta ha sido desactivada.",
 }
 
 export function LoginForm() {
@@ -77,7 +78,7 @@ export function LoginForm() {
       router.push(redirectTo)
       router.refresh()
     } catch {
-      setFormError("Unable to connect. Check your network and try again.")
+      setFormError("No se pudo conectar. Verifica tu red e inténtalo de nuevo.")
       setIsSubmitting(false)
     }
   }
@@ -85,9 +86,9 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>Sign in</CardTitle>
+        <CardTitle>Iniciar sesión</CardTitle>
         <CardDescription>
-          Enter your credentials to access Inventario Pro.
+          Ingresa tus credenciales para acceder a {APP_NAME}.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -103,14 +104,14 @@ export function LoginForm() {
 
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
-              Email
+              Correo electrónico
             </label>
             <Input
               id="email"
               name="email"
               type="email"
               autoComplete="email"
-              placeholder="you@company.com"
+              placeholder="tu@empresa.com"
               disabled={isSubmitting}
               aria-invalid={Boolean(fieldErrors.email)}
             />
@@ -121,7 +122,7 @@ export function LoginForm() {
 
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">
-              Password
+              Contraseña
             </label>
             <Input
               id="password"
@@ -143,10 +144,10 @@ export function LoginForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="animate-spin" data-icon="inline-start" />
-                Signing in…
+                Iniciando sesión…
               </>
             ) : (
-              "Sign in"
+              "Iniciar sesión"
             )}
           </Button>
         </form>

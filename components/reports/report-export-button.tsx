@@ -22,7 +22,7 @@ export function ReportExportButton({
       href={href}
       className="inline-flex h-9 items-center justify-center rounded-md border bg-background px-3 text-sm font-medium hover:bg-muted"
     >
-      Export CSV
+      Exportar CSV
     </a>
   )
 }

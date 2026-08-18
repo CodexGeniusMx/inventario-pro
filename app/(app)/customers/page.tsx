@@ -52,7 +52,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   try {
     customers = await listCustomers(user, filters)
   } catch {
-    loadError = "Unable to load customers from the database."
+    loadError = "No se pudieron cargar los clientes desde la base de datos."
   }
 
   const hasFilters = Boolean(filters.q || filters.status !== "all")
@@ -60,13 +60,13 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   return (
     <>
       <PageHeader
-        title="Customers"
-        description="Manage customer records for sales and history."
+        title="Clientes"
+        description="Administra registros de clientes para ventas e historial."
         actions={
           canWrite ? (
             <LinkButton href="/customers/new">
               <Plus data-icon="inline-start" />
-              New customer
+              Nuevo cliente
             </LinkButton>
           ) : undefined
         }
@@ -82,18 +82,18 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
       {loadError ? (
         <Card>
           <CardHeader>
-            <CardTitle>Unable to load customers</CardTitle>
+            <CardTitle>No se pudieron cargar los clientes</CardTitle>
             <CardDescription>{loadError}</CardDescription>
           </CardHeader>
         </Card>
       ) : customers.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No customers found</CardTitle>
+            <CardTitle>No se encontraron clientes</CardTitle>
             <CardDescription>
               {hasFilters
-                ? "Try adjusting your search or filters."
-                : "Create your first customer to associate with sales."}
+                ? "Intenta ajustar tu búsqueda o filtros."
+                : "Crea tu primer cliente para asociarlo con ventas."}
             </CardDescription>
           </CardHeader>
         </Card>

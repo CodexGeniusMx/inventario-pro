@@ -48,13 +48,13 @@ function mapInventoryStatus(row: {
 }): InventoryStatusItem {
   return {
     productId: row.product_id ?? "",
-    productName: row.product_name ?? "Unknown product",
+    productName: row.product_name ?? "Producto desconocido",
     productVariantId: row.product_variant_id ?? "",
     variantName: row.variant_name ?? "Default",
     sku: row.sku ?? "—",
     barcode: row.barcode,
     warehouseId: row.warehouse_id ?? "",
-    warehouseName: row.warehouse_name ?? "Unknown warehouse",
+    warehouseName: row.warehouse_name ?? "Almacén desconocido",
     quantityOnHand: row.quantity_on_hand ?? 0,
     reorderPoint: row.reorder_point ?? 0,
     stockStatus: mapStockStatus(row.stock_status),
@@ -225,7 +225,7 @@ function mapRelatedDocument(row: {
   }
 
   if (row.sale_id) {
-    return { label: "Sale", href: `/sales/${row.sale_id}` }
+    return { label: "Venta", href: `/sales/${row.sale_id}` }
   }
 
   if (row.purchase_receipt_id && row.purchase_receipts?.document_number) {
@@ -336,18 +336,18 @@ export async function listMovements(
     return {
       id: row.id,
       createdAt: row.created_at,
-      productName: row.product_variants?.products?.name ?? "Unknown product",
+      productName: row.product_variants?.products?.name ?? "Producto desconocido",
       variantName: row.product_variants?.name ?? "Default",
       sku: row.product_variants?.sku ?? "—",
       warehouseId: row.warehouse_id,
-      warehouseName: row.warehouses?.name ?? "Unknown warehouse",
+      warehouseName: row.warehouses?.name ?? "Almacén desconocido",
       movementType: row.movement_type,
       quantity: row.quantity,
       quantityBefore: row.quantity_before,
       quantityAfter: row.quantity_after,
       reason: row.reason,
       notes: row.notes,
-      createdByName: row.profiles?.full_name ?? "Unknown user",
+      createdByName: row.profiles?.full_name ?? "Usuario desconocido",
       relatedDocumentLabel: related.label,
       relatedDocumentHref: related.href,
       stockAdjustmentId: row.stock_adjustment_id,
@@ -394,8 +394,8 @@ export async function listAdjustments(
     reason: row.reason,
     notes: row.notes,
     warehouseId: row.warehouse_id,
-    warehouseName: row.warehouses?.name ?? "Unknown warehouse",
-    createdByName: row.profiles?.full_name ?? "Unknown user",
+    warehouseName: row.warehouses?.name ?? "Almacén desconocido",
+    createdByName: row.profiles?.full_name ?? "Usuario desconocido",
     createdAt: row.created_at,
     lineCount: row.stock_adjustment_items?.length ?? 0,
   }))
@@ -447,7 +447,7 @@ export async function getAdjustmentById(
   }
 
   if (!data) {
-    throw new NotFoundError("Stock adjustment not found.")
+    throw new NotFoundError("Ajuste de stock no encontrado.")
   }
 
   return {
@@ -457,13 +457,13 @@ export async function getAdjustmentById(
     reason: data.reason,
     notes: data.notes,
     warehouseId: data.warehouse_id,
-    warehouseName: data.warehouses?.name ?? "Unknown warehouse",
-    createdByName: data.profiles?.full_name ?? "Unknown user",
+    warehouseName: data.warehouses?.name ?? "Almacén desconocido",
+    createdByName: data.profiles?.full_name ?? "Usuario desconocido",
     createdAt: data.created_at,
     lines: (data.stock_adjustment_items ?? []).map((line) => ({
       id: line.id,
       productVariantId: line.product_variant_id,
-      productName: line.product_variants?.products?.name ?? "Unknown product",
+      productName: line.product_variants?.products?.name ?? "Producto desconocido",
       variantName: line.product_variants?.name ?? "Default",
       sku: line.product_variants?.sku ?? "—",
       quantity: line.quantity,
@@ -504,7 +504,7 @@ export async function listVariantOptions(
     .filter((variant) => variant.products?.status === "active")
     .map((variant) => ({
       id: variant.id,
-      productName: variant.products?.name ?? "Unknown product",
+      productName: variant.products?.name ?? "Producto desconocido",
       variantName: variant.name,
       sku: variant.sku,
     }))
@@ -562,7 +562,7 @@ function mapRpcError(error: PostgrestError): never {
     message.includes("reason_required") ||
     message.includes("invalid_line_quantity")
   ) {
-    throw new ValidationError("Please check the adjustment details and try again.")
+    throw new ValidationError("Revisa los detalles del ajuste e inténtalo de nuevo.")
   }
 
   if (message.includes("organization_mismatch")) {
@@ -599,14 +599,14 @@ export async function createStockAdjustment(
   }
 
   if (!data) {
-    throw new InventoryError("Adjustment was not created.")
+    throw new InventoryError("El ajuste no fue creado.")
   }
 
   const adjustment = await getAdjustmentById(user, data)
 
   if (adjustment.lines.length === 0) {
     throw new InventoryError(
-      "Adjustment was saved without inventory movement lines."
+      "El ajuste se guardó sin líneas de movimiento de inventario."
     )
   }
 
@@ -616,7 +616,7 @@ export async function createStockAdjustment(
 
   if (missingMovement) {
     throw new InventoryError(
-      "Adjustment completed without a linked inventory movement record."
+      "Ajuste completado sin un registro de movimiento de inventario vinculado."
     )
   }
 

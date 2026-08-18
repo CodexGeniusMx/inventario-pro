@@ -31,8 +31,8 @@ export default async function NewSalePage() {
   return (
     <>
       <PageHeader
-        title="New sale"
-        description="Record a sale with server-authoritative pricing and atomic stock deduction."
+        title="Nueva venta"
+        description="Registra una venta con precios autoritativos del servidor y deducción atómica de stock."
       />
 
       <SaleForm

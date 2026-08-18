@@ -19,19 +19,19 @@ export default async function AdjustmentsPage() {
   try {
     adjustments = await listAdjustments(user)
   } catch {
-    loadError = "Unable to load stock adjustments."
+    loadError = "No se pudieron cargar los ajustes de stock."
   }
 
   return (
     <>
       <PageHeader
-        title="Stock adjustments"
-        description="Controlled stock changes that create inventory movement records."
+        title="Ajustes de stock"
+        description="Cambios controlados de stock que crean registros de movimiento de inventario."
         actions={
           canAdjust ? (
             <LinkButton href="/inventory/adjustments/new">
               <Plus data-icon="inline-start" />
-              New adjustment
+              Nuevo ajuste
             </LinkButton>
           ) : undefined
         }
@@ -43,11 +43,11 @@ export default async function AdjustmentsPage() {
         <InventoryErrorState message={loadError} />
       ) : adjustments.length === 0 ? (
         <div className="rounded-2xl border border-dashed px-4 py-10 text-center text-sm text-muted-foreground">
-          No adjustments yet.
+          Aún no hay ajustes de stock.
           {canAdjust && (
             <div className="mt-4">
               <LinkButton href="/inventory/adjustments/new">
-                Create first adjustment
+                Crear primer ajuste
               </LinkButton>
             </div>
           )}

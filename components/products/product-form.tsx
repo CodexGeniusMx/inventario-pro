@@ -49,10 +49,10 @@ function getInitialState(product?: ProductDetail): FormState {
     name: product?.name ?? "",
     description: product?.description ?? "",
     categoryId: product?.categoryId ?? "",
-    unitOfMeasure: product?.unitOfMeasure ?? "unit",
+    unitOfMeasure: product?.unitOfMeasure ?? "unidad",
     baseCostPrice: product ? String(product.baseCostPrice) : "0",
     baseSalePrice: product ? String(product.baseSalePrice) : "0",
-    variantName: variant?.name ?? "Default",
+    variantName: variant?.name ?? "Predeterminado",
     sku: variant?.sku ?? "",
     barcode: variant?.barcode ?? "",
     variantCostPrice:
@@ -73,7 +73,7 @@ function mapFieldErrors(
   const mapped: Record<string, string> = {}
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
-    mapped[key] = messages[0] ?? "Invalid value."
+    mapped[key] = messages[0] ?? "Valor no válido."
   }
 
   return mapped
@@ -172,15 +172,15 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Product details</CardTitle>
+          <CardTitle>Detalles del producto</CardTitle>
           <CardDescription>
-            Basic catalog information shared across variants.
+            Información básica del catálogo compartida entre variantes.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
             <label htmlFor="name" className="text-sm font-medium">
-              Product name
+              Nombre del producto
             </label>
             <Input
               id="name"
@@ -196,7 +196,7 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2 md:col-span-2">
             <label htmlFor="description" className="text-sm font-medium">
-              Description
+              Descripción
             </label>
             <Textarea
               id="description"
@@ -211,7 +211,7 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="categoryId" className="text-sm font-medium">
-              Category
+              Categoría
             </label>
             <select
               id="categoryId"
@@ -222,7 +222,7 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
               className="flex h-8 w-full rounded-2xl border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
               disabled={isSubmitting}
             >
-              <option value="">No category</option>
+              <option value="">Sin categoría</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -233,11 +233,11 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="unitOfMeasure" className="text-sm font-medium">
-              Unit of measure
+              Unidad de medida
             </label>
             <Input
               id="unitOfMeasure"
-              placeholder="unit"
+              placeholder="unidad"
               value={formState.unitOfMeasure}
               onChange={(event) =>
                 updateField("unitOfMeasure", event.target.value)
@@ -254,7 +254,7 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="baseCostPrice" className="text-sm font-medium">
-              Base cost price
+              Precio de costo base
             </label>
             <Input
               id="baseCostPrice"
@@ -277,7 +277,7 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="baseSalePrice" className="text-sm font-medium">
-              Base sale price
+              Precio de venta base
             </label>
             <Input
               id="baseSalePrice"
@@ -302,15 +302,15 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Default variant</CardTitle>
+          <CardTitle>Variante predeterminada</CardTitle>
           <CardDescription>
-            SKU, barcode, and pricing for the initial variant.
+            SKU, código de barras y precios para la variante inicial.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
             <label htmlFor="variantName" className="text-sm font-medium">
-              Variant name
+              Nombre de variante
             </label>
             <Input
               id="variantName"
@@ -348,7 +348,7 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="barcode" className="text-sm font-medium">
-              Barcode
+              Código de barras
             </label>
             <Input
               id="barcode"
@@ -366,14 +366,14 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="variantCostPrice" className="text-sm font-medium">
-              Variant cost override
+              Sobreescritura de costo de variante
             </label>
             <Input
               id="variantCostPrice"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Uses base cost if empty"
+              placeholder="Usa costo base si está vacío"
               value={formState.variantCostPrice}
               onChange={(event) =>
                 updateField("variantCostPrice", event.target.value)
@@ -390,14 +390,14 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="variantSalePrice" className="text-sm font-medium">
-              Variant sale override
+              Sobreescritura de precio de variante
             </label>
             <Input
               id="variantSalePrice"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Uses base sale if empty"
+              placeholder="Usa precio base si está vacío"
               value={formState.variantSalePrice}
               onChange={(event) =>
                 updateField("variantSalePrice", event.target.value)
@@ -414,7 +414,7 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
 
           <div className="space-y-2">
             <label htmlFor="reorderPoint" className="text-sm font-medium">
-              Reorder point
+              Punto de reorden
             </label>
             <Input
               id="reorderPoint"
@@ -442,19 +442,19 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
           {isSubmitting ? (
             <>
               <Loader2 className="animate-spin" data-icon="inline-start" />
-              Saving…
+              Guardando…
             </>
           ) : mode === "create" ? (
-            "Create product"
+            "Crear producto"
           ) : (
-            "Save changes"
+            "Guardar cambios"
           )}
         </Button>
         <LinkButton
           href={product ? `/products/${product.id}` : "/products"}
           variant="outline"
         >
-          Cancel
+          Cancelar
         </LinkButton>
       </div>
     </form>

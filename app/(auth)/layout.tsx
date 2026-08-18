@@ -1,5 +1,7 @@
 import { Package2 } from "lucide-react"
 
+import { APP_NAME, APP_COMPANY } from "@/lib/i18n/branding"
+
 export default function AuthLayout({
   children,
 }: {
@@ -10,10 +12,8 @@ export default function AuthLayout({
       <div className="mb-8 flex items-center gap-3">
         <Package2 className="size-7 text-primary" />
         <div>
-          <p className="text-lg font-semibold tracking-tight">Inventario Pro</p>
-          <p className="text-sm text-muted-foreground">
-            Inventory management for your business
-          </p>
+          <p className="text-lg font-semibold tracking-tight">{APP_NAME}</p>
+          <p className="text-sm text-muted-foreground">{APP_COMPANY}</p>
         </div>
       </div>
       {children}

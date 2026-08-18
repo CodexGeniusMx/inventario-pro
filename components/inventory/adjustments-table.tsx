@@ -19,19 +19,19 @@ type AdjustmentsTableProps = {
 export function AdjustmentsTable({ adjustments }: AdjustmentsTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Stock adjustments">
+      <Table aria-label="Ajustes de stock">
         <TableHeader>
           <TableHead isRowHeader id="document">
-            Document
+            Documento
           </TableHead>
-          <TableHead id="type">Type</TableHead>
-          <TableHead id="warehouse">Warehouse</TableHead>
-          <TableHead id="reason">Reason</TableHead>
+          <TableHead id="type">Tipo</TableHead>
+          <TableHead id="warehouse">Almacén</TableHead>
+          <TableHead id="reason">Motivo</TableHead>
           <TableHead id="lines" className="text-right">
-            Lines
+            Líneas
           </TableHead>
-          <TableHead id="user">Created by</TableHead>
-          <TableHead id="created">Created</TableHead>
+          <TableHead id="user">Creado por</TableHead>
+          <TableHead id="created">Creado</TableHead>
         </TableHeader>
         <TableBody>
           {adjustments.map((adjustment) => (

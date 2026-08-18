@@ -19,32 +19,32 @@ type ProductsTableProps = {
 export function ProductsTable({ products }: ProductsTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
-      <Table aria-label="Products">
+      <Table aria-label="Productos">
         <TableHeader>
           <TableHead isRowHeader id="product">
-            Product
+            Producto
           </TableHead>
-          <TableHead id="category">Category</TableHead>
+          <TableHead id="category">Categoría</TableHead>
           <TableHead id="variants" className="hidden md:table-cell">
-            Variants
+            Variantes
           </TableHead>
           <TableHead id="sku" className="hidden lg:table-cell">
             SKU
           </TableHead>
           <TableHead id="barcode" className="hidden xl:table-cell">
-            Barcode
+            Código de barras
           </TableHead>
           <TableHead id="cost" className="text-right">
-            Cost
+            Costo
           </TableHead>
           <TableHead id="salePrice" className="text-right">
-            Sale price
+            Precio de venta
           </TableHead>
           <TableHead id="status" className="hidden sm:table-cell">
-            Status
+            Estado
           </TableHead>
           <TableHead id="updated" className="hidden lg:table-cell">
-            Updated
+            Actualizado
           </TableHead>
         </TableHeader>
         <TableBody>

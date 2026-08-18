@@ -28,26 +28,26 @@ export function LowStockAlert({
         <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600" />
         <div className="space-y-1">
           <p className="text-sm font-medium text-amber-950">
-            {lowStockCount} products low on stock
-            {outOfStockCount > 0 && ` · ${outOfStockCount} out of stock`}
+            {lowStockCount} productos con stock bajo
+            {outOfStockCount > 0 && ` · ${outOfStockCount} sin stock`}
           </p>
           <p className="text-sm text-amber-900/80">
             {products.slice(0, 2).map((product, index) => (
               <span key={product.sku}>
                 {index > 0 && ", "}
-                {product.product} ({product.onHand} left)
+                {product.product} ({product.onHand} restantes)
               </span>
             ))}
-            {products.length > 2 && ` and ${products.length - 2} more`}
+            {products.length > 2 && ` y ${products.length - 2} más`}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-2">
         <Badge className="border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-100">
-          Action needed
+          Acción requerida
         </Badge>
         <LinkButton href="/inventory" variant="outline" size="sm">
-          View inventory
+          Ver inventario
         </LinkButton>
       </div>
     </div>
@@ -61,20 +61,20 @@ type QuickActionsProps = {
 export function QuickActions({ className }: QuickActionsProps) {
   return (
     <div className={className}>
-      <p className="mb-2 text-sm font-medium">Quick actions</p>
+      <p className="mb-2 text-sm font-medium">Acciones rápidas</p>
       <div className="flex flex-wrap gap-2">
         <LinkButton href="/sales/new" size="sm">
-          New sale
+          Nueva venta
         </LinkButton>
         <LinkButton href="/purchases" size="sm" variant="outline">
-          Receive PO
+          Recibir OC
         </LinkButton>
         <LinkButton href="/inventory/adjustments/new" size="sm" variant="outline">
-          Adjust stock
+          Ajustar stock
         </LinkButton>
         <Link href="/reports">
           <Button variant="outline" size="sm">
-            View reports
+            Ver reportes
           </Button>
         </Link>
       </div>

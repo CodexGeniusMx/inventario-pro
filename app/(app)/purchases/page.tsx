@@ -43,20 +43,20 @@ function PurchasesFilters({
     >
       <div className="flex-1">
         <label htmlFor="purchase-search" className="mb-1 block text-sm font-medium">
-          Search
+          Buscar
         </label>
         <input
           id="purchase-search"
           name="q"
           defaultValue={initialQuery}
-          placeholder="Search by PO number or notes"
+          placeholder="Buscar por número de OC o notas"
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         />
       </div>
 
       <div className="sm:w-48">
         <label htmlFor="purchase-status" className="mb-1 block text-sm font-medium">
-          Status
+          Estado
         </label>
         <select
           id="purchase-status"
@@ -64,12 +64,12 @@ function PurchasesFilters({
           defaultValue={initialStatus}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
-          <option value="all">All</option>
-          <option value="ordered">Ordered</option>
-          <option value="partially_received">Partially received</option>
-          <option value="received">Received</option>
-          <option value="draft">Draft</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="all">Todos</option>
+          <option value="ordered">Ordenada</option>
+          <option value="partially_received">Parcialmente recibida</option>
+          <option value="received">Recibida</option>
+          <option value="draft">Borrador</option>
+          <option value="cancelled">Cancelada</option>
         </select>
       </div>
 
@@ -77,7 +77,7 @@ function PurchasesFilters({
         type="submit"
         className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
       >
-        Apply
+        Aplicar
       </button>
     </form>
   )
@@ -108,7 +108,7 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
   try {
     purchases = await listPurchaseOrders(user, filters)
   } catch {
-    loadError = "Unable to load purchase orders from the database."
+    loadError = "No se pudieron cargar las órdenes de compra desde la base de datos."
   }
 
   const hasFilters = Boolean(filters.q || filters.status !== "all")
@@ -116,13 +116,13 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
   return (
     <>
       <PageHeader
-        title="Purchases"
-        description="Purchase orders, receiving progress, and supplier-linked procurement."
+        title="Compras"
+        description="Órdenes de compra, progreso de recepción y abastecimiento vinculado a proveedores."
         actions={
           canWrite ? (
             <LinkButton href="/purchases/new">
               <Plus data-icon="inline-start" />
-              New purchase
+              Nueva compra
             </LinkButton>
           ) : undefined
         }
@@ -138,18 +138,18 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
       {loadError ? (
         <Card>
           <CardHeader>
-            <CardTitle>Unable to load purchases</CardTitle>
+            <CardTitle>No se pudieron cargar las compras</CardTitle>
             <CardDescription>{loadError}</CardDescription>
           </CardHeader>
         </Card>
       ) : purchases.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No purchase orders found</CardTitle>
+            <CardTitle>No se encontraron órdenes de compra</CardTitle>
             <CardDescription>
               {hasFilters
-                ? "Try adjusting your search or filters."
-                : "Create a purchase order to order inventory from a supplier."}
+                ? "Intenta ajustar tu búsqueda o filtros."
+                : "Crea una orden de compra para pedir inventario a un proveedor."}
             </CardDescription>
           </CardHeader>
         </Card>

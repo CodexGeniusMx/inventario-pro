@@ -24,16 +24,16 @@ export function ProductsEmptyState({
           <PackageOpen className="size-6 text-muted-foreground" />
         </div>
         <CardTitle>
-          {hasFilters ? "No products match your filters" : "No products yet"}
+          {hasFilters ? "Ningún producto coincide con tus filtros" : "Aún no hay productos"}
         </CardTitle>
         <CardDescription>
           {hasFilters
-            ? "Try adjusting your search or filters to find what you need."
-            : "Create your first product to start building your catalog."}
+            ? "Intenta ajustar tu búsqueda o filtros para encontrar lo que necesitas."
+            : "Crea tu primer producto para comenzar a construir tu catálogo."}
         </CardDescription>
         {canWrite && !hasFilters && (
           <LinkButton href="/products/new" className="mt-4">
-            Create product
+            Crear producto
           </LinkButton>
         )}
       </CardHeader>

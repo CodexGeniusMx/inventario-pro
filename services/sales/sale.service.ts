@@ -58,7 +58,7 @@ function mapRpcError(error: PostgrestError): never {
     message.includes("invalid_discount_amount") ||
     message.includes("invalid_line_price")
   ) {
-    throw new ValidationError("Please check the sale details and try again.")
+    throw new ValidationError("Revisa los detalles de la venta e inténtalo de nuevo.")
   }
 
   if (
@@ -66,7 +66,7 @@ function mapRpcError(error: PostgrestError): never {
     message.includes("invalid_warehouse") ||
     message.includes("invalid_customer")
   ) {
-    throw new ValidationError("One or more sale details are invalid.")
+    throw new ValidationError("Uno o más detalles de la venta no son válidos.")
   }
 
   if (
@@ -74,7 +74,7 @@ function mapRpcError(error: PostgrestError): never {
     error.code === "PGRST202"
   ) {
     throw new ConflictError(
-      "Sale completion is not available. Apply the latest database migrations."
+      "La finalización de ventas no está disponible. Aplica las últimas migraciones de base de datos."
     )
   }
 
@@ -130,12 +130,12 @@ export async function listSales(
     customerId: row.customer_id,
     customerName: row.customers?.name ?? null,
     warehouseId: row.warehouse_id,
-    warehouseName: row.warehouses?.name ?? "Unknown warehouse",
+    warehouseName: row.warehouses?.name ?? "Almacén desconocido",
     completedAt: row.completed_at,
     createdAt: row.created_at,
     total: Number(row.total),
     itemCount: row.sale_items?.length ?? 0,
-    createdByName: row.profiles?.full_name ?? "Unknown user",
+    createdByName: row.profiles?.full_name ?? "Usuario desconocido",
   }))
 }
 
@@ -192,7 +192,7 @@ export async function getSaleById(
   }
 
   if (!data) {
-    throw new NotFoundError("Sale not found.")
+    throw new NotFoundError("Venta no encontrada.")
   }
 
   return {
@@ -202,18 +202,18 @@ export async function getSaleById(
     customerId: data.customer_id,
     customerName: data.customers?.name ?? null,
     warehouseId: data.warehouse_id,
-    warehouseName: data.warehouses?.name ?? "Unknown warehouse",
+    warehouseName: data.warehouses?.name ?? "Almacén desconocido",
     subtotal: Number(data.subtotal),
     discountAmount: Number(data.discount_amount),
     total: Number(data.total),
     completedAt: data.completed_at,
     createdAt: data.created_at,
-    createdByName: data.profiles?.full_name ?? "Unknown user",
+    createdByName: data.profiles?.full_name ?? "Usuario desconocido",
     notes: data.notes ?? null,
     lines: (data.sale_items ?? []).map((line) => ({
       id: line.id,
       productVariantId: line.product_variant_id,
-      productName: line.product_variants?.products?.name ?? "Unknown product",
+      productName: line.product_variants?.products?.name ?? "Producto desconocido",
       variantName: line.product_variants?.name ?? "Default",
       sku: line.product_variants?.sku ?? "—",
       quantity: line.quantity,
@@ -316,13 +316,13 @@ export async function createAndCompleteSale(
   }
 
   if (!data) {
-    throw new ConflictError("Sale was not created.")
+    throw new ConflictError("La venta no fue creada.")
   }
 
   const sale = await getSaleById(user, data)
 
   if (sale.status !== "completed") {
-    throw new ConflictError("Sale was not completed successfully.")
+    throw new ConflictError("La venta no se completó correctamente.")
   }
 
   const missingMovement = sale.lines.some(
@@ -334,7 +334,7 @@ export async function createAndCompleteSale(
 
   if (missingMovement) {
     throw new ConflictError(
-      "Sale completed without linked inventory movement records."
+      "Venta completada sin registros de movimiento de inventario vinculados."
     )
   }
 

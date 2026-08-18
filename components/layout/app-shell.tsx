@@ -4,6 +4,7 @@ import { useState } from "react"
 
 import { Header } from "@/components/layout/header"
 import { Sidebar } from "@/components/layout/sidebar"
+import { KeepAiAssistant } from "@/components/keep-ai/keep-ai-assistant"
 import type { AuthenticatedUser } from "@/lib/auth/types"
 import { SheetContent } from "@/components/ui/sheet"
 
@@ -18,7 +19,7 @@ export function AppShell({ title, user, children }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <div className="flex min-h-svh w-full bg-background">
+    <div className="flex min-h-svh w-full overflow-x-hidden bg-background">
       <div className="hidden lg:flex">
         <Sidebar
           user={user}
@@ -41,6 +42,8 @@ export function AppShell({ title, user, children }: AppShellProps) {
         <Header title={title} user={user} onMenuClick={() => setMobileOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
+
+      <KeepAiAssistant user={user} />
     </div>
   )
 }

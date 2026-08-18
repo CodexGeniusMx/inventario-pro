@@ -4,6 +4,11 @@ import type { Json } from "@/lib/database.types"
 
 import type { AuthenticatedUser } from "@/lib/auth/types"
 import {
+  isSupportedCurrency,
+  resolveTransactionCurrency,
+} from "@/lib/currency/types"
+import { isMissingSchemaError } from "@/lib/auth/redirect-log"
+import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
@@ -51,18 +56,18 @@ function mapRpcError(error: PostgrestError): never {
     details.includes("over_receipt")
   ) {
     throw new ValidationError(
-      "Cannot receive more than the remaining ordered quantity."
+      "No se puede recibir más que la cantidad ordenada restante."
     )
   }
 
   if (message.includes("invalid_purchase_status")) {
     throw new ConflictError(
-      "This purchase order cannot be received in its current status."
+      "Esta orden de compra no se puede recibir en su estado actual."
     )
   }
 
   if (message.includes("purchase_order_not_found")) {
-    throw new NotFoundError("Purchase order not found.")
+    throw new NotFoundError("Orden de compra no encontrada.")
   }
 
   if (
@@ -70,19 +75,19 @@ function mapRpcError(error: PostgrestError): never {
     message.includes("lines_required") ||
     message.includes("invalid_unit_cost")
   ) {
-    throw new ValidationError("Please check the receipt quantities and try again.")
+    throw new ValidationError("Revisa las cantidades de recepción e inténtalo de nuevo.")
   }
 
   if (
     message.includes("invalid_purchase_order_item") ||
     message.includes("invalid_line_variant")
   ) {
-    throw new ValidationError("One or more purchase lines are invalid.")
+    throw new ValidationError("Una o más líneas de compra no son válidas.")
   }
 
   if (message.includes("inventory_movements are immutable")) {
     throw new ConflictError(
-      "Purchase receipt could not be linked to inventory movements."
+      "La recepción de compra no pudo vincularse a movimientos de inventario."
     )
   }
 
@@ -91,7 +96,7 @@ function mapRpcError(error: PostgrestError): never {
     error.code === "PGRST202"
   ) {
     throw new ConflictError(
-      "Purchase receiving is not available. Apply the latest database migrations."
+      "La recepción de compras no está disponible. Aplica las últimas migraciones de base de datos."
     )
   }
 
@@ -118,7 +123,7 @@ async function validateSupplier(
   }
 
   if (!data) {
-    throw new NotFoundError("Supplier not found or inactive.")
+    throw new NotFoundError("Proveedor no encontrado o inactivo.")
   }
 }
 
@@ -141,7 +146,7 @@ async function validateWarehouse(
   }
 
   if (!data) {
-    throw new NotFoundError("Warehouse not found or inactive.")
+    throw new NotFoundError("Almacén no encontrado o inactivo.")
   }
 }
 
@@ -179,7 +184,7 @@ async function validateVariants(
   )
 
   if (validIds.size !== uniqueIds.length) {
-    throw new NotFoundError("One or more product variants are invalid.")
+    throw new NotFoundError("Una o más variantes de producto no son válidas.")
   }
 }
 
@@ -245,15 +250,16 @@ export async function listPurchaseOrders(
       documentNumber: row.document_number,
       status: mapPurchaseOrderStatus(row.status),
       supplierId: row.supplier_id,
-      supplierName: row.suppliers?.name ?? "Unknown supplier",
+      supplierName: row.suppliers?.name ?? "Proveedor desconocido",
       warehouseId: row.warehouse_id,
-      warehouseName: row.warehouses?.name ?? "Unknown warehouse",
+      warehouseName: row.warehouses?.name ?? "Almacén desconocido",
       orderedAt: row.ordered_at,
       createdAt: row.created_at,
       total: Number(row.total),
+      currencyCode: user.organizationBaseCurrency,
       quantityOrdered,
       quantityReceived,
-      createdByName: row.profiles?.full_name ?? "Unknown user",
+      createdByName: row.profiles?.full_name ?? "Usuario desconocido",
     }
   })
 }
@@ -328,7 +334,7 @@ export async function getPurchaseOrderById(
   }
 
   if (!data) {
-    throw new NotFoundError("Purchase order not found.")
+    throw new NotFoundError("Orden de compra no encontrada.")
   }
 
   return {
@@ -336,20 +342,21 @@ export async function getPurchaseOrderById(
     documentNumber: data.document_number,
     status: mapPurchaseOrderStatus(data.status),
     supplierId: data.supplier_id,
-    supplierName: data.suppliers?.name ?? "Unknown supplier",
+    supplierName: data.suppliers?.name ?? "Proveedor desconocido",
     warehouseId: data.warehouse_id,
-    warehouseName: data.warehouses?.name ?? "Unknown warehouse",
+    warehouseName: data.warehouses?.name ?? "Almacén desconocido",
     orderedAt: data.ordered_at,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     subtotal: Number(data.subtotal),
     total: Number(data.total),
+    currencyCode: user.organizationBaseCurrency,
     notes: data.notes,
-    createdByName: data.profiles?.full_name ?? "Unknown user",
+    createdByName: data.profiles?.full_name ?? "Usuario desconocido",
     lines: (data.purchase_order_items ?? []).map((line) => ({
       id: line.id,
       productVariantId: line.product_variant_id,
-      productName: line.product_variants?.products?.name ?? "Unknown product",
+      productName: line.product_variants?.products?.name ?? "Producto desconocido",
       variantName: line.product_variants?.name ?? "Default",
       sku: line.product_variants?.sku ?? "—",
       quantityOrdered: line.quantity_ordered,
@@ -367,11 +374,11 @@ export async function getPurchaseOrderById(
         id: receipt.id,
         documentNumber: receipt.document_number,
         receivedAt: receipt.received_at,
-        createdByName: receipt.profiles?.full_name ?? "Unknown user",
+        createdByName: receipt.profiles?.full_name ?? "Usuario desconocido",
         notes: receipt.notes,
         lines: (receipt.purchase_receipt_items ?? []).map((item) => ({
           id: item.id,
-          productName: item.product_variants?.products?.name ?? "Unknown product",
+          productName: item.product_variants?.products?.name ?? "Producto desconocido",
           variantName: item.product_variants?.name ?? "Default",
           sku: item.product_variants?.sku ?? "—",
           quantityReceived: item.quantity_received,
@@ -412,7 +419,7 @@ export async function createPurchaseOrder(
   }
 
   if (!documentNumber) {
-    throw new ConflictError("Unable to generate purchase order number.")
+    throw new ConflictError("No se pudo generar el número de orden de compra.")
   }
 
   const lines = input.lines.map((line) => {
@@ -428,25 +435,53 @@ export async function createPurchaseOrder(
   const subtotal = lines.reduce((sum, line) => sum + line.lineTotal, 0)
   const total = subtotal
 
-  const { data: purchaseOrder, error: poError } = await supabase
+  const currencyCode = resolveTransactionCurrency(
+    user.organizationAllowedCurrencies,
+    input.currencyCode
+  )
+
+  const insertBase = {
+    organization_id: organizationId,
+    supplier_id: input.supplierId,
+    warehouse_id: input.warehouseId,
+    document_number: documentNumber,
+    status: "ordered" as const,
+    ordered_at: new Date().toISOString(),
+    notes: input.notes ?? null,
+    subtotal,
+    total,
+    created_by: user.id,
+  }
+
+  let purchaseOrder: { id: string } | null = null
+  let poError: PostgrestError | null = null
+
+  const withCurrency = await supabase
     .from("purchase_orders")
-    .insert({
-      organization_id: organizationId,
-      supplier_id: input.supplierId,
-      warehouse_id: input.warehouseId,
-      document_number: documentNumber,
-      status: "ordered",
-      ordered_at: new Date().toISOString(),
-      notes: input.notes ?? null,
-      subtotal,
-      total,
-      created_by: user.id,
-    })
+    .insert({ ...insertBase, currency_code: currencyCode })
     .select("id")
     .single()
 
+  purchaseOrder = withCurrency.data
+  poError = withCurrency.error
+
+  if (poError && isMissingSchemaError(poError)) {
+    const withoutCurrency = await supabase
+      .from("purchase_orders")
+      .insert(insertBase)
+      .select("id")
+      .single()
+
+    purchaseOrder = withoutCurrency.data
+    poError = withoutCurrency.error
+  }
+
   if (poError) {
     throw poError
+  }
+
+  if (!purchaseOrder) {
+    throw new ConflictError("No se pudo crear la orden de compra.")
   }
 
   const { error: itemsError } = await supabase.from("purchase_order_items").insert(
@@ -497,7 +532,7 @@ export async function receivePurchaseOrder(
   }
 
   if (!data) {
-    throw new ConflictError("Purchase receipt was not created.")
+    throw new ConflictError("La recepción de compra no fue creada.")
   }
 
   const purchaseOrder = await getPurchaseOrderById(user, input.purchaseOrderId)
@@ -505,7 +540,7 @@ export async function receivePurchaseOrder(
 
   if (!receipt) {
     throw new ConflictError(
-      "Receipt was created but could not be verified."
+      "La recepción fue creada pero no pudo verificarse."
     )
   }
 
@@ -518,7 +553,7 @@ export async function receivePurchaseOrder(
 
   if (missingMovement) {
     throw new ConflictError(
-      "Receipt completed without linked inventory movement records."
+      "Recepción completada sin registros de movimiento de inventario vinculados."
     )
   }
 

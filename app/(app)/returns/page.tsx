@@ -46,7 +46,7 @@ export default async function ReturnsPage({ searchParams }: ReturnsPageProps) {
       listReturnableSales(user),
     ])
   } catch {
-    loadError = "Unable to load returns from the database."
+    loadError = "No se pudieron cargar las devoluciones desde la base de datos."
   }
 
   const hasFilters = Boolean(filters.q)
@@ -54,8 +54,8 @@ export default async function ReturnsPage({ searchParams }: ReturnsPageProps) {
   return (
     <>
       <PageHeader
-        title="Returns"
-        description="Customer sale returns with inventory restock and audit trail."
+        title="Devoluciones"
+        description="Devoluciones de ventas con reintegración de inventario y registro de auditoría."
       />
 
       <form
@@ -65,13 +65,13 @@ export default async function ReturnsPage({ searchParams }: ReturnsPageProps) {
       >
         <div className="flex-1">
           <label htmlFor="return-search" className="mb-1 block text-sm font-medium">
-            Search
+            Buscar
           </label>
           <input
             id="return-search"
             name="q"
             defaultValue={filters.q}
-            placeholder="Search by return number"
+            placeholder="Buscar por número de devolución"
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
         </div>
@@ -79,16 +79,16 @@ export default async function ReturnsPage({ searchParams }: ReturnsPageProps) {
           type="submit"
           className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground"
         >
-          Apply
+          Aplicar
         </button>
       </form>
 
       {returnableSales.length > 0 ? (
         <Card className="mb-4">
           <CardHeader>
-            <CardTitle>Sales with returnable items</CardTitle>
+            <CardTitle>Ventas con artículos por devolver</CardTitle>
             <CardDescription>
-              Start a return from a completed sale.
+              Inicia una devolución desde una venta completada.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -102,7 +102,7 @@ export default async function ReturnsPage({ searchParams }: ReturnsPageProps) {
                 </Link>
                 <span className="text-muted-foreground">
                   {" "}
-                  · {sale.customerName ?? "Walk-in"} · {sale.returnableLineCount}{" "}
+                  · {sale.customerName ?? "Cliente ocasional"} · {sale.returnableLineCount}{" "}
                   line(s) returnable
                 </span>
               </p>
@@ -114,18 +114,18 @@ export default async function ReturnsPage({ searchParams }: ReturnsPageProps) {
       {loadError ? (
         <Card>
           <CardHeader>
-            <CardTitle>Unable to load returns</CardTitle>
+            <CardTitle>No se pudieron cargar las devoluciones</CardTitle>
             <CardDescription>{loadError}</CardDescription>
           </CardHeader>
         </Card>
       ) : returns.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No returns found</CardTitle>
+            <CardTitle>No se encontraron devoluciones</CardTitle>
             <CardDescription>
               {hasFilters
-                ? "Try adjusting your search."
-                : "Process a return from a completed sale to see it here."}
+                ? "Intenta ajustar tu búsqueda."
+                : "Procesa una devolución de una venta completada para verla aquí."}
             </CardDescription>
           </CardHeader>
         </Card>

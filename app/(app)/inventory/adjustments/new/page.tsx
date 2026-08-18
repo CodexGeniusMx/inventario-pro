@@ -56,8 +56,8 @@ export default async function NewAdjustmentPage({
   return (
     <>
       <PageHeader
-        title="New stock adjustment"
-        description="Adjustments update balances atomically and create immutable movement records."
+        title="Nuevo ajuste de stock"
+        description="Los ajustes actualizan saldos de forma atómica y crean registros de movimiento inmutables."
       />
 
       <InventorySubNav />
