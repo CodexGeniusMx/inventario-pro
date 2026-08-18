@@ -64,7 +64,10 @@ export default async function ReportDetailPage({
   const filters = parsedFilters.success
     ? parsedFilters.data
     : reportFiltersSchema.parse({})
-  const range = resolveReportDateRange(filters)
+  const range = resolveReportDateRange({
+    ...filters,
+    timeZone: user.organizationTimezone,
+  })
   const filterOptions = await listReportFilterOptions(user)
 
   let loadError: string | null = null
@@ -298,7 +301,9 @@ export default async function ReportDetailPage({
             "Variant",
             "SKU",
             "Units sold",
+            "Return units",
             "Net revenue",
+            "Return revenue",
             "On hand",
             "Stock status",
             "Last movement",
@@ -308,7 +313,9 @@ export default async function ReportDetailPage({
             row.variantName,
             row.sku,
             row.unitsSold,
+            row.returnUnits,
             formatCurrency(row.netRevenue),
+            formatCurrency(row.returnRevenue),
             row.quantityOnHand,
             row.stockStatus ?? "—",
             row.lastMovementAt ? formatDateTime(row.lastMovementAt) : "—",

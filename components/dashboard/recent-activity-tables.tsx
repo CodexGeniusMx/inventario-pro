@@ -7,7 +7,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency, formatRelativeTime } from "@/lib/format"
-import type { RecentPurchaseActivity, RecentReturnActivity } from "@/types/dashboard"
+import type {
+  RecentAdjustmentActivity,
+  RecentPurchaseActivity,
+  RecentPurchaseReceiptActivity,
+  RecentReturnActivity,
+} from "@/types/dashboard"
 
 type RecentPurchasesTableProps = {
   purchases: RecentPurchaseActivity[]
@@ -61,6 +66,118 @@ export function RecentPurchasesTable({ purchases }: RecentPurchasesTableProps) {
                     {purchase.receivedAt
                       ? formatRelativeTime(new Date(purchase.receivedAt))
                       : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function RecentReceiptsTable({
+  receipts,
+}: {
+  receipts: RecentPurchaseReceiptActivity[]
+}) {
+  if (receipts.length === 0) {
+    return null
+  }
+
+  return (
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle>Recent purchase receipts</CardTitle>
+      </CardHeader>
+      <CardContent className="px-0 pb-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left text-muted-foreground">
+                <th className="px-4 py-2 font-medium">Receipt #</th>
+                <th className="px-2 py-2 font-medium">PO #</th>
+                <th className="px-2 py-2 font-medium">Warehouse</th>
+                <th className="px-2 py-2 text-right font-medium">Lines</th>
+                <th className="px-4 py-2 text-right font-medium">Received</th>
+              </tr>
+            </thead>
+            <tbody>
+              {receipts.map((receipt) => (
+                <tr key={receipt.id} className="border-b last:border-0 hover:bg-muted/40">
+                  <td className="px-4 py-2 font-mono text-xs">
+                    {receipt.documentNumber}
+                  </td>
+                  <td className="px-2 py-2 font-mono text-xs">
+                    {receipt.purchaseOrderNumber}
+                  </td>
+                  <td className="px-2 py-2">{receipt.warehouseName}</td>
+                  <td className="px-2 py-2 text-right tabular-nums">
+                    {receipt.itemCount}
+                  </td>
+                  <td className="px-4 py-2 text-right text-xs text-muted-foreground">
+                    {formatRelativeTime(new Date(receipt.receivedAt))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function RecentAdjustmentsTable({
+  adjustments,
+}: {
+  adjustments: RecentAdjustmentActivity[]
+}) {
+  if (adjustments.length === 0) {
+    return null
+  }
+
+  return (
+    <Card size="sm">
+      <CardHeader>
+        <CardTitle>Recent stock adjustments</CardTitle>
+      </CardHeader>
+      <CardContent className="px-0 pb-0">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left text-muted-foreground">
+                <th className="px-4 py-2 font-medium">Adjustment #</th>
+                <th className="px-2 py-2 font-medium">Type</th>
+                <th className="px-2 py-2 font-medium">Warehouse</th>
+                <th className="px-2 py-2 text-right font-medium">Lines</th>
+                <th className="px-4 py-2 text-right font-medium">Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adjustments.map((adjustment) => (
+                <tr
+                  key={adjustment.id}
+                  className="border-b last:border-0 hover:bg-muted/40"
+                >
+                  <td className="px-4 py-2">
+                    <Link
+                      href={`/inventory/adjustments/${adjustment.id}`}
+                      className="font-mono text-xs text-primary hover:underline"
+                    >
+                      {adjustment.documentNumber}
+                    </Link>
+                  </td>
+                  <td className="px-2 py-2 capitalize">
+                    {adjustment.adjustmentType.replaceAll("_", " ")}
+                  </td>
+                  <td className="px-2 py-2">{adjustment.warehouseName}</td>
+                  <td className="px-2 py-2 text-right tabular-nums">
+                    {adjustment.itemCount}
+                  </td>
+                  <td className="px-4 py-2 text-right text-xs text-muted-foreground">
+                    {formatRelativeTime(new Date(adjustment.createdAt))}
                   </td>
                 </tr>
               ))}

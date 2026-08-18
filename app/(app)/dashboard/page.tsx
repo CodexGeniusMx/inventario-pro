@@ -22,19 +22,15 @@ import {
   MetricCardCurrency,
 } from "@/components/dashboard/metric-card"
 import {
+  RecentAdjustmentsTable,
   RecentPurchasesTable,
+  RecentReceiptsTable,
   RecentReturnsTable,
 } from "@/components/dashboard/recent-activity-tables"
 import { RecentMovementsTable } from "@/components/dashboard/recent-movements-table"
 import { RecentSalesTable } from "@/components/dashboard/recent-sales-table"
 import { TopProductsTable } from "@/components/dashboard/top-products-table"
 import { PageHeader } from "@/components/layout/page-header"
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { formatDashboardHeadingDate } from "@/lib/reports/date-ranges"
 import { requireUser } from "@/lib/auth/session"
 import { formatNumber, formatPercent } from "@/lib/format"
@@ -48,40 +44,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const user = await requireUser()
   const params = await searchParams
   const chartRangeDays = parseDashboardChartRange(params.chart)
-
-  let summary: Awaited<ReturnType<typeof getDashboardSummary>> | null = null
-  let loadError: string | null = null
-
-  try {
-    summary = await getDashboardSummary(user, { chartRangeDays })
-  } catch {
-    loadError = "Unable to load dashboard metrics from the database."
-  }
-
-  if (loadError || !summary) {
-    return (
-      <>
-        <PageHeader
-          title="Dashboard"
-          description={`Overview for ${user.organizationName}`}
-        />
-        <Card>
-          <CardHeader>
-            <CardTitle>Unable to load dashboard</CardTitle>
-            <CardDescription>{loadError}</CardDescription>
-          </CardHeader>
-        </Card>
-      </>
-    )
-  }
-
+  const summary = await getDashboardSummary(user, { chartRangeDays })
   const { metrics, canViewFinancials } = summary
 
   return (
     <>
       <PageHeader
         title="Dashboard"
-        description={`Overview for ${summary.organizationName} · ${formatDashboardHeadingDate()}`}
+        description={`Overview for ${summary.organizationName} · ${formatDashboardHeadingDate(new Date(summary.generatedAt), user.organizationTimezone)}`}
       />
 
       <LowStockAlert
@@ -204,6 +174,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
       <div className="mt-6 grid gap-4 xl:grid-cols-2">
         <RecentPurchasesTable purchases={summary.recentPurchases} />
+        <RecentReceiptsTable receipts={summary.recentReceipts} />
+      </div>
+
+      <div className="mt-6 grid gap-4 xl:grid-cols-2">
+        <RecentAdjustmentsTable adjustments={summary.recentAdjustments} />
         <RecentReturnsTable returns={summary.recentReturns} />
       </div>
 

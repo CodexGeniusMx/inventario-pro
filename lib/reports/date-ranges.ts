@@ -1,28 +1,22 @@
 import type { ReportDatePreset } from "@/types/reports"
 
+import {
+  addZonedDays,
+  formatZonedDateLabel,
+  formatZonedHeadingDate,
+  iterateZonedDays,
+  normalizeTimeZone,
+  startOfNextZonedMonth,
+  startOfZonedDay,
+  startOfZonedMonth,
+} from "@/lib/reports/timezone"
+
 export type DateRange = {
   from: Date
   to: Date
   preset: ReportDatePreset
   label: string
-}
-
-function startOfUtcDay(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
-}
-
-function addUtcDays(date: Date, days: number): Date {
-  const next = new Date(date)
-  next.setUTCDate(next.getUTCDate() + days)
-  return next
-}
-
-function startOfUtcMonth(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1))
-}
-
-function startOfNextUtcMonth(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1))
+  timeZone: string
 }
 
 export function resolveReportDateRange(input: {
@@ -30,27 +24,31 @@ export function resolveReportDateRange(input: {
   from?: string
   to?: string
   now?: Date
+  timeZone?: string
 }): DateRange {
   const now = input.now ?? new Date()
-  const todayStart = startOfUtcDay(now)
-  const tomorrowStart = addUtcDays(todayStart, 1)
+  const timeZone = normalizeTimeZone(input.timeZone)
+  const todayStart = startOfZonedDay(now, timeZone)
+  const tomorrowStart = addZonedDays(todayStart, 1, timeZone)
   const preset = input.preset ?? "last_30_days"
 
   if (preset === "custom" && input.from && input.to) {
-    const from = new Date(input.from)
-    const to = new Date(input.to)
+    const fromDate = new Date(`${input.from}T12:00:00.000Z`)
+    const toDate = new Date(`${input.to}T12:00:00.000Z`)
 
-    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) {
-      return resolveReportDateRange({ preset: "last_30_days", now })
+    if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+      return resolveReportDateRange({ preset: "last_30_days", now, timeZone })
     }
 
-    const inclusiveTo = addUtcDays(startOfUtcDay(to), 1)
+    const from = startOfZonedDay(fromDate, timeZone)
+    const inclusiveTo = addZonedDays(startOfZonedDay(toDate, timeZone), 1, timeZone)
 
     return {
-      from: startOfUtcDay(from),
+      from,
       to: inclusiveTo,
       preset,
-      label: `${from.toISOString().slice(0, 10)} to ${to.toISOString().slice(0, 10)}`,
+      timeZone,
+      label: `${input.from} to ${input.to}`,
     }
   }
 
@@ -60,28 +58,32 @@ export function resolveReportDateRange(input: {
         from: todayStart,
         to: tomorrowStart,
         preset,
+        timeZone,
         label: "Today",
       }
     case "last_7_days":
       return {
-        from: addUtcDays(todayStart, -6),
+        from: addZonedDays(todayStart, -6, timeZone),
         to: tomorrowStart,
         preset,
+        timeZone,
         label: "Last 7 days",
       }
     case "this_month":
       return {
-        from: startOfUtcMonth(now),
-        to: startOfNextUtcMonth(now),
+        from: startOfZonedMonth(now, timeZone),
+        to: startOfNextZonedMonth(now, timeZone),
         preset,
+        timeZone,
         label: "This month",
       }
     case "last_30_days":
     default:
       return {
-        from: addUtcDays(todayStart, -29),
+        from: addZonedDays(todayStart, -29, timeZone),
         to: tomorrowStart,
         preset: "last_30_days",
+        timeZone,
         label: "Last 30 days",
       }
   }
@@ -95,22 +97,23 @@ export function percentChange(current: number, previous: number): number | null 
   return ((current - previous) / previous) * 100
 }
 
-export function formatChartDayLabel(dateIso: string): string {
-  const date = new Date(`${dateIso}T00:00:00.000Z`)
+export function formatChartDayLabel(dateIso: string, timeZone = "UTC"): string {
+  const [year, month, day] = dateIso.split("-").map(Number)
 
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  })
+  if (!year || !month || !day) {
+    return dateIso
+  }
+
+  return formatZonedDateLabel(year, month, day, timeZone)
 }
 
-export function formatDashboardHeadingDate(now = new Date()): string {
-  return now.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  })
+export function formatDashboardHeadingDate(
+  now = new Date(),
+  timeZone = "UTC"
+): string {
+  return formatZonedHeadingDate(now, timeZone)
+}
+
+export function buildChartDayKeys(from: Date, to: Date, timeZone: string) {
+  return iterateZonedDays(from, to, timeZone)
 }

@@ -93,7 +93,9 @@ export type ProductReportRow = {
   variantName: string
   sku: string
   unitsSold: number
+  returnUnits: number
   netRevenue: number
+  returnRevenue: number
   quantityOnHand: number
   stockStatus: string | null
   lastMovementAt: string | null
@@ -134,6 +136,6 @@ export const REPORT_DEFINITIONS: Array<{
   {
     slug: "products",
     title: "Products report",
-    description: "Top sellers, low stock, out of stock, and inactive movement highlights.",
+    description: "Top sellers, returns, low stock, and out-of-stock variants.",
   },
 ]

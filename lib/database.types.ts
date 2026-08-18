@@ -1692,6 +1692,8 @@ export type Database = {
           net_revenue: number
           product_name: string
           product_variant_id: string
+          return_revenue: number
+          return_units: number
           sku: string
           units_sold: number
           variant_name: string

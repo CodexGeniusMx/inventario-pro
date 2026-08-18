@@ -70,6 +70,24 @@ export type SalesChartPoint = {
   salesCount: number
 }
 
+export type RecentPurchaseReceiptActivity = {
+  id: string
+  documentNumber: string
+  purchaseOrderNumber: string
+  warehouseName: string
+  itemCount: number
+  receivedAt: string
+}
+
+export type RecentAdjustmentActivity = {
+  id: string
+  documentNumber: string
+  adjustmentType: string
+  warehouseName: string
+  itemCount: number
+  createdAt: string
+}
+
 export type RecentPurchaseActivity = {
   id: string
   documentNumber: string
@@ -97,6 +115,8 @@ export type DashboardSummary = {
   salesChart: SalesChartPoint[]
   salesChartRangeDays: 7 | 30
   recentPurchases: RecentPurchaseActivity[]
+  recentReceipts: RecentPurchaseReceiptActivity[]
+  recentAdjustments: RecentAdjustmentActivity[]
   recentReturns: RecentReturnActivity[]
   canViewFinancials: boolean
   organizationName: string

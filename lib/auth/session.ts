@@ -35,7 +35,8 @@ async function loadAuthenticatedUser(): Promise<AuthenticatedUser | null> {
         organizations (
           id,
           name,
-          slug
+          slug,
+          timezone
         )
       `
     )
@@ -85,6 +86,7 @@ async function loadAuthenticatedUser(): Promise<AuthenticatedUser | null> {
     organizationId: profile.organization_id,
     organizationName: organization.name,
     organizationSlug: organization.slug,
+    organizationTimezone: organization.timezone,
     role: profile.role,
     branchId: profile.branch_id,
     isActive: profile.is_active,

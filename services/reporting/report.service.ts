@@ -1,5 +1,6 @@
 import type { AuthenticatedUser } from "@/lib/auth/types"
 import type { Database } from "@/lib/database.types"
+import { logSalesReportRpcFailure } from "@/lib/reports/log-query-error"
 import { resolveReportDateRange } from "@/lib/reports/date-ranges"
 import type { ParsedReportFilters } from "@/lib/validations/report.schema"
 import { createClient } from "@/lib/supabase/server"
@@ -43,10 +44,13 @@ export async function getSalesReport(
   user: AuthenticatedUser,
   filters: ParsedReportFilters
 ): Promise<{ summary: SalesReportSummary; rows: SalesReportRow[] }> {
-  const range = resolveReportDateRange(filters)
+  const range = resolveReportDateRange({
+    ...filters,
+    timeZone: user.organizationTimezone,
+  })
   const supabase = await createClient()
 
-  let summaryQuery = supabase.rpc("report_sales_summary", {
+  const summaryQuery = supabase.rpc("report_sales_summary", {
     p_organization_id: user.organizationId,
     p_from: range.from.toISOString(),
     p_to: range.to.toISOString(),
@@ -85,10 +89,22 @@ export async function getSalesReport(
     await Promise.all([summaryQuery, salesQuery])
 
   if (summaryError) {
+    logSalesReportRpcFailure("report_sales_summary.sales_report", summaryError, {
+      rpc: "report_sales_summary",
+      organizationId: user.organizationId,
+      from: range.from.toISOString(),
+      to: range.to.toISOString(),
+    })
     throw summaryError
   }
 
   if (salesError) {
+    logSalesReportRpcFailure("sales.list.sales_report", salesError, {
+      query: "sales",
+      organizationId: user.organizationId,
+      from: range.from.toISOString(),
+      to: range.to.toISOString(),
+    })
     throw salesError
   }
 
@@ -228,7 +244,10 @@ export async function getMovementReport(
   user: AuthenticatedUser,
   filters: ParsedReportFilters
 ): Promise<MovementReportRow[]> {
-  const range = resolveReportDateRange(filters)
+  const range = resolveReportDateRange({
+    ...filters,
+    timeZone: user.organizationTimezone,
+  })
   const supabase = await createClient()
 
   let query = supabase
@@ -251,7 +270,7 @@ export async function getMovementReport(
         profiles!inventory_movements_created_by_fkey ( full_name ),
         sales ( document_number ),
         purchase_receipts ( document_number ),
-        returns ( document_number ),
+        returns!inventory_movements_return_id_fkey ( document_number ),
         stock_adjustments ( document_number )
       `
     )
@@ -303,7 +322,10 @@ export async function getPurchaseReport(
   user: AuthenticatedUser,
   filters: ParsedReportFilters
 ): Promise<PurchaseReportRow[]> {
-  const range = resolveReportDateRange(filters)
+  const range = resolveReportDateRange({
+    ...filters,
+    timeZone: user.organizationTimezone,
+  })
   const supabase = await createClient()
 
   let query = supabase
@@ -379,7 +401,10 @@ export async function getProductReport(
   user: AuthenticatedUser,
   filters: ParsedReportFilters
 ): Promise<ProductReportRow[]> {
-  const range = resolveReportDateRange(filters)
+  const range = resolveReportDateRange({
+    ...filters,
+    timeZone: user.organizationTimezone,
+  })
   const supabase = await createClient()
 
   const [{ data: topProducts, error: topError }, { data: inventoryRows, error: inventoryError }] =
@@ -437,7 +462,9 @@ export async function getProductReport(
     variant_name: string
     sku: string
     units_sold: number | null
+    return_units: number | null
     net_revenue: number | null
+    return_revenue: number | null
   }>) {
     const inventory = inventoryMap.get(product.product_variant_id)
 
@@ -447,7 +474,9 @@ export async function getProductReport(
       variantName: product.variant_name,
       sku: product.sku,
       unitsSold: Number(product.units_sold ?? 0),
+      returnUnits: Number(product.return_units ?? 0),
       netRevenue: Number(product.net_revenue ?? 0),
+      returnRevenue: Number(product.return_revenue ?? 0),
       quantityOnHand: inventory?.quantityOnHand ?? 0,
       stockStatus: inventory?.stockStatus ?? null,
       lastMovementAt: inventory?.lastMovementAt ?? null,
@@ -469,7 +498,9 @@ export async function getProductReport(
         variantName: inventory.variantName,
         sku: inventory.sku,
         unitsSold: 0,
+        returnUnits: 0,
         netRevenue: 0,
+        returnRevenue: 0,
         quantityOnHand: inventory.quantityOnHand,
         stockStatus: inventory.stockStatus,
         lastMovementAt: inventory.lastMovementAt,

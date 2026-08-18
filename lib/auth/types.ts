@@ -14,6 +14,7 @@ export type AuthenticatedUser = {
   organizationId: string
   organizationName: string
   organizationSlug: string
+  organizationTimezone: string
   role: AppRole
   branchId: string | null
   isActive: boolean
