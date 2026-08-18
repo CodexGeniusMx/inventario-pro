@@ -5,7 +5,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { formatCurrency, formatNumber } from "@/lib/format"
-import type { TopProduct } from "@/lib/mock/dashboard"
+import type { TopProduct } from "@/types/dashboard"
 
 type TopProductsTableProps = {
   products: TopProduct[]

@@ -4,8 +4,8 @@ import Link from "next/link"
 import { AlertTriangle } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
-import { Button, LinkButton, buttonVariants } from "@/components/ui/button"
-import type { LowStockProduct } from "@/lib/mock/dashboard"
+import { Button, LinkButton } from "@/components/ui/button"
+import type { LowStockProduct } from "@/types/dashboard"
 
 type LowStockAlertProps = {
   lowStockCount: number
@@ -46,12 +46,9 @@ export function LowStockAlert({
         <Badge className="border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-100">
           Action needed
         </Badge>
-        <Link
-          href="/inventory"
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
+        <LinkButton href="/inventory" variant="outline" size="sm">
           View inventory
-        </Link>
+        </LinkButton>
       </div>
     </div>
   )
@@ -69,12 +66,12 @@ export function QuickActions({ className }: QuickActionsProps) {
         <LinkButton href="/sales/new" size="sm">
           New sale
         </LinkButton>
-        <Button variant="outline" size="sm" isDisabled>
+        <LinkButton href="/purchases" size="sm" variant="outline">
           Receive PO
-        </Button>
-        <Button variant="outline" size="sm" isDisabled>
+        </LinkButton>
+        <LinkButton href="/inventory/adjustments/new" size="sm" variant="outline">
           Adjust stock
-        </Button>
+        </LinkButton>
         <Link href="/reports">
           <Button variant="outline" size="sm">
             View reports

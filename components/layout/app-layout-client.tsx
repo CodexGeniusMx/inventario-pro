@@ -90,6 +90,10 @@ function getPageTitle(pathname: string): string {
     return "Return detail"
   }
 
+  if (/^\/reports\/[^/]+$/.test(pathname)) {
+    return "Report detail"
+  }
+
   const match = Object.entries(pageTitles).find(([path]) =>
     pathname.startsWith(`${path}/`)
   )

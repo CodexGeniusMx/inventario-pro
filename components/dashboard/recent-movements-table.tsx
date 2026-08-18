@@ -7,31 +7,39 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { formatRelativeTime } from "@/lib/format"
-import type { InventoryMovement } from "@/lib/mock/dashboard"
+import type { RecentInventoryMovement } from "@/types/dashboard"
 
-const movementLabels: Record<InventoryMovement["type"], string> = {
+const movementLabels: Record<RecentInventoryMovement["type"], string> = {
   sale: "Sale",
   purchase_receipt: "Receipt",
-  adjustment: "Adjustment",
+  adjustment_increase: "Adjust +",
+  adjustment_decrease: "Adjust -",
   damage: "Damage",
+  loss: "Loss",
   sale_return: "Return",
   initial_stock: "Initial",
+  transfer_in: "Transfer in",
+  transfer_out: "Transfer out",
 }
 
 const movementVariants: Record<
-  InventoryMovement["type"],
+  RecentInventoryMovement["type"],
   "default" | "secondary" | "destructive" | "outline"
 > = {
   sale: "outline",
   purchase_receipt: "default",
-  adjustment: "secondary",
+  adjustment_increase: "secondary",
+  adjustment_decrease: "secondary",
   damage: "destructive",
+  loss: "destructive",
   sale_return: "outline",
   initial_stock: "secondary",
+  transfer_in: "default",
+  transfer_out: "outline",
 }
 
 type RecentMovementsTableProps = {
-  movements: InventoryMovement[]
+  movements: RecentInventoryMovement[]
 }
 
 export function RecentMovementsTable({ movements }: RecentMovementsTableProps) {
@@ -92,7 +100,7 @@ export function RecentMovementsTable({ movements }: RecentMovementsTableProps) {
                     {movement.user}
                   </td>
                   <td className="px-4 py-2 text-right text-xs text-muted-foreground">
-                    {formatRelativeTime(movement.createdAt)}
+                    {formatRelativeTime(new Date(movement.createdAt))}
                   </td>
                 </tr>
               ))}

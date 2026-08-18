@@ -1575,6 +1575,23 @@ export type Database = {
           },
         ]
       }
+      v_inventory_valuation: {
+        Row: {
+          inventory_value: number | null
+          organization_id: string | null
+          product_id: string | null
+          product_name: string | null
+          product_status: Database["public"]["Enums"]["product_status"] | null
+          product_variant_id: string | null
+          quantity_on_hand: number | null
+          sku: string | null
+          unit_cost: number | null
+          variant_name: string | null
+          warehouse_id: string | null
+          warehouse_name: string | null
+        }
+        Relationships: []
+      }
       v_low_stock_items: {
         Row: {
           barcode: string | null
@@ -1633,6 +1650,52 @@ export type Database = {
           p_warehouse_id: string
         }
         Returns: string
+      }
+      report_sales_by_day: {
+        Args: {
+          p_from: string
+          p_organization_id: string
+          p_to: string
+        }
+        Returns: {
+          day: string
+          net_revenue: number
+          sales_count: number
+        }[]
+      }
+      report_sales_summary: {
+        Args: {
+          p_from: string
+          p_organization_id: string
+          p_to: string
+        }
+        Returns: {
+          discount_total: number
+          estimated_cogs: number
+          estimated_gross_profit: number
+          gross_revenue: number
+          net_revenue: number
+          return_revenue: number
+          return_units: number
+          sales_count: number
+          units_sold: number
+        }[]
+      }
+      report_top_products: {
+        Args: {
+          p_from: string
+          p_limit?: number
+          p_organization_id: string
+          p_to: string
+        }
+        Returns: {
+          net_revenue: number
+          product_name: string
+          product_variant_id: string
+          sku: string
+          units_sold: number
+          variant_name: string
+        }[]
       }
       process_return: { Args: { p_created_by: string; p_idempotency_key?: string; p_lines: Json; p_notes?: string; p_organization_id: string; p_reason: string; p_sale_id: string }; Returns: string }
       get_user_organization_id: { Args: never; Returns: string }

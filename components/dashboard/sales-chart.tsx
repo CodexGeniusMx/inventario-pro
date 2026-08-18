@@ -5,22 +5,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import type { SalesChartPoint } from "@/lib/mock/dashboard"
+import type { SalesChartPoint } from "@/types/dashboard"
 import { formatCompactCurrency } from "@/lib/format"
 
 type SalesChartProps = {
   data: SalesChartPoint[]
+  rangeDays: 7 | 30
+  description?: string
 }
 
-export function SalesChart({ data }: SalesChartProps) {
+export function SalesChart({ data, rangeDays, description }: SalesChartProps) {
   const maxSales = Math.max(...data.map((point) => point.sales))
   const chartHeight = 160
 
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>Sales this week</CardTitle>
-        <CardDescription>Daily completed sales · Aug 10–16, 2026</CardDescription>
+        <CardTitle>Sales trend</CardTitle>
+        <CardDescription>
+          {description ?? `Daily net revenue · last ${rangeDays} days`}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div

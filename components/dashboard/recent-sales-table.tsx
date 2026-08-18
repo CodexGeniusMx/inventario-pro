@@ -7,21 +7,25 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { formatCurrency, formatRelativeTime } from "@/lib/format"
-import type { RecentSale } from "@/lib/mock/dashboard"
+import type { RecentSale } from "@/types/dashboard"
 
 const saleStatusLabels: Record<RecentSale["status"], string> = {
   completed: "Completed",
   draft: "Draft",
   partially_returned: "Partial return",
+  fully_returned: "Fully returned",
+  cancelled: "Cancelled",
 }
 
 const saleStatusVariants: Record<
   RecentSale["status"],
-  "default" | "secondary" | "outline"
+  "default" | "secondary" | "outline" | "destructive"
 > = {
   completed: "default",
   draft: "secondary",
   partially_returned: "outline",
+  fully_returned: "outline",
+  cancelled: "destructive",
 }
 
 type RecentSalesTableProps = {
@@ -73,7 +77,7 @@ export function RecentSalesTable({ sales }: RecentSalesTableProps) {
                     </Badge>
                   </td>
                   <td className="px-4 py-2 text-right text-xs text-muted-foreground">
-                    {formatRelativeTime(sale.createdAt)}
+                    {formatRelativeTime(new Date(sale.createdAt))}
                   </td>
                 </tr>
               ))}
