@@ -93,7 +93,7 @@ export const KEEP_AI_EXPANDED_CASES: KeepAiEvaluationCase[] = [
       { role: "user", content: "cuantos ps5 tenemos" },
       { role: "assistant", content: "PlayStation 5 (PS5-001): 7 uds." },
     ],
-    expectedTool: "getProductStock",
+    expectedTool: "getProductSalePrice",
     expectedEntity: "PlayStation 5",
   },
   {
@@ -157,7 +157,7 @@ export const KEEP_AI_EXPANDED_CASES: KeepAiEvaluationCase[] = [
   { id: "perm-4", group: "permissions", metric: "permissions", input: "cuantos ps5 tenemos", expectedTool: "getProductStock", permissionRole: "manager" },
   { id: "perm-5", group: "permissions", metric: "permissions", input: "cuantos ps5 tenemos", expectedTool: "getProductStock", permissionRole: "warehouse" },
   { id: "perm-6", group: "permissions", metric: "permissions", input: "cuantos ps5 tenemos", expectedTool: "getProductStock", permissionRole: "read_only" },
-  { id: "perm-7", group: "permissions", metric: "permissions", input: "cuanto nos cuesta el ps5", expectedTool: "getProductStock", permissionRole: "seller", expectDenied: true, notes: "Cost hidden for seller" },
+  { id: "perm-7", group: "permissions", metric: "permissions", input: "cuanto nos cuesta el ps5", expectedTool: "getProductAcquisitionCost", permissionRole: "seller", expectDenied: true, notes: "Cost hidden for seller" },
   { id: "perm-8", group: "permissions", metric: "permissions", input: "cuanto ganamos este mes", expectedTool: "getSalesSummary", permissionRole: "warehouse", expectDenied: true },
   { id: "perm-9", group: "permissions", metric: "permissions", input: "cuanto ganamos hoy", expectedTool: "getSalesSummary", permissionRole: "warehouse", expectDenied: true },
   { id: "perm-10", group: "permissions", metric: "permissions", input: "que llego hoy", expectedTool: "getPendingPurchases", permissionRole: "warehouse" },

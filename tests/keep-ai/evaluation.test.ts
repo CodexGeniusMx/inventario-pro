@@ -168,6 +168,73 @@ describe("Keep AI permission messaging", () => {
   })
 })
 
+describe("Keep AI price regression (manual QA)", () => {
+  it("A) inventory list then price follow-up resolves sale price", async () => {
+    const user = userWithRole("seller")
+    const history = [
+      { role: "user" as const, content: "que tenemos a la venta" },
+      {
+        role: "assistant" as const,
+        content: "PlayStation 5 — 6 unidades.",
+      },
+    ]
+
+    const detection = detectFallbackTool("precio?", history)
+    expect(detection.tool).toBe("getProductSalePrice")
+    expect(String(detection.args.query ?? "").toLowerCase()).toContain("playstation")
+
+    const response = await runKeepAiFallback(user, "precio?", history)
+    expect(response.denied).not.toBe(true)
+    expect(response.message.toLowerCase()).toMatch(/precio de venta|11,999|11999/)
+  })
+
+  it("B) cuanto cuesta el ps5 returns sale price", async () => {
+    const user = userWithRole("seller")
+    const detection = detectFallbackTool("cuanto cuesta el ps5", [])
+    expect(detection.tool).toBe("getProductSalePrice")
+
+    const response = await runKeepAiFallback(user, "cuanto cuesta el ps5", [])
+    expect(response.denied).not.toBe(true)
+    expect(response.message.toLowerCase()).toMatch(/precio de venta|11,999|11999/)
+  })
+
+  it("C) qué precio tiene playstation 5 returns sale price", async () => {
+    const user = userWithRole("admin")
+    const detection = detectFallbackTool("qué precio tiene playstation 5", [])
+    expect(detection.tool).toBe("getProductSalePrice")
+
+    const response = await runKeepAiFallback(user, "qué precio tiene playstation 5", [])
+    expect(response.message.toLowerCase()).toMatch(/precio de venta|11,999|11999/)
+  })
+
+  it("D) seller acquisition cost is permission denied", async () => {
+    const seller = userWithRole("seller")
+    const detection = detectFallbackTool("cuánto nos cuesta el ps5", [])
+    expect(detection.tool).toBe("getProductAcquisitionCost")
+
+    const response = await runKeepAiFallback(seller, "cuánto nos cuesta el ps5", [])
+    expect(response.denied).toBe(true)
+    expect(response.message.toLowerCase()).toMatch(/permiso|costo de compra/)
+  })
+
+  it("E) admin acquisition cost is allowed", async () => {
+    const admin = userWithRole("admin")
+    const response = await runKeepAiFallback(admin, "cuánto nos cuesta el ps5", [])
+    expect(response.denied).not.toBe(true)
+    expect(response.message.toLowerCase()).toMatch(/costo de compra|9,000|9000/)
+  })
+
+  it("F) profit query enforces financial permission", async () => {
+    const seller = userWithRole("seller")
+    const detection = detectFallbackTool("cuánto le ganamos al ps5", [])
+    expect(detection.tool).toBe("getProductProfit")
+
+    const response = await runKeepAiFallback(seller, "cuánto le ganamos al ps5", [])
+    expect(response.denied).toBe(true)
+    expect(response.message.toLowerCase()).toMatch(/permiso|utilidad|margen/)
+  })
+})
+
 describe("Keep AI role permissions (server-side helpers)", () => {
   it("seller cannot view costs or profit", () => {
     const seller = userWithRole("seller")

@@ -1,4 +1,5 @@
 import { AppError } from "@/lib/errors/app-error"
+import { mapInvitationErrorMessage } from "@/lib/errors/invitation-error-mapping"
 import { ZodError } from "zod"
 
 export type ActionResult<T> =
@@ -41,6 +42,28 @@ export function toActionResult(error: unknown): ActionResult<never> {
         code: "VALIDATION_ERROR",
         message: "Revisa el formulario e inténtalo de nuevo.",
         fieldErrors,
+      },
+    }
+  }
+
+  const mappedMessage = mapInvitationErrorMessage(error)
+
+  if (mappedMessage) {
+    const err = error as { code?: string; status?: number }
+    const code =
+      err.code === "23505"
+        ? "CONFLICT"
+        : err.code === "email_exists"
+          ? "CONFLICT"
+          : err.status === 429
+            ? "CONFLICT"
+            : "UNKNOWN"
+
+    return {
+      success: false,
+      error: {
+        code,
+        message: mappedMessage,
       },
     }
   }

@@ -23,14 +23,22 @@ const queryErrorMessages: Record<string, string> = {
   inactive: "Tu cuenta ha sido desactivada.",
 }
 
+const querySuccessMessages: Record<string, string> = {
+  activated: "Cuenta activada. Ya puedes iniciar sesión.",
+}
+
 export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryError = searchParams.get("error")
+  const queryMessage = searchParams.get("message")
   const redirectTo = searchParams.get("redirectTo") ?? "/dashboard"
 
   const [formError, setFormError] = useState<string | null>(
     queryError ? (queryErrorMessages[queryError] ?? null) : null
+  )
+  const [formMessage, setFormMessage] = useState<string | null>(
+    queryMessage ? (querySuccessMessages[queryMessage] ?? null) : null
   )
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -38,6 +46,7 @@ export function LoginForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setFormError(null)
+    setFormMessage(null)
     setFieldErrors({})
     setIsSubmitting(true)
 
@@ -93,6 +102,15 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+          {formMessage && (
+            <div
+              className="rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm text-foreground"
+              role="status"
+            >
+              {formMessage}
+            </div>
+          )}
+
           {formError && (
             <div
               className="rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"

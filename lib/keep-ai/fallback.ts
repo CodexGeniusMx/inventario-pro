@@ -1,5 +1,5 @@
 import type { AuthenticatedUser } from "@/lib/auth/types"
-import { canViewProductCosts, hasPermission } from "@/lib/auth/permissions"
+import { hasPermission } from "@/lib/auth/permissions"
 import { executeKeepAiTool } from "@/lib/keep-ai/tools/executor"
 import type {
   KeepAiConversationMessage,
@@ -13,7 +13,55 @@ function normalize(text: string): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\?+$/g, "")
     .trim()
+}
+
+function extractProductNamesFromAssistant(content: string): string[] {
+  const names = new Set<string>()
+
+  for (const line of content.split("\n")) {
+    const parenMatch = line.match(
+      /([A-Za-zÁÉÍÓÚáéíóú0-9][^(\n:]+?)\s*\([^)]+\)\s*:/
+    )
+    if (parenMatch?.[1]) {
+      names.add(parenMatch[1].trim())
+      continue
+    }
+
+    const dashMatch = line.match(
+      /^([A-Za-zÁÉÍÓÚáéíóú0-9][^—:\n]+?)\s*—\s*\d+/u
+    )
+    if (dashMatch?.[1]) {
+      names.add(dashMatch[1].trim())
+    }
+  }
+
+  return Array.from(names)
+}
+
+function isAcquisitionCostQuery(text: string): boolean {
+  return /nos cuesta|costo de compra|cuanto pagamos|pagamos por|costo de adquisicion|costo nos/.test(
+    text
+  )
+}
+
+function isProfitQuery(text: string): boolean {
+  return /utilidad|margen|le ganamos|cuanto ganamos|cuanto le ganamos|profit|que utilidad/.test(
+    text
+  )
+}
+
+function isSalePriceQuery(text: string): boolean {
+  return /precio|cuanto cuesta|cuanto cuestan|a cuanto|a cuánto|que precio|qué precio|vale para el cliente|cuanto vale|cuánto vale/.test(
+    text
+  )
+}
+
+function isStockQuery(text: string): boolean {
+  return /cuantos|cuantas|hay|stock|existencias|queda|quedan|kedan|todavia tenemos|disponible/.test(
+    text
+  )
 }
 
 export function resolveProductFromContext(
@@ -39,6 +87,11 @@ export function resolveProductFromContext(
   for (let index = history.length - 1; index >= 0; index -= 1) {
     const entry = history[index]
     if (entry.role === "assistant") {
+      const names = extractProductNamesFromAssistant(entry.content)
+      if (names.length === 1) {
+        return names[0]!
+      }
+
       const match = entry.content.match(/([A-Za-zÁÉÍÓÚáéíóú0-9][^(\n:]+)\s*\(/)
       if (match?.[1]) {
         return match[1].trim()
@@ -287,22 +340,52 @@ export function detectFallbackTool(
   const productQuery =
     contextualProduct ??
     text
-      .replace(/^(cuantos|cuantas|hay|stock del|stock de|stock de la|existencias de|busca|buscar|cuanto queda de|cuanto kedan del)\s+/g, "")
+      .replace(
+        /^(cuantos|cuantas|hay|stock del|stock de|stock de la|existencias de|busca|buscar|cuanto queda de|cuanto kedan del|cuanto cuesta|cuanto cuestan|que precio tiene|qué precio tiene|precio del|precio de|cuanto nos cuesta|cual es el costo de|cuál es el costo de|cuanto le ganamos|cuánto le ganamos)\s+/g,
+        ""
+      )
       .replace(/\?/g, "")
       .trim()
 
+  if (productQuery && isProfitQuery(text)) {
+    return {
+      tool: "getProductProfit",
+      args: { query: productQuery },
+      intent: "stock_query",
+    }
+  }
+
+  if (productQuery && isAcquisitionCostQuery(text)) {
+    return {
+      tool: "getProductAcquisitionCost",
+      args: { query: productQuery },
+      intent: "stock_query",
+    }
+  }
+
+  if (productQuery && isSalePriceQuery(text)) {
+    return {
+      tool: "getProductSalePrice",
+      args: { query: productQuery },
+      intent: "stock_query",
+    }
+  }
+
+  if (productQuery && isStockQuery(text)) {
+    return {
+      tool: "getProductStock",
+      args: { query: productQuery },
+      intent: "stock_query",
+    }
+  }
+
   if (
     productQuery &&
-    /cuantos|cuantas|hay|stock|existencias|ps5|play|pley|producto|sku|barcode|cuanto cuestan|precio|queda|quedan|kedan|todavia tenemos|todavía tenemos|cuanto nos cuesta|cuanto cuesta|costo del|costo de/.test(
-      text
-    )
+    /ps5|play|pley|producto|sku|barcode/.test(text)
   ) {
     return {
       tool: "getProductStock",
-      args: {
-        query: productQuery,
-        includeCost: /cuesta|costo|costar|nos cuesta/.test(text),
-      },
+      args: { query: productQuery },
       intent: "stock_query",
     }
   }
@@ -376,7 +459,8 @@ function formatToolResult(
       .slice(0, 8)
       .map(
         (item) =>
-          `${item.product_name} ${item.variant_name ?? ""} (${item.sku}): ${item.quantity_on_hand} uds.`
+          `${item.product_name} ${item.variant_name ?? ""}`.trim() +
+          ` — ${item.quantity_on_hand} unidades.`
       )
       .join("\n")
 
@@ -387,7 +471,13 @@ function formatToolResult(
     }
   }
 
-  if (toolName === "getProductStock" || toolName === "searchProducts") {
+  if (
+    toolName === "getProductStock" ||
+    toolName === "searchProducts" ||
+    toolName === "getProductSalePrice" ||
+    toolName === "getProductAcquisitionCost" ||
+    toolName === "getProductProfit"
+  ) {
     const matches = (payload.matches as Array<Record<string, unknown>>) ?? []
     if (matches.length === 0) {
       return {
@@ -407,32 +497,46 @@ function formatToolResult(
       }
     }
 
-    const item = matches[0]
-    const lines = [
-      `${item.product_name} ${item.variant_name ?? ""} (${item.sku}): ${item.quantity_on_hand} uds.`,
-    ]
+    const item = matches[0]!
+    const productLabel = `${item.product_name}${item.variant_name ? ` ${item.variant_name}` : ""}`.trim()
+    const currency = user.organizationBaseCurrency
 
-    if (canViewProductCosts(user) && item.cost_price != null) {
-      lines.push(
-        `Costo: ${Number(item.cost_price).toLocaleString("es-MX", {
+    if (toolName === "getProductSalePrice") {
+      return {
+        intent: "stock_query",
+        message: `El precio de venta de ${productLabel} es ${Number(item.sale_price).toLocaleString("es-MX", {
           style: "currency",
-          currency: user.organizationBaseCurrency,
-        })} ${user.organizationBaseCurrency}`
-      )
+          currency,
+        })} ${currency}.`,
+        links: [{ label: "Ver producto", href: "/products" }],
+      }
     }
 
-    if (item.sale_price != null) {
-      lines.push(
-        `Precio: ${Number(item.sale_price).toLocaleString("es-MX", {
+    if (toolName === "getProductAcquisitionCost") {
+      return {
+        intent: "stock_query",
+        message: `El costo de compra de ${productLabel} es ${Number(item.cost_price).toLocaleString("es-MX", {
           style: "currency",
-          currency: user.organizationBaseCurrency,
-        })} ${user.organizationBaseCurrency}`
-      )
+          currency,
+        })} ${currency}.`,
+        links: [{ label: "Ver producto", href: "/products" }],
+      }
+    }
+
+    if (toolName === "getProductProfit") {
+      return {
+        intent: "stock_query",
+        message: `La utilidad estimada de ${productLabel} es ${Number(item.margin_amount).toLocaleString("es-MX", {
+          style: "currency",
+          currency,
+        })} ${currency} (${item.margin_percent}% sobre el precio de venta).`,
+        links: [{ label: "Ver reportes", href: "/reports/sales" }],
+      }
     }
 
     return {
       intent: "stock_query",
-      message: lines.join("\n"),
+      message: `${productLabel} (${item.sku}): ${item.quantity_on_hand} uds.`,
       links: [{ label: "Ver inventario", href: "/inventory" }],
     }
   }

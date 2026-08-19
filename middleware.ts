@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { logAuthRedirect } from "@/lib/auth/redirect-log"
 import { updateSession } from "@/lib/supabase/middleware"
 
-const PUBLIC_PATHS = ["/login", "/accept-invite"]
+const PUBLIC_PATHS = ["/login", "/accept-invite", "/auth/callback"]
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(

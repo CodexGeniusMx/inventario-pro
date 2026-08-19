@@ -8,8 +8,13 @@ import { ProductsFilters } from "@/components/products/products-filters"
 import { ProductsTable } from "@/components/products/products-table"
 import { LinkButton } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { hasPermission } from "@/lib/auth/permissions"
-import { requirePermission } from "@/lib/auth/session"
+import {
+  canCreateProducts,
+  canViewProductCosts,
+  canViewProducts,
+} from "@/lib/auth/product-permissions"
+import { requireUser } from "@/lib/auth/session"
+import { ForbiddenError } from "@/lib/errors/app-error"
 import { productListFiltersSchema } from "@/lib/validations/product.schema"
 import { listCategories } from "@/services/catalog/category.service"
 import { listProducts } from "@/services/catalog/product.service"
@@ -27,8 +32,14 @@ function FiltersFallback() {
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
-  const user = await requirePermission("products", "read")
-  const canWrite = hasPermission(user, "products", "write")
+  const user = await requireUser()
+
+  if (!canViewProducts(user)) {
+    throw new ForbiddenError("No tienes permiso para consultar productos.")
+  }
+
+  const canCreate = canCreateProducts(user)
+  const canViewCost = canViewProductCosts(user)
   const rawParams = await searchParams
 
   const parsedFilters = productListFiltersSchema.safeParse({
@@ -68,7 +79,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         title="Productos"
         description="Administra tu catálogo de productos, variantes, SKU y códigos de barras."
         actions={
-          canWrite ? (
+          canCreate ? (
             <LinkButton href="/products/new">
               <Plus data-icon="inline-start" />
               Nuevo producto
@@ -89,9 +100,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       {loadError ? (
         <ProductsErrorState message={loadError} />
       ) : products.length === 0 ? (
-        <ProductsEmptyState canWrite={canWrite} hasFilters={hasFilters} />
+        <ProductsEmptyState canWrite={canCreate} hasFilters={hasFilters} />
       ) : (
-        <ProductsTable products={products} />
+        <ProductsTable products={products} canViewCost={canViewCost} />
       )}
     </>
   )

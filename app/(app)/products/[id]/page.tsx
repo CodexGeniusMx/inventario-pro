@@ -4,6 +4,7 @@ import { Pencil } from "lucide-react"
 
 import { ArchiveProductButton } from "@/components/products/archive-product-button"
 import { ProductStatusBadge } from "@/components/products/product-status-badge"
+import { ReactivateProductButton } from "@/components/products/reactivate-product-button"
 import { PageHeader } from "@/components/layout/page-header"
 import { LinkButton } from "@/components/ui/button"
 import {
@@ -21,28 +22,55 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { hasPermission } from "@/lib/auth/permissions"
-import { requirePermission } from "@/lib/auth/session"
-import { NotFoundError } from "@/lib/errors/app-error"
+import {
+  canArchiveProducts,
+  canEditProducts,
+  canViewProducts,
+} from "@/lib/auth/product-permissions"
+import { requireUser } from "@/lib/auth/session"
+import {
+  resolveVariantCostPrice,
+  resolveVariantSalePrice,
+  variantInheritsCost,
+  variantInheritsSalePrice,
+} from "@/lib/catalog/product-pricing"
+import { ForbiddenError, NotFoundError } from "@/lib/errors/app-error"
 import { formatCurrency, formatDateTime } from "@/lib/format"
 import { getProductById } from "@/services/catalog/product.service"
+import { listOrganizationUnits, resolveUnitLabel } from "@/services/catalog/unit.service"
 
 type ProductDetailPageProps = {
   params: Promise<{ id: string }>
 }
 
-function displayPrice(
-  override: number | null,
-  fallback: number
-): number {
-  return override ?? fallback
+function VariantPriceCell({
+  value,
+  inherits,
+}: {
+  value: number
+  inherits: boolean
+}) {
+  return (
+    <div className="text-right">
+      <p className="tabular-nums">{formatCurrency(value)}</p>
+      {inherits && (
+        <p className="text-xs text-muted-foreground">(Hereda del producto)</p>
+      )}
+    </div>
+  )
 }
 
 export default async function ProductDetailPage({
   params,
 }: ProductDetailPageProps) {
-  const user = await requirePermission("products", "read")
-  const canWrite = hasPermission(user, "products", "write")
+  const user = await requireUser()
+
+  if (!canViewProducts(user)) {
+    throw new ForbiddenError("No tienes permiso para consultar productos.")
+  }
+
+  const canEdit = canEditProducts(user)
+  const canArchive = canArchiveProducts(user)
   const { id } = await params
 
   let product
@@ -57,22 +85,32 @@ export default async function ProductDetailPage({
     throw error
   }
 
+  const units = await listOrganizationUnits(user)
+  const unitLabel = resolveUnitLabel(units, product.unitOfMeasure)
+
   return (
     <>
       <PageHeader
         title={product.name}
         description={product.description ?? "Detalles del producto y variantes."}
         actions={
-          canWrite && product.status === "active" ? (
+          canArchive && product.status === "archived" ? (
+            <ReactivateProductButton
+              productId={product.id}
+              productName={product.name}
+            />
+          ) : canEdit && product.status === "active" ? (
             <div className="flex items-center gap-2">
               <LinkButton href={`/products/${product.id}/edit`} variant="outline">
                 <Pencil data-icon="inline-start" />
                 Editar
               </LinkButton>
-              <ArchiveProductButton
-                productId={product.id}
-                productName={product.name}
-              />
+              {canArchive && (
+                <ArchiveProductButton
+                  productId={product.id}
+                  productName={product.name}
+                />
+              )}
             </div>
           ) : undefined
         }
@@ -98,16 +136,18 @@ export default async function ProductDetailPage({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Unidad de medida</p>
-              <p className="font-medium">{product.unitOfMeasure}</p>
+              <p className="font-medium">{unitLabel}</p>
             </div>
+            {product.canViewCost && product.baseCostPrice !== undefined && (
+              <div>
+                <p className="text-sm text-muted-foreground">Costo de compra</p>
+                <p className="font-medium tabular-nums">
+                  {formatCurrency(product.baseCostPrice)}
+                </p>
+              </div>
+            )}
             <div>
-              <p className="text-sm text-muted-foreground">Precio de costo base</p>
-              <p className="font-medium tabular-nums">
-                {formatCurrency(product.baseCostPrice)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Precio de venta base</p>
+              <p className="text-sm text-muted-foreground">Precio de venta</p>
               <p className="font-medium tabular-nums">
                 {formatCurrency(product.baseSalePrice)}
               </p>
@@ -156,11 +196,13 @@ export default async function ProductDetailPage({
               </TableHead>
               <TableHead id="sku">SKU</TableHead>
               <TableHead id="barcode">Código de barras</TableHead>
-              <TableHead id="cost" className="text-right">
-                Costo
-              </TableHead>
+              {product.canViewCost && (
+                <TableHead id="cost" className="text-right">
+                  Costo
+                </TableHead>
+              )}
               <TableHead id="salePrice" className="text-right">
-                Precio de venta
+                Precio
               </TableHead>
               <TableHead id="reorderPoint" className="text-right">
                 Punto de reorden
@@ -168,33 +210,50 @@ export default async function ProductDetailPage({
               <TableHead id="status">Estado</TableHead>
             </TableHeader>
             <TableBody>
-              {product.variants.map((variant) => (
-                <TableRow key={variant.id}>
-                  <TableCell>{variant.name}</TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {variant.sku}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {variant.barcode ?? "—"}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatCurrency(
-                      displayPrice(variant.costPrice, product.baseCostPrice)
+              {product.variants.map((variant) => {
+                const inheritsCost = variantInheritsCost(variant.costPrice)
+                const inheritsSale = variantInheritsSalePrice(variant.salePrice)
+                const resolvedCost = resolveVariantCostPrice(
+                  variant.costPrice,
+                  product.baseCostPrice ?? 0
+                )
+                const resolvedSale = resolveVariantSalePrice(
+                  variant.salePrice,
+                  product.baseSalePrice
+                )
+
+                return (
+                  <TableRow key={variant.id}>
+                    <TableCell>{variant.name}</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {variant.sku}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {variant.barcode ?? "—"}
+                    </TableCell>
+                    {product.canViewCost && (
+                      <TableCell>
+                        <VariantPriceCell
+                          value={resolvedCost}
+                          inherits={inheritsCost}
+                        />
+                      </TableCell>
                     )}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {formatCurrency(
-                      displayPrice(variant.salePrice, product.baseSalePrice)
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {variant.reorderPoint}
-                  </TableCell>
-                  <TableCell>
-                    {variant.isActive ? "Activo" : "Inactivo"}
-                  </TableCell>
-                </TableRow>
-              ))}
+                    <TableCell>
+                      <VariantPriceCell
+                        value={resolvedSale}
+                        inherits={inheritsSale}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {variant.reorderPoint}
+                    </TableCell>
+                    <TableCell>
+                      {variant.isActive ? "Activo" : "Inactivo"}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </CardContent>

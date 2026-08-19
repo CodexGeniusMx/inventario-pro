@@ -10,13 +10,20 @@ export const movementTypeLabels: Record<MovementType, string> = {
   initial_stock: "Stock inicial",
   purchase_receipt: "Recepción de compra",
   sale: "Venta",
-  sale_return: "Devolución de venta",
-  adjustment_increase: "Ajuste (+)",
-  adjustment_decrease: "Ajuste (−)",
+  sale_return: "Devolución",
+  adjustment_increase: "Ajuste de entrada",
+  adjustment_decrease: "Ajuste de salida",
   damage: "Daño",
   loss: "Pérdida",
   transfer_in: "Transferencia entrante",
   transfer_out: "Transferencia saliente",
+}
+
+export function formatMovementTypeLabel(type: string): string {
+  return (
+    movementTypeLabels[type as MovementType] ??
+    type.replace(/_/g, " ")
+  )
 }
 
 export const adjustmentTypeLabels: Record<StockAdjustmentType, string> = {

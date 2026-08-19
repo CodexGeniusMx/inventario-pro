@@ -172,16 +172,72 @@ export async function executeKeepAiToolStub(
   }
 
   if (toolName === "getProductStock" || toolName === "searchProducts") {
-    if (args.includeCost && !canViewProductCosts(user)) {
-        return {
-          toolName,
-          success: false,
-          denied: true,
-          error: "No tienes permiso para consultar costos de productos.",
+    const matches = resolveProductMatches(query)
+    return {
+      toolName,
+      success: true,
+      data: { query, matches, ambiguous: matches.length > 1 },
+    }
+  }
+
+  if (toolName === "getProductSalePrice") {
+    const matches = resolveProductMatches(query)
+    return {
+      toolName,
+      success: true,
+      data: { query, matches, ambiguous: matches.length > 1 },
+    }
+  }
+
+  if (toolName === "getProductAcquisitionCost") {
+    if (!canViewProductCosts(user)) {
+      return {
+        toolName,
+        success: false,
+        denied: true,
+        error: "No tienes permiso para consultar el costo de compra.",
       }
     }
 
     const matches = resolveProductMatches(query)
+    return {
+      toolName,
+      success: true,
+      data: { query, matches, ambiguous: matches.length > 1 },
+    }
+  }
+
+  if (toolName === "getProductProfit") {
+    if (!canViewFinancialProfit(user)) {
+      return {
+        toolName,
+        success: false,
+        denied: true,
+        error: "No tienes permiso para consultar utilidad o margen.",
+      }
+    }
+
+    if (!canViewProductCosts(user)) {
+      return {
+        toolName,
+        success: false,
+        denied: true,
+        error: "No tienes permiso para consultar el costo de compra.",
+      }
+    }
+
+    const matches = resolveProductMatches(query).map((item) => ({
+      ...item,
+      margin_amount: Number(item.sale_price) - Number(item.cost_price),
+      margin_percent: Number(
+        (
+          ((Number(item.sale_price) - Number(item.cost_price)) /
+            Number(item.sale_price)) *
+          100
+        ).toFixed(1)
+      ),
+    }))
+
     return {
       toolName,
       success: true,

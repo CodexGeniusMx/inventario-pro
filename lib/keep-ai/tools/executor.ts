@@ -59,6 +59,39 @@ async function searchInventoryRows(
   return data ?? []
 }
 
+function stripSensitivePricing(
+  user: AuthenticatedUser,
+  rows: Array<Record<string, unknown>>,
+  options: { includeCost?: boolean; includeSalePrice?: boolean } = {}
+) {
+  return rows.map((row) => {
+    const next = { ...(row as Record<string, unknown>) }
+    if (!options.includeCost || !canViewProductCosts(user)) {
+      delete next.cost_price
+    }
+    if (!options.includeSalePrice) {
+      delete next.sale_price
+    }
+    return next
+  })
+}
+
+async function resolveProductPricingMatches(
+  user: AuthenticatedUser,
+  args: ToolArgs,
+  limit = 6
+) {
+  const query = String(args.query ?? "").trim()
+  if (!query) {
+    return {
+      error: "Indica el producto que quieres consultar.",
+    }
+  }
+
+  const rows = await searchInventoryRows(user, query, limit)
+  return { query, matches: rows, ambiguous: rows.length > 1 }
+}
+
 function canViewInventory(user: AuthenticatedUser): boolean {
   return (
     hasPermission(user, "inventory", "view") ||
@@ -81,6 +114,12 @@ export async function executeKeepAiTool(
         return runListInventory(user, args)
       case "getProductStock":
         return runGetProductStock(user, args)
+      case "getProductSalePrice":
+        return runGetProductSalePrice(user, args)
+      case "getProductAcquisitionCost":
+        return runGetProductAcquisitionCost(user, args)
+      case "getProductProfit":
+        return runGetProductProfit(user, args)
       case "getLowStock":
         return runLowStock(user, false)
       case "getOutOfStock":
@@ -139,7 +178,10 @@ async function runSearchProducts(
   return {
     toolName: "searchProducts",
     success: true,
-    data: { query, matches: rows },
+    data: {
+      query,
+      matches: stripSensitivePricing(user, rows as unknown as Array<Record<string, unknown>>),
+    },
   }
 }
 
@@ -206,15 +248,157 @@ async function runGetProductStock(
     }
   }
 
-  const rows = await searchInventoryRows(user, query, 6)
+  const resolved = await resolveProductPricingMatches(user, args, 6)
+  if ("error" in resolved) {
+    return {
+      toolName: "getProductStock",
+      success: false,
+      error: resolved.error,
+    }
+  }
 
   return {
     toolName: "getProductStock",
     success: true,
     data: {
-      query,
-      matches: rows,
-      ambiguous: rows.length > 1,
+      query: resolved.query,
+      matches: stripSensitivePricing(
+        user,
+        resolved.matches as unknown as Array<Record<string, unknown>>
+      ),
+      ambiguous: resolved.ambiguous,
+    },
+  }
+}
+
+async function runGetProductSalePrice(
+  user: AuthenticatedUser,
+  args: ToolArgs
+): Promise<KeepAiToolResult> {
+  if (!canViewInventory(user)) {
+    return {
+      toolName: "getProductSalePrice",
+      success: false,
+      denied: true,
+      error: "No tienes permiso para consultar productos.",
+    }
+  }
+
+  const resolved = await resolveProductPricingMatches(user, args, 6)
+  if ("error" in resolved) {
+    return {
+      toolName: "getProductSalePrice",
+      success: false,
+      error: resolved.error,
+    }
+  }
+
+  return {
+    toolName: "getProductSalePrice",
+    success: true,
+    data: {
+      query: resolved.query,
+      matches: stripSensitivePricing(user, resolved.matches as unknown as Array<Record<string, unknown>>, {
+        includeSalePrice: true,
+      }),
+      ambiguous: resolved.ambiguous,
+    },
+  }
+}
+
+async function runGetProductAcquisitionCost(
+  user: AuthenticatedUser,
+  args: ToolArgs
+): Promise<KeepAiToolResult> {
+  if (!canViewInventory(user)) {
+    return {
+      toolName: "getProductAcquisitionCost",
+      success: false,
+      denied: true,
+      error: "No tienes permiso para consultar productos.",
+    }
+  }
+
+  if (!canViewProductCosts(user)) {
+    return {
+      toolName: "getProductAcquisitionCost",
+      success: false,
+      denied: true,
+      error: "No tienes permiso para consultar el costo de compra.",
+    }
+  }
+
+  const resolved = await resolveProductPricingMatches(user, args, 6)
+  if ("error" in resolved) {
+    return {
+      toolName: "getProductAcquisitionCost",
+      success: false,
+      error: resolved.error,
+    }
+  }
+
+  return {
+    toolName: "getProductAcquisitionCost",
+    success: true,
+    data: {
+      query: resolved.query,
+      matches: stripSensitivePricing(user, resolved.matches as unknown as Array<Record<string, unknown>>, {
+        includeCost: true,
+      }),
+      ambiguous: resolved.ambiguous,
+    },
+  }
+}
+
+async function runGetProductProfit(
+  user: AuthenticatedUser,
+  args: ToolArgs
+): Promise<KeepAiToolResult> {
+  if (!canViewFinancialProfit(user)) {
+    return {
+      toolName: "getProductProfit",
+      success: false,
+      denied: true,
+      error: "No tienes permiso para consultar utilidad o margen.",
+    }
+  }
+
+  if (!canViewProductCosts(user)) {
+    return {
+      toolName: "getProductProfit",
+      success: false,
+      denied: true,
+      error: "No tienes permiso para consultar el costo de compra.",
+    }
+  }
+
+  const resolved = await resolveProductPricingMatches(user, args, 6)
+  if ("error" in resolved) {
+    return {
+      toolName: "getProductProfit",
+      success: false,
+      error: resolved.error,
+    }
+  }
+
+  const matches = (resolved.matches as unknown as Array<Record<string, unknown>>).map((row) => {
+    const salePrice = Number(row.sale_price ?? 0)
+    const costPrice = Number(row.cost_price ?? 0)
+    return {
+      ...row,
+      margin_amount: salePrice - costPrice,
+      margin_percent:
+        salePrice > 0 ? Number((((salePrice - costPrice) / salePrice) * 100).toFixed(1)) : 0,
+    }
+  })
+
+  return {
+    toolName: "getProductProfit",
+    success: true,
+    data: {
+      query: resolved.query,
+      matches,
+      ambiguous: resolved.ambiguous,
     },
   }
 }

@@ -53,6 +53,7 @@ export async function runGlobalSearch(
         .select("id, name, product_variants(id, sku, barcode)")
         .eq("organization_id", user.organizationId)
         .is("deleted_at", null)
+        .eq("status", "active")
         .ilike("name", pattern)
         .limit(perTypeLimit),
     ])

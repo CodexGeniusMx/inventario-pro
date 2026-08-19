@@ -1,7 +1,19 @@
 import type { PostgrestError } from "@supabase/supabase-js"
 
+import {
+  assertCanArchiveProducts,
+  assertCanCreateProducts,
+  assertCanEditProducts,
+  assertCanViewProductCosts,
+  assertCanViewProducts,
+  canViewProductCosts,
+} from "@/lib/auth/product-permissions"
 import type { AuthenticatedUser } from "@/lib/auth/types"
-import { ConflictError, NotFoundError } from "@/lib/errors/app-error"
+import {
+  resolveVariantCostPrice,
+  resolveVariantSalePrice,
+} from "@/lib/catalog/product-pricing"
+import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/errors/app-error"
 import { createClient } from "@/lib/supabase/server"
 import type {
   CreateProductInput,
@@ -170,8 +182,11 @@ export async function listProducts(
   user: AuthenticatedUser,
   filters: ProductListFilters = {}
 ): Promise<ProductListItem[]> {
+  assertCanViewProducts(user)
+
   const supabase = await createClient()
   const status = filters.status ?? "active"
+  const includeCost = canViewProductCosts(user)
 
   let productIds: string[] | null = null
 
@@ -235,10 +250,12 @@ export async function listProducts(
     const variants = product.product_variants ?? []
     const activeVariants = variants.filter((variant) => !variant.deleted_at)
     const lead = primaryVariant(variants)
-    const costPrice = lead?.cost_price ?? product.base_cost_price
-    const salePrice = lead?.sale_price ?? product.base_sale_price
+    const salePrice = resolveVariantSalePrice(
+      lead?.sale_price ?? null,
+      product.base_sale_price
+    )
 
-    return {
+    const item: ProductListItem = {
       id: product.id,
       name: product.name,
       status: product.status,
@@ -246,11 +263,19 @@ export async function listProducts(
       variantCount: activeVariants.length,
       primarySku: lead?.sku ?? null,
       primaryBarcode: lead?.barcode ?? null,
-      costPrice,
       salePrice,
       unitOfMeasure: product.unit_of_measure,
       updatedAt: product.updated_at,
     }
+
+    if (includeCost) {
+      item.costPrice = resolveVariantCostPrice(
+        lead?.cost_price ?? null,
+        product.base_cost_price
+      )
+    }
+
+    return item
   })
 }
 
@@ -258,7 +283,10 @@ export async function getProductById(
   user: AuthenticatedUser,
   productId: string
 ): Promise<ProductDetail> {
+  assertCanViewProducts(user)
+
   const supabase = await createClient()
+  const includeCost = canViewProductCosts(user)
 
   const { data, error } = await supabase
     .from("products")
@@ -316,8 +344,9 @@ export async function getProductById(
     description: data.description,
     status: data.status,
     unitOfMeasure: data.unit_of_measure,
-    baseCostPrice: data.base_cost_price,
+    baseCostPrice: includeCost ? data.base_cost_price : undefined,
     baseSalePrice: data.base_sale_price,
+    canViewCost: includeCost,
     categoryId: data.category_id,
     categoryName: data.categories?.name ?? null,
     createdAt: data.created_at,
@@ -330,6 +359,12 @@ export async function createProduct(
   user: AuthenticatedUser,
   input: CreateProductInput
 ): Promise<{ id: string }> {
+  assertCanCreateProducts(user)
+
+  if (!canViewProductCosts(user) && input.baseCostPrice > 0) {
+    throw new ForbiddenError("No tienes permiso para establecer costos de compra.")
+  }
+
   const supabase = await createClient()
   const organizationId = user.organizationId
 
@@ -396,6 +431,8 @@ export async function updateProduct(
   productId: string,
   input: UpdateProductInput
 ): Promise<{ id: string }> {
+  assertCanEditProducts(user)
+
   const supabase = await createClient()
   const organizationId = user.organizationId
 
@@ -403,6 +440,39 @@ export async function updateProduct(
 
   if (existing.status === "archived") {
     throw new ConflictError("Los productos archivados no se pueden editar.")
+  }
+
+  let baseCostPrice = input.baseCostPrice
+  let variantCostPrice = input.variant.costPrice ?? null
+
+  if (!canViewProductCosts(user)) {
+    const { data: rawProduct, error: rawProductError } = await supabase
+      .from("products")
+      .select("base_cost_price")
+      .eq("id", productId)
+      .eq("organization_id", organizationId)
+      .single()
+
+    if (rawProductError) {
+      throw rawProductError
+    }
+
+    baseCostPrice = rawProduct.base_cost_price
+
+    const variantId = input.variant.id ?? existing.variants[0]?.id
+    if (variantId) {
+      const { data: rawVariant, error: rawVariantError } = await supabase
+        .from("product_variants")
+        .select("cost_price")
+        .eq("id", variantId)
+        .single()
+
+      if (rawVariantError) {
+        throw rawVariantError
+      }
+
+      variantCostPrice = rawVariant.cost_price
+    }
   }
 
   const excludeVariantId = input.variant.id ?? existing.variants[0]?.id
@@ -424,7 +494,7 @@ export async function updateProduct(
       description: input.description ?? null,
       category_id: input.categoryId ?? null,
       unit_of_measure: input.unitOfMeasure.trim(),
-      base_cost_price: input.baseCostPrice,
+      base_cost_price: baseCostPrice,
       base_sale_price: input.baseSalePrice,
     })
     .eq("id", productId)
@@ -446,7 +516,7 @@ export async function updateProduct(
       name: input.variant.name.trim(),
       sku: input.variant.sku.trim(),
       barcode: input.variant.barcode ?? null,
-      cost_price: input.variant.costPrice ?? null,
+      cost_price: variantCostPrice,
       sale_price: input.variant.salePrice ?? null,
       reorder_point: input.variant.reorderPoint,
     })
@@ -473,9 +543,10 @@ export async function archiveProduct(
   user: AuthenticatedUser,
   productId: string
 ): Promise<void> {
+  assertCanArchiveProducts(user)
+
   const supabase = await createClient()
   const organizationId = user.organizationId
-  const now = new Date().toISOString()
 
   const existing = await getProductById(user, productId)
 
@@ -487,7 +558,6 @@ export async function archiveProduct(
     .from("products")
     .update({
       status: "archived",
-      deleted_at: now,
     })
     .eq("id", productId)
     .eq("organization_id", organizationId)
@@ -500,11 +570,52 @@ export async function archiveProduct(
     .from("product_variants")
     .update({
       is_active: false,
-      deleted_at: now,
     })
     .eq("product_id", productId)
     .eq("organization_id", organizationId)
     .is("deleted_at", null)
+
+  if (variantError) {
+    throw variantError
+  }
+}
+
+export async function reactivateProduct(
+  user: AuthenticatedUser,
+  productId: string
+): Promise<void> {
+  assertCanArchiveProducts(user)
+
+  const supabase = await createClient()
+  const organizationId = user.organizationId
+
+  const existing = await getProductById(user, productId)
+
+  if (existing.status === "active") {
+    return
+  }
+
+  const { error: productError } = await supabase
+    .from("products")
+    .update({
+      status: "active",
+      deleted_at: null,
+    })
+    .eq("id", productId)
+    .eq("organization_id", organizationId)
+
+  if (productError) {
+    throw productError
+  }
+
+  const { error: variantError } = await supabase
+    .from("product_variants")
+    .update({
+      is_active: true,
+      deleted_at: null,
+    })
+    .eq("product_id", productId)
+    .eq("organization_id", organizationId)
 
   if (variantError) {
     throw variantError

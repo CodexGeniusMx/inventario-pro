@@ -2,10 +2,26 @@ import type { AuthenticatedUser } from "@/lib/auth/types"
 import { hasPermission, isAdmin } from "@/lib/auth/permissions"
 import type { AppRole } from "@/lib/auth/types"
 import { INVITABLE_ROLES } from "@/lib/auth/roles"
-import { ForbiddenError, ValidationError } from "@/lib/errors/app-error"
+import {
+  mapCompleteInvitationError,
+  resolveInvitationFailureMessage,
+} from "@/lib/auth/invite-activation"
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from "@/lib/errors/app-error"
+import {
+  logInvitationDbError,
+  logInviteUserError,
+} from "@/lib/errors/invitation-error-mapping"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { createClient } from "@/lib/supabase/server"
 import type { OrganizationUser, UserInvitation } from "@/types/settings"
+import type { User } from "@supabase/supabase-js"
+
+const INVITATION_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 function assertUserManagement(user: AuthenticatedUser): void {
   if (
@@ -17,6 +33,170 @@ function assertUserManagement(user: AuthenticatedUser): void {
   }
 
   throw new ForbiddenError()
+}
+
+function getSiteUrl(): string {
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+}
+
+function getInvitationRedirectUrl(invitationId: string): string {
+  return `${getSiteUrl()}/auth/callback?invitation=${invitationId}`
+}
+
+function getInvitationExpiryDate(): string {
+  return new Date(Date.now() + INVITATION_TTL_MS).toISOString()
+}
+
+async function findAuthUserByEmail(
+  email: string
+): Promise<User | null> {
+  const admin = createAdminClient()
+  const normalizedEmail = email.trim().toLowerCase()
+  let page = 1
+
+  while (true) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 })
+
+    if (error) {
+      throw error
+    }
+
+    const match = data.users.find(
+      (authUser) => authUser.email?.trim().toLowerCase() === normalizedEmail
+    )
+
+    if (match) {
+      return match
+    }
+
+    if (data.users.length < 200) {
+      return null
+    }
+
+    page += 1
+  }
+}
+
+async function assertNoActiveProfileForAuthUser(
+  authUserId: string
+): Promise<void> {
+  const supabase = await createClient()
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", authUserId)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  if (profile) {
+    throw new ConflictError(
+      "Este correo ya pertenece a un usuario activo de la organización."
+    )
+  }
+}
+
+async function removeOrphanInvitedAuthUser(email: string): Promise<void> {
+  const authUser = await findAuthUserByEmail(email)
+
+  if (!authUser) {
+    return
+  }
+
+  await assertNoActiveProfileForAuthUser(authUser.id)
+
+  const admin = createAdminClient()
+  const { error } = await admin.auth.admin.deleteUser(authUser.id)
+
+  if (error) {
+    throw error
+  }
+}
+
+type InvitationEmailPayload = {
+  id: string
+  email: string
+  role: AppRole
+  organizationId: string
+}
+
+async function sendInvitationEmail(
+  invitation: InvitationEmailPayload,
+  options: { allowRecreateAuthUser?: boolean } = {}
+): Promise<void> {
+  const admin = createAdminClient()
+  const inviteOptions = {
+    redirectTo: getInvitationRedirectUrl(invitation.id),
+    data: {
+      invitation_id: invitation.id,
+      organization_id: invitation.organizationId,
+      role: invitation.role,
+    },
+  }
+
+  const { error } = await admin.auth.admin.inviteUserByEmail(
+    invitation.email,
+    inviteOptions
+  )
+
+  if (!error) {
+    return
+  }
+
+  logInviteUserError(error)
+
+  if (!options.allowRecreateAuthUser) {
+    throw error
+  }
+
+  const authUser = await findAuthUserByEmail(invitation.email)
+
+  if (!authUser) {
+    throw error
+  }
+
+  await assertNoActiveProfileForAuthUser(authUser.id)
+  await admin.auth.admin.deleteUser(authUser.id)
+
+  const { error: retryError } = await admin.auth.admin.inviteUserByEmail(
+    invitation.email,
+    inviteOptions
+  )
+
+  if (retryError) {
+    logInviteUserError(retryError)
+    throw retryError
+  }
+}
+
+async function getPendingInvitationForOrganization(
+  user: AuthenticatedUser,
+  invitationId: string
+) {
+  const supabase = await createClient()
+
+  const { data: invitation, error } = await supabase
+    .from("user_invitations")
+    .select("id, email, role, status, organization_id, warehouse_id, expires_at")
+    .eq("id", invitationId)
+    .eq("organization_id", user.organizationId)
+    .maybeSingle()
+
+  if (error) {
+    throw error
+  }
+
+  if (!invitation) {
+    throw new NotFoundError("Invitación no encontrada.")
+  }
+
+  if (invitation.status !== "pending") {
+    throw new ValidationError("Solo se pueden gestionar invitaciones pendientes.")
+  }
+
+  return invitation
 }
 
 export async function listOrganizationUsers(
@@ -122,7 +302,6 @@ export async function inviteOrganizationUser(
   }
 
   const supabase = await createClient()
-  const admin = createAdminClient()
 
   const { data: invitation, error: insertError } = await supabase
     .from("user_invitations")
@@ -138,26 +317,27 @@ export async function inviteOrganizationUser(
     .single()
 
   if (insertError) {
+    logInvitationDbError(insertError)
     throw insertError
   }
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+  try {
+    await sendInvitationEmail({
+      id: invitation.id,
+      email: invitation.email,
+      role: invitation.role,
+      organizationId: user.organizationId,
+    })
+  } catch (inviteError) {
+    const { error: rollbackError } = await supabase
+      .from("user_invitations")
+      .delete()
+      .eq("id", invitation.id)
 
-  const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-    email,
-    {
-      redirectTo: `${siteUrl}/accept-invite?invitation=${invitation.id}`,
-      data: {
-        invitation_id: invitation.id,
-        organization_id: user.organizationId,
-        role: input.role,
-      },
+    if (rollbackError) {
+      logInvitationDbError(rollbackError)
     }
-  )
 
-  if (inviteError) {
-    await supabase.from("user_invitations").delete().eq("id", invitation.id)
     throw inviteError
   }
 
@@ -182,10 +362,101 @@ export async function completeInvitation(
   })
 
   if (error) {
-    throw error
+    if (error.message.includes("invitation_not_found")) {
+      throw mapCompleteInvitationError(
+        `invitation_not_found:${await resolveInvitationFailureMessage(invitationId)}`
+      )
+    }
+
+    throw mapCompleteInvitationError(error.message)
   }
 
   return data as string
+}
+
+export async function cancelOrganizationInvitation(
+  user: AuthenticatedUser,
+  invitationId: string
+): Promise<void> {
+  assertUserManagement(user)
+
+  const invitation = await getPendingInvitationForOrganization(
+    user,
+    invitationId
+  )
+  const supabase = await createClient()
+
+  const { data: revokedInvitation, error: revokeError } = await supabase
+    .from("user_invitations")
+    .update({
+      status: "revoked",
+      revoked_at: new Date().toISOString(),
+    })
+    .eq("id", invitation.id)
+    .eq("organization_id", user.organizationId)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle()
+
+  if (revokeError) {
+    logInvitationDbError(revokeError)
+    throw revokeError
+  }
+
+  if (!revokedInvitation) {
+    throw new ValidationError("La invitación ya no está pendiente.")
+  }
+
+  await removeOrphanInvitedAuthUser(invitation.email)
+}
+
+export async function resendOrganizationInvitation(
+  user: AuthenticatedUser,
+  invitationId: string
+): Promise<void> {
+  assertUserManagement(user)
+
+  const invitation = await getPendingInvitationForOrganization(
+    user,
+    invitationId
+  )
+  const supabase = await createClient()
+
+  const authUser = await findAuthUserByEmail(invitation.email)
+
+  if (authUser) {
+    await assertNoActiveProfileForAuthUser(authUser.id)
+  }
+
+  const { data: updatedInvitation, error: updateError } = await supabase
+    .from("user_invitations")
+    .update({
+      expires_at: getInvitationExpiryDate(),
+    })
+    .eq("id", invitation.id)
+    .eq("organization_id", user.organizationId)
+    .eq("status", "pending")
+    .select("id, email, role, organization_id")
+    .maybeSingle()
+
+  if (updateError) {
+    logInvitationDbError(updateError)
+    throw updateError
+  }
+
+  if (!updatedInvitation) {
+    throw new ValidationError("La invitación ya no está pendiente.")
+  }
+
+  await sendInvitationEmail(
+    {
+      id: updatedInvitation.id,
+      email: updatedInvitation.email,
+      role: updatedInvitation.role,
+      organizationId: updatedInvitation.organization_id,
+    },
+    { allowRecreateAuthUser: true }
+  )
 }
 
 export async function updateUserRole(

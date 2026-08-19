@@ -14,9 +14,10 @@ import type { ProductListItem } from "@/types/catalog"
 
 type ProductsTableProps = {
   products: ProductListItem[]
+  canViewCost?: boolean
 }
 
-export function ProductsTable({ products }: ProductsTableProps) {
+export function ProductsTable({ products, canViewCost = false }: ProductsTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">
       <Table aria-label="Productos">
@@ -34,9 +35,11 @@ export function ProductsTable({ products }: ProductsTableProps) {
           <TableHead id="barcode" className="hidden xl:table-cell">
             Código de barras
           </TableHead>
-          <TableHead id="cost" className="text-right">
-            Costo
-          </TableHead>
+          {canViewCost && (
+            <TableHead id="cost" className="text-right">
+              Costo
+            </TableHead>
+          )}
           <TableHead id="salePrice" className="text-right">
             Precio de venta
           </TableHead>
@@ -58,7 +61,7 @@ export function ProductsTable({ products }: ProductsTableProps) {
                   {product.name}
                 </Link>
                 <p className="text-xs text-muted-foreground">
-                  per {product.unitOfMeasure}
+                  por {product.unitOfMeasure}
                 </p>
               </TableCell>
               <TableCell className="text-muted-foreground">
@@ -73,9 +76,11 @@ export function ProductsTable({ products }: ProductsTableProps) {
               <TableCell className="hidden font-mono text-xs xl:table-cell">
                 {product.primaryBarcode ?? "—"}
               </TableCell>
-              <TableCell className="text-right tabular-nums">
-                {formatCurrency(product.costPrice)}
-              </TableCell>
+              {canViewCost && (
+                <TableCell className="text-right tabular-nums">
+                  {formatCurrency(product.costPrice ?? 0)}
+                </TableCell>
+              )}
               <TableCell className="text-right tabular-nums">
                 {formatCurrency(product.salePrice)}
               </TableCell>

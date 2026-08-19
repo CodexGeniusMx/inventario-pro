@@ -9,11 +9,14 @@ import {
 } from "@/lib/errors/action-result"
 import { requireUsersAccessOrRedirect } from "@/lib/auth/session"
 import {
+  cancelOrganizationInvitation,
   inviteOrganizationUser,
+  resendOrganizationInvitation,
   setUserActiveState,
   updateUserRole,
 } from "@/services/users/user.service"
 import {
+  invitationActionSchema,
   inviteUserSchema,
   updateUserRoleSchema,
   updateUserStatusSchema,
@@ -58,6 +61,34 @@ export async function updateUserStatusAction(
     return actionSuccess({
       message: parsed.isActive ? "Usuario activado." : "Usuario desactivado.",
     })
+  } catch (error) {
+    return toActionResult(error)
+  }
+}
+
+export async function cancelInvitationAction(
+  input: unknown
+): Promise<ActionResult<{ message: string }>> {
+  try {
+    const user = await requireUsersAccessOrRedirect()
+    const parsed = invitationActionSchema.parse(input)
+    await cancelOrganizationInvitation(user, parsed.invitationId)
+    revalidatePath("/users")
+    return actionSuccess({ message: "Invitación cancelada." })
+  } catch (error) {
+    return toActionResult(error)
+  }
+}
+
+export async function resendInvitationAction(
+  input: unknown
+): Promise<ActionResult<{ message: string }>> {
+  try {
+    const user = await requireUsersAccessOrRedirect()
+    const parsed = invitationActionSchema.parse(input)
+    await resendOrganizationInvitation(user, parsed.invitationId)
+    revalidatePath("/users")
+    return actionSuccess({ message: "Invitación reenviada." })
   } catch (error) {
     return toActionResult(error)
   }

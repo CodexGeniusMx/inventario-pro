@@ -2,9 +2,8 @@ import { requireUsersAccessOrRedirect } from "@/lib/auth/session"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { InviteUserForm } from "@/components/users/invite-user-form"
+import { PendingInvitationsList } from "@/components/users/pending-invitations-list"
 import { UsersTable } from "@/components/users/users-table"
-import { getRoleLabel } from "@/lib/auth/roles"
-import { invitationStatusLabel } from "@/lib/i18n/status-labels"
 import {
   listOrganizationUsers,
   listPendingInvitations,
@@ -42,24 +41,8 @@ export default async function UsersPage() {
               <CardHeader>
                 <CardTitle>Invitaciones pendientes</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                {invitations.map((invitation) => (
-                  <div
-                    key={invitation.id}
-                    className="flex items-center justify-between rounded-xl border px-3 py-2"
-                  >
-                    <div>
-                      <p className="font-medium">{invitation.email}</p>
-                      <p className="text-muted-foreground">
-                        {getRoleLabel(invitation.role)} · expira{" "}
-                        {new Date(invitation.expiresAt).toLocaleDateString("es-MX")}
-                      </p>
-                    </div>
-                    <span className="text-muted-foreground">
-                      {invitationStatusLabel(invitation.status)}
-                    </span>
-                  </div>
-                ))}
+              <CardContent>
+                <PendingInvitationsList invitations={invitations} />
               </CardContent>
             </Card>
           )}

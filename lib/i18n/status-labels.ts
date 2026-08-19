@@ -27,6 +27,7 @@ const INVITATION_STATUS: Record<string, string> = {
   pending: "Pendiente",
   accepted: "Aceptada",
   expired: "Expirada",
+  revoked: "Cancelada",
   cancelled: "Cancelada",
 }
 

@@ -742,3 +742,31 @@ Detailed specifications will be maintained in companion documents:
 - `/docs/automations.md` — n8n workflow catalog
 
 This architecture document is the top-level reference. Module-specific details belong in those companion files as they are developed.
+
+---
+
+## 18. Future: Redis (not implemented)
+
+Redis may later be used for:
+
+- Dashboard and report caching
+- Keep AI rate limiting
+- API rate limiting
+- Temporary AI conversation state
+- Notification and workflow queues
+- Short-lived query cache
+
+Redis must **never** become the source of truth for inventory balances, inventory movements, sales, or purchases. PostgreSQL/Supabase remains authoritative.
+
+---
+
+## 19. Session handling audit (Supabase Auth)
+
+The application uses Supabase Auth session handling as designed:
+
+- **Access JWT** — validated server-side via `createClient()` and `requireUser()` helpers
+- **Refresh token** — managed by Supabase SSR cookie flow; not exposed to client JavaScript
+- **Server auth helpers** — `lib/auth/session.ts`, middleware proxy refresh
+- **No custom refresh-token system** — JWT/refresh lifecycle delegated to Supabase
+
+Tokens must not be logged or returned in API responses. No replacement of this flow is planned for the current phase.

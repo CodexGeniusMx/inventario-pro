@@ -29,3 +29,7 @@ export const updateUserStatusSchema = z.object({
   userId: z.string().uuid(),
   isActive: z.boolean(),
 })
+
+export const invitationActionSchema = z.object({
+  invitationId: z.string().uuid(),
+})

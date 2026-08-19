@@ -558,6 +558,50 @@ export type Database = {
           },
         ]
       }
+      organization_units: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_system: boolean
+          label: string
+          normalized_key: string
+          organization_id: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          label: string
+          normalized_key: string
+          organization_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_system?: boolean
+          label?: string
+          normalized_key?: string
+          organization_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_units_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_invitations: {
         Row: {
           accepted_at: string | null
@@ -1671,12 +1715,14 @@ export type Database = {
       v_inventory_status: {
         Row: {
           barcode: string | null
+          cost_price: number | null
           organization_id: string | null
           product_id: string | null
           product_name: string | null
           product_variant_id: string | null
           quantity_on_hand: number | null
           reorder_point: number | null
+          sale_price: number | null
           sku: string | null
           stock_status: string | null
           updated_at: string | null

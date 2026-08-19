@@ -19,11 +19,18 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { createProductSchema } from "@/lib/validations/product.schema"
+import { CreateCategoryDialog } from "./create-category-dialog"
+import { CreateUnitDialog } from "./create-unit-dialog"
 import type { CategoryOption, ProductDetail } from "@/types/catalog"
+import type { UnitOption } from "@/services/catalog/unit.service"
 
 type ProductFormProps = {
   mode: "create" | "edit"
   categories: CategoryOption[]
+  units: UnitOption[]
+  canViewCost: boolean
+  canManageCategories: boolean
+  canManageUnits: boolean
   product?: ProductDetail
 }
 
@@ -49,7 +56,7 @@ function getInitialState(product?: ProductDetail): FormState {
     name: product?.name ?? "",
     description: product?.description ?? "",
     categoryId: product?.categoryId ?? "",
-    unitOfMeasure: product?.unitOfMeasure ?? "unidad",
+    unitOfMeasure: product?.unitOfMeasure ?? "unit",
     baseCostPrice: product ? String(product.baseCostPrice) : "0",
     baseSalePrice: product ? String(product.baseSalePrice) : "0",
     variantName: variant?.name ?? "Predeterminado",
@@ -79,8 +86,18 @@ function mapFieldErrors(
   return mapped
 }
 
-export function ProductForm({ mode, categories, product }: ProductFormProps) {
+export function ProductForm({
+  mode,
+  categories: initialCategories,
+  units: initialUnits,
+  canViewCost,
+  canManageCategories,
+  canManageUnits,
+  product,
+}: ProductFormProps) {
   const router = useRouter()
+  const [categories, setCategories] = useState(initialCategories)
+  const [units, setUnits] = useState(initialUnits)
   const [formState, setFormState] = useState<FormState>(() =>
     getInitialState(product)
   )
@@ -210,9 +227,23 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="categoryId" className="text-sm font-medium">
-              Categoría
-            </label>
+            <div className="flex items-center justify-between gap-2">
+              <label htmlFor="categoryId" className="text-sm font-medium">
+                Categoría
+              </label>
+              {canManageCategories && (
+                <CreateCategoryDialog
+                  onCreated={(category) => {
+                    setCategories((current) =>
+                      [...current, category].sort((a, b) =>
+                        a.name.localeCompare(b.name, "es")
+                      )
+                    )
+                    updateField("categoryId", category.id)
+                  }}
+                />
+              )}
+            </div>
             <select
               id="categoryId"
               value={formState.categoryId}
@@ -232,19 +263,38 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="unitOfMeasure" className="text-sm font-medium">
-              Unidad de medida
-            </label>
-            <Input
+            <div className="flex items-center justify-between gap-2">
+              <label htmlFor="unitOfMeasure" className="text-sm font-medium">
+                Unidad de medida
+              </label>
+              {canManageUnits && (
+                <CreateUnitDialog
+                  onCreated={(unit) => {
+                    setUnits((current) =>
+                      [...current, unit].sort((a, b) =>
+                        a.label.localeCompare(b.label, "es")
+                      )
+                    )
+                    updateField("unitOfMeasure", unit.code)
+                  }}
+                />
+              )}
+            </div>
+            <select
               id="unitOfMeasure"
-              placeholder="unidad"
               value={formState.unitOfMeasure}
               onChange={(event) =>
                 updateField("unitOfMeasure", event.target.value)
               }
-              aria-invalid={Boolean(fieldError("unitOfMeasure"))}
+              className="flex h-8 w-full rounded-2xl border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
               disabled={isSubmitting}
-            />
+            >
+              {units.map((unit) => (
+                <option key={unit.id} value={unit.code}>
+                  {unit.label}
+                </option>
+              ))}
+            </select>
             {fieldError("unitOfMeasure") && (
               <p className="text-sm text-destructive">
                 {fieldError("unitOfMeasure")}
@@ -252,10 +302,14 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
             )}
           </div>
 
+          {canViewCost && (
           <div className="space-y-2">
             <label htmlFor="baseCostPrice" className="text-sm font-medium">
-              Precio de costo base
+              Costo de compra
             </label>
+            <p className="text-xs text-muted-foreground">
+              Lo que le cuesta a la empresa adquirir una unidad.
+            </p>
             <Input
               id="baseCostPrice"
               type="number"
@@ -274,11 +328,15 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
               </p>
             )}
           </div>
+          )}
 
           <div className="space-y-2">
             <label htmlFor="baseSalePrice" className="text-sm font-medium">
-              Precio de venta base
+              Precio de venta
             </label>
+            <p className="text-xs text-muted-foreground">
+              El precio al que se vende al cliente.
+            </p>
             <Input
               id="baseSalePrice"
               type="number"
@@ -364,16 +422,20 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
             )}
           </div>
 
+          {canViewCost && (
           <div className="space-y-2">
             <label htmlFor="variantCostPrice" className="text-sm font-medium">
-              Sobreescritura de costo de variante
+              Costo específico de variante (opcional)
             </label>
+            <p className="text-xs text-muted-foreground">
+              Déjalo vacío para usar el valor general del producto.
+            </p>
             <Input
               id="variantCostPrice"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Usa costo base si está vacío"
+              placeholder=""
               value={formState.variantCostPrice}
               onChange={(event) =>
                 updateField("variantCostPrice", event.target.value)
@@ -387,17 +449,21 @@ export function ProductForm({ mode, categories, product }: ProductFormProps) {
               </p>
             )}
           </div>
+          )}
 
           <div className="space-y-2">
             <label htmlFor="variantSalePrice" className="text-sm font-medium">
-              Sobreescritura de precio de variante
+              Precio específico de variante (opcional)
             </label>
+            <p className="text-xs text-muted-foreground">
+              Déjalo vacío para usar el valor general del producto.
+            </p>
             <Input
               id="variantSalePrice"
               type="number"
               min="0"
               step="0.01"
-              placeholder="Usa precio base si está vacío"
+              placeholder=""
               value={formState.variantSalePrice}
               onChange={(event) =>
                 updateField("variantSalePrice", event.target.value)

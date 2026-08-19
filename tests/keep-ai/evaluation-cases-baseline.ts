@@ -203,7 +203,7 @@ export const KEEP_AI_BASELINE_CASES: KeepAiEvaluationCase[] = [
       { role: "user", content: "cuantos ps5 tenemos" },
       { role: "assistant", content: "PlayStation 5 (PS5-001): 7 uds." },
     ],
-    expectedTool: "getProductStock",
+    expectedTool: "getProductSalePrice",
     expectedEntity: "PlayStation 5",
     baseline: true,
   },

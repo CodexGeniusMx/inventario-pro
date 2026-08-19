@@ -2,23 +2,23 @@ import { notFound, redirect } from "next/navigation"
 
 import { PageHeader } from "@/components/layout/page-header"
 import { ProductForm } from "@/components/products/product-form"
-import { hasPermission } from "@/lib/auth/permissions"
-import { requireUser } from "@/lib/auth/session"
+import {
+  canManageCategories,
+  canManageUnits,
+  canViewProductCosts,
+} from "@/lib/auth/product-permissions"
+import { requireProductPageAccess } from "@/app/actions/products"
 import { NotFoundError } from "@/lib/errors/app-error"
 import { listCategories } from "@/services/catalog/category.service"
 import { getProductById } from "@/services/catalog/product.service"
+import { listOrganizationUnits } from "@/services/catalog/unit.service"
 
 type EditProductPageProps = {
   params: Promise<{ id: string }>
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
-  const user = await requireUser()
-
-  if (!hasPermission(user, "products", "write")) {
-    redirect("/products")
-  }
-
+  const user = await requireProductPageAccess("edit")
   const { id } = await params
 
   let product
@@ -37,7 +37,10 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     redirect(`/products/${id}`)
   }
 
-  const categories = await listCategories(user)
+  const [categories, units] = await Promise.all([
+    listCategories(user),
+    listOrganizationUnits(user),
+  ])
 
   return (
     <>
@@ -45,7 +48,15 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
         title={`Editar ${product.name}`}
         description="Actualiza detalles del producto y precios de variantes. Los cambios de stock pertenecen a Inventario."
       />
-      <ProductForm mode="edit" categories={categories} product={product} />
+      <ProductForm
+        mode="edit"
+        categories={categories}
+        units={units}
+        canViewCost={canViewProductCosts(user)}
+        canManageCategories={canManageCategories(user)}
+        canManageUnits={canManageUnits(user)}
+        product={product}
+      />
     </>
   )
 }

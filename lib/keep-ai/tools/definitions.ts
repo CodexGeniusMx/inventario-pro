@@ -42,6 +42,51 @@ export const KEEP_AI_TOOL_DEFINITIONS: KeepAiToolDefinition[] = [
   {
     type: "function",
     function: {
+      name: "getProductSalePrice",
+      description:
+        "Obtiene el precio de venta al cliente de un producto. Usar para preguntas como cuánto cuesta, qué precio tiene o a cuánto lo vendemos.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Nombre, SKU o alias del producto" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "getProductAcquisitionCost",
+      description:
+        "Obtiene el costo de compra/adquisición de un producto. Requiere permiso de costos. Usar cuando preguntan cuánto nos cuesta o cuánto pagamos.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Nombre, SKU o alias del producto" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "getProductProfit",
+      description:
+        "Calcula utilidad o margen estimado de un producto. Requiere permisos financieros y de costos.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Nombre, SKU o alias del producto" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "getProductStock",
       description:
         "Obtiene existencias de un producto específico. Usar cuando el usuario pregunta cuántos hay de un producto concreto.",

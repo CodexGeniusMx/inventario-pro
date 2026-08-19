@@ -39,13 +39,15 @@ export function UsersTable({ users }: UsersTableProps) {
   return (
     <Table aria-label="Usuarios de la organización">
       <TableHeader>
-        <TableRow>
-          <TableHead>Nombre</TableHead>
-          <TableHead>Correo</TableHead>
-          <TableHead>Rol</TableHead>
-          <TableHead>Estado</TableHead>
-          <TableHead className="text-right">Acciones</TableHead>
-        </TableRow>
+        <TableHead isRowHeader id="name">
+          Nombre
+        </TableHead>
+        <TableHead id="email">Correo</TableHead>
+        <TableHead id="role">Rol</TableHead>
+        <TableHead id="status">Estado</TableHead>
+        <TableHead id="actions" className="text-right">
+          Acciones
+        </TableHead>
       </TableHeader>
       <TableBody>
         {users.map((user) => (

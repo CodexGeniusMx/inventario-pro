@@ -6,21 +6,9 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { formatMovementTypeLabel } from "@/lib/inventory/labels"
 import { formatRelativeTime } from "@/lib/format"
 import type { RecentInventoryMovement } from "@/types/dashboard"
-
-const movementLabels: Record<RecentInventoryMovement["type"], string> = {
-  sale: "Venta",
-  purchase_receipt: "Recepción",
-  adjustment_increase: "Ajuste +",
-  adjustment_decrease: "Ajuste -",
-  damage: "Daño",
-  loss: "Pérdida",
-  sale_return: "Devolución",
-  initial_stock: "Inicial",
-  transfer_in: "Transferencia entrante",
-  transfer_out: "Transferencia saliente",
-}
 
 const movementVariants: Record<
   RecentInventoryMovement["type"],
@@ -73,7 +61,7 @@ export function RecentMovementsTable({ movements }: RecentMovementsTableProps) {
                 >
                   <td className="px-4 py-2">
                     <Badge variant={movementVariants[movement.type]}>
-                      {movementLabels[movement.type]}
+                      {formatMovementTypeLabel(movement.type)}
                     </Badge>
                   </td>
                   <td className="max-w-[180px] truncate px-2 py-2">

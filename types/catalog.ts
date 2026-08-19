@@ -26,7 +26,7 @@ export type ProductListItem = {
   variantCount: number
   primarySku: string | null
   primaryBarcode: string | null
-  costPrice: number
+  costPrice?: number
   salePrice: number
   unitOfMeasure: string
   updatedAt: string
@@ -38,8 +38,9 @@ export type ProductDetail = {
   description: string | null
   status: ProductStatus
   unitOfMeasure: string
-  baseCostPrice: number
+  baseCostPrice?: number
   baseSalePrice: number
+  canViewCost: boolean
   categoryId: string | null
   categoryName: string | null
   createdAt: string

@@ -73,6 +73,8 @@ export const ROLE_PERMISSION_PRESETS: Record<
   owner: buildPermissions([
     ["products", "view"],
     ["products", "create"],
+    ["products", "edit"],
+    ["products", "archive"],
     ["products", "view_cost"],
     ["inventory", "view"],
     ["inventory", "adjust"],
@@ -88,6 +90,8 @@ export const ROLE_PERMISSION_PRESETS: Record<
   admin: buildPermissions([
     ["products", "view"],
     ["products", "create"],
+    ["products", "edit"],
+    ["products", "archive"],
     ["products", "view_cost"],
     ["inventory", "view"],
     ["purchases", "view"],
