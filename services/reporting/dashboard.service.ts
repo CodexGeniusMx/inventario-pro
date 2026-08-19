@@ -1,8 +1,15 @@
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js"
 
-import { hasPermission } from "@/lib/auth/permissions"
+import {
+  canViewPurchaseFinancials,
+  canViewReportInventoryValue,
+  canViewReportProfit,
+  canViewReportRevenue,
+} from "@/lib/auth/financial-data"
 import type { AuthenticatedUser } from "@/lib/auth/types"
 import type { Database } from "@/lib/database.types"
+import { READ } from "@/lib/db/read-models"
+import { fetchVariantDisplayMeta } from "@/lib/db/variant-meta"
 import { logQueryError, logSalesReportRpcFailure } from "@/lib/reports/log-query-error"
 import {
   buildChartDayKeys,
@@ -70,15 +77,11 @@ const RECENT_MOVEMENTS_SELECT = `
   movement_type,
   quantity,
   created_at,
+  product_variant_id,
   sale_id,
   purchase_receipt_id,
   return_id,
   stock_adjustment_id,
-  product_variants (
-    name,
-    sku,
-    products ( name )
-  ),
   profiles!inventory_movements_created_by_fkey ( full_name ),
   sales ( document_number ),
   purchase_receipts ( document_number ),
@@ -258,7 +261,11 @@ export async function getDashboardSummary(
   options: { chartRangeDays?: 7 | 30 } = {}
 ): Promise<DashboardSummary> {
   const chartRangeDays = options.chartRangeDays ?? 7
-  const canViewFinancials = hasPermission(user, "reports", "read")
+  const canViewRevenue = canViewReportRevenue(user)
+  const canViewProfit = canViewReportProfit(user)
+  const canViewInventoryValue = canViewReportInventoryValue(user)
+  const canViewFinancials = canViewRevenue
+  const canViewPurchaseTotals = canViewPurchaseFinancials(user)
   const timeZone = user.organizationTimezone
   const now = new Date()
 
@@ -338,14 +345,23 @@ export async function getDashboardSummary(
           previousMonthEnd
         )
       : Promise.resolve(EMPTY_SALES_SUMMARY),
-    runQuery(
-      "v_inventory_valuation",
-      supabase
-        .from("v_inventory_valuation")
-        .select("quantity_on_hand, inventory_value")
-        .eq("organization_id", user.organizationId),
-      []
-    ),
+    canViewInventoryValue
+      ? runQuery(
+          "v_inventory_valuation",
+          supabase
+            .from("v_inventory_valuation")
+            .select("quantity_on_hand, inventory_value")
+            .eq("organization_id", user.organizationId),
+          []
+        )
+      : runQuery(
+          "v_inventory_status.quantities",
+          supabase
+            .from("v_inventory_status")
+            .select("quantity_on_hand")
+            .eq("organization_id", user.organizationId),
+          []
+        ),
     runQuery(
       "v_inventory_status",
       supabase
@@ -359,7 +375,7 @@ export async function getDashboardSummary(
     runCountQuery(
       "products.active_count",
       supabase
-        .from("products")
+        .from(READ.products)
         .select("id", { count: "exact", head: true })
         .eq("organization_id", user.organizationId)
         .eq("status", "active")
@@ -423,17 +439,8 @@ export async function getDashboardSummary(
     runQuery(
       "purchase_orders.recent",
       supabase
-        .from("purchase_orders")
-        .select(
-          `
-            id,
-            document_number,
-            status,
-            total,
-            ordered_at,
-            suppliers ( name )
-          `
-        )
+        .from(READ.purchaseOrders)
+        .select("id, document_number, status, total, ordered_at, supplier_id")
         .eq("organization_id", user.organizationId)
         .order("created_at", { ascending: false })
         .limit(5),
@@ -467,9 +474,8 @@ export async function getDashboardSummary(
             id,
             document_number,
             received_at,
-            warehouses ( name ),
-            purchase_orders ( document_number ),
-            purchase_receipt_items ( id )
+            purchase_order_id,
+            warehouses ( name )
           `
         )
         .eq("organization_id", user.organizationId)
@@ -498,10 +504,84 @@ export async function getDashboardSummary(
     ),
   ])
 
-  const inventoryValue = valuationRows.reduce(
-    (sum, row) => sum + Number(row.inventory_value ?? 0),
-    0
+  const purchaseOrderIdsForReceipts = Array.from(
+    new Set(
+      recentReceiptRows
+        .map((row) => row.purchase_order_id)
+        .filter((id): id is string => Boolean(id))
+    )
   )
+  const receiptIds = recentReceiptRows
+    .map((row) => row.id)
+    .filter((id): id is string => Boolean(id))
+
+  const [purchaseOrderDocuments, receiptItemRows] = await Promise.all([
+    purchaseOrderIdsForReceipts.length > 0
+      ? runQuery(
+          "purchase_receipts.recent.purchase_orders",
+          supabase
+            .from(READ.purchaseOrders)
+            .select("id, document_number")
+            .in("id", purchaseOrderIdsForReceipts),
+          []
+        )
+      : Promise.resolve([]),
+    receiptIds.length > 0
+      ? runQuery(
+          "purchase_receipts.recent.items",
+          supabase
+            .from(READ.purchaseReceiptItems)
+            .select("purchase_receipt_id")
+            .in("purchase_receipt_id", receiptIds),
+          []
+        )
+      : Promise.resolve([]),
+  ])
+
+  const purchaseOrderDocumentById = new Map(
+    purchaseOrderDocuments.map((row) => [row.id, row.document_number ?? "—"])
+  )
+  const receiptItemCountById = new Map<string, number>()
+  for (const row of receiptItemRows) {
+    if (!row.purchase_receipt_id) {
+      continue
+    }
+    receiptItemCountById.set(
+      row.purchase_receipt_id,
+      (receiptItemCountById.get(row.purchase_receipt_id) ?? 0) + 1
+    )
+  }
+
+  const supplierIds = recentPurchaseRows
+    .map((row) => row.supplier_id)
+    .filter((id): id is string => Boolean(id))
+  const supplierNames = new Map<string, string>()
+
+  if (supplierIds.length > 0) {
+    const { data: suppliers, error: supplierError } = await supabase
+      .from("suppliers")
+      .select("id, name")
+      .in("id", supplierIds)
+
+    if (supplierError) {
+      logQueryError("purchase_orders.recent.suppliers", supplierError)
+    } else {
+      for (const supplier of suppliers ?? []) {
+        supplierNames.set(supplier.id, supplier.name)
+      }
+    }
+  }
+
+  const inventoryValue = canViewInventoryValue
+    ? valuationRows.reduce(
+        (sum, row) =>
+          sum +
+          Number(
+            "inventory_value" in row ? (row.inventory_value ?? 0) : 0
+          ),
+        0
+      )
+    : 0
   const totalUnitsInStock = valuationRows.reduce(
     (sum, row) => sum + Number(row.quantity_on_hand ?? 0),
     0
@@ -536,18 +616,27 @@ export async function getDashboardSummary(
     createdAt: row.completed_at ?? row.created_at,
   }))
 
-  const recentMovements: RecentInventoryMovement[] = recentMovementRows.map(
-    (row) => ({
-      id: row.id,
-      type: mapMovementType(row.movement_type),
-      product: row.product_variants?.products?.name ?? "Producto desconocido",
-      variant: row.product_variants?.name ?? "Default",
-      quantity: row.quantity,
-      user: row.profiles?.full_name ?? "Usuario desconocido",
-      reference: mapMovementReference(row),
-      createdAt: row.created_at,
+  const recentMovements: RecentInventoryMovement[] = await (async () => {
+    const variantMeta = await fetchVariantDisplayMeta(
+      supabase,
+      recentMovementRows.map((row) => row.product_variant_id)
+    )
+
+    return recentMovementRows.map((row) => {
+      const meta = variantMeta.get(row.product_variant_id)
+
+      return {
+        id: row.id,
+        type: mapMovementType(row.movement_type),
+        product: meta?.productName ?? "Producto desconocido",
+        variant: meta?.name ?? "Default",
+        quantity: row.quantity,
+        user: row.profiles?.full_name ?? "Usuario desconocido",
+        reference: mapMovementReference(row),
+        createdAt: row.created_at,
+      }
     })
-  )
+  })()
 
   const topProducts: TopProduct[] = (topProductRows as TopProductRow[]).map(
     (row, index) => ({
@@ -567,16 +656,18 @@ export async function getDashboardSummary(
     timeZone
   )
 
-  const recentPurchases: RecentPurchaseActivity[] = recentPurchaseRows.map(
-    (row) => ({
+  const recentPurchases: RecentPurchaseActivity[] = recentPurchaseRows
+    .filter((row): row is typeof row & { id: string } => Boolean(row.id))
+    .map((row) => ({
       id: row.id,
-      documentNumber: row.document_number,
-      supplierName: row.suppliers?.name ?? "Proveedor desconocido",
-      total: Number(row.total),
-      status: row.status,
-      receivedAt: row.ordered_at,
-    })
-  )
+      documentNumber: row.document_number ?? "—",
+      supplierName: row.supplier_id
+        ? supplierNames.get(row.supplier_id) ?? "Proveedor desconocido"
+        : "Proveedor desconocido",
+      total: canViewPurchaseTotals ? Number(row.total ?? 0) : 0,
+      status: row.status ?? "draft",
+      receivedAt: row.ordered_at ?? new Date(0).toISOString(),
+    }))
 
   const recentReturns: RecentReturnActivity[] = recentReturnRows.map((row) => ({
     id: row.id,
@@ -593,9 +684,11 @@ export async function getDashboardSummary(
   const recentReceipts = recentReceiptRows.map((row) => ({
     id: row.id,
     documentNumber: row.document_number,
-    purchaseOrderNumber: row.purchase_orders?.document_number ?? "—",
+    purchaseOrderNumber: row.purchase_order_id
+      ? purchaseOrderDocumentById.get(row.purchase_order_id) ?? "—"
+      : "—",
     warehouseName: row.warehouses?.name ?? "Almacén desconocido",
-    itemCount: row.purchase_receipt_items?.length ?? 0,
+    itemCount: receiptItemCountById.get(row.id) ?? 0,
     receivedAt: row.received_at,
   }))
 
@@ -612,11 +705,13 @@ export async function getDashboardSummary(
   const revenueYesterday = Number(yesterdaySummary.net_revenue ?? 0)
   const revenueMonth = Number(monthSummary.net_revenue ?? 0)
   const revenuePreviousMonth = Number(previousMonthSummary.net_revenue ?? 0)
-  const estimatedGrossProfitMonth = Number(
-    monthSummary.estimated_gross_profit ?? 0
-  )
+  const estimatedGrossProfitMonth = canViewProfit
+    ? Number(monthSummary.estimated_gross_profit ?? 0)
+    : 0
   const estimatedGrossProfitMargin =
-    revenueMonth > 0 ? (estimatedGrossProfitMonth / revenueMonth) * 100 : null
+    canViewProfit && revenueMonth > 0
+      ? (estimatedGrossProfitMonth / revenueMonth) * 100
+      : null
 
   return {
     metrics: {
@@ -649,6 +744,8 @@ export async function getDashboardSummary(
     recentAdjustments,
     recentReturns,
     canViewFinancials,
+    canViewInventoryValue,
+    canViewProfit,
     organizationName: user.organizationName,
     generatedAt: now.toISOString(),
   }

@@ -13,7 +13,13 @@ import {
   resolveVariantCostPrice,
   resolveVariantSalePrice,
 } from "@/lib/catalog/product-pricing"
-import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/errors/app-error"
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from "@/lib/errors/app-error"
+import { writeAuditLog } from "@/lib/audit/audit.service"
+import { READ, WRITE } from "@/lib/db/read-models"
 import { createClient } from "@/lib/supabase/server"
 import type {
   CreateProductInput,
@@ -28,22 +34,25 @@ function isUniqueViolation(error: PostgrestError | null): boolean {
   return error?.code === "23505"
 }
 
-function mapVariantRow(variant: {
-  id: string
-  name: string
-  sku: string
-  barcode: string | null
-  cost_price: number | null
-  sale_price: number | null
-  reorder_point: number
-  is_active: boolean
-}): ProductVariantRow {
+function mapVariantRow(
+  variant: {
+    id: string
+    name: string
+    sku: string
+    barcode: string | null
+    cost_price: number | null
+    sale_price: number | null
+    reorder_point: number
+    is_active: boolean
+  },
+  includeCost: boolean
+): ProductVariantRow {
   return {
     id: variant.id,
     name: variant.name,
     sku: variant.sku,
     barcode: variant.barcode,
-    costPrice: variant.cost_price,
+    costPrice: includeCost ? variant.cost_price : null,
     salePrice: variant.sale_price,
     reorderPoint: variant.reorder_point,
     isActive: variant.is_active,
@@ -80,19 +89,19 @@ async function findProductIdsForSearch(
   const [productsResult, skuVariantsResult, barcodeVariantsResult] =
     await Promise.all([
     supabase
-      .from("products")
+      .from(READ.products)
       .select("id")
       .eq("organization_id", organizationId)
       .is("deleted_at", null)
       .ilike("name", term),
     supabase
-      .from("product_variants")
+      .from(READ.productVariants)
       .select("product_id")
       .eq("organization_id", organizationId)
       .is("deleted_at", null)
       .ilike("sku", term),
     supabase
-      .from("product_variants")
+      .from(READ.productVariants)
       .select("product_id")
       .eq("organization_id", organizationId)
       .is("deleted_at", null)
@@ -113,9 +122,21 @@ async function findProductIdsForSearch(
   }
 
   const ids = new Set<string>()
-  productsResult.data?.forEach((product) => ids.add(product.id))
-  skuVariantsResult.data?.forEach((variant) => ids.add(variant.product_id))
-  barcodeVariantsResult.data?.forEach((variant) => ids.add(variant.product_id))
+  productsResult.data?.forEach((product) => {
+    if (product.id) {
+      ids.add(product.id)
+    }
+  })
+  skuVariantsResult.data?.forEach((variant) => {
+    if (variant.product_id) {
+      ids.add(variant.product_id)
+    }
+  })
+  barcodeVariantsResult.data?.forEach((variant) => {
+    if (variant.product_id) {
+      ids.add(variant.product_id)
+    }
+  })
 
   return Array.from(ids)
 }
@@ -128,7 +149,7 @@ async function assertSkuAvailable(
   const supabase = await createClient()
 
   let query = supabase
-    .from("product_variants")
+    .from(READ.productVariants)
     .select("id")
     .eq("organization_id", organizationId)
     .eq("sku", sku.trim())
@@ -157,7 +178,7 @@ async function assertBarcodeAvailable(
   const supabase = await createClient()
 
   let query = supabase
-    .from("product_variants")
+    .from(READ.productVariants)
     .select("id")
     .eq("organization_id", organizationId)
     .eq("barcode", barcode.trim())
@@ -199,7 +220,7 @@ export async function listProducts(
   }
 
   let query = supabase
-    .from("products")
+    .from(READ.products)
     .select(
       `
         id,
@@ -209,17 +230,7 @@ export async function listProducts(
         base_cost_price,
         base_sale_price,
         updated_at,
-        categories ( name ),
-        product_variants (
-          id,
-          sku,
-          barcode,
-          cost_price,
-          sale_price,
-          is_active,
-          deleted_at,
-          created_at
-        )
+        category_id
       `
     )
     .eq("organization_id", user.organizationId)
@@ -246,32 +257,110 @@ export async function listProducts(
     throw error
   }
 
-  return (data ?? []).map((product) => {
-    const variants = product.product_variants ?? []
+  const productRows = (data ?? []).filter(
+    (product): product is (typeof data)[number] & { id: string; name: string; status: "active" | "archived" } =>
+      Boolean(product.id && product.name && product.status)
+  )
+  const productRowIds = productRows.map((product) => product.id)
+  const categoryIds = Array.from(
+    new Set(
+      productRows
+        .map((product) => product.category_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  )
+  const categoryNames = new Map<string, string>()
+
+  if (categoryIds.length > 0) {
+    const { data: categories, error: categoryError } = await supabase
+      .from("categories")
+      .select("id, name")
+      .in("id", categoryIds)
+
+    if (categoryError) {
+      throw categoryError
+    }
+
+    for (const category of categories ?? []) {
+      categoryNames.set(category.id, category.name)
+    }
+  }
+
+  let variantsByProduct = new Map<
+    string,
+    Array<{
+      id: string
+      sku: string
+      barcode: string | null
+      cost_price: number | null
+      sale_price: number | null
+      is_active: boolean
+      deleted_at: string | null
+      created_at: string
+    }>
+  >()
+
+  if (productRowIds.length > 0) {
+    const { data: variantRows, error: variantError } = await supabase
+      .from(READ.productVariants)
+      .select(
+        "id, product_id, sku, barcode, cost_price, sale_price, is_active, deleted_at, created_at"
+      )
+      .eq("organization_id", user.organizationId)
+      .in("product_id", productRowIds)
+
+    if (variantError) {
+      throw variantError
+    }
+
+    for (const variant of variantRows ?? []) {
+      if (!variant.product_id || !variant.id) {
+        continue
+      }
+
+      const bucket = variantsByProduct.get(variant.product_id) ?? []
+      bucket.push({
+        id: variant.id,
+        sku: variant.sku ?? "—",
+        barcode: variant.barcode,
+        cost_price: variant.cost_price,
+        sale_price: variant.sale_price,
+        is_active: variant.is_active ?? true,
+        deleted_at: variant.deleted_at,
+        created_at: variant.created_at ?? new Date(0).toISOString(),
+      })
+      variantsByProduct.set(variant.product_id, bucket)
+    }
+  }
+
+  return productRows.map((product) => {
+    const variants = variantsByProduct.get(product.id) ?? []
     const activeVariants = variants.filter((variant) => !variant.deleted_at)
     const lead = primaryVariant(variants)
     const salePrice = resolveVariantSalePrice(
       lead?.sale_price ?? null,
-      product.base_sale_price
+      product.base_sale_price ?? 0
     )
 
     const item: ProductListItem = {
       id: product.id,
       name: product.name,
       status: product.status,
-      categoryName: product.categories?.name ?? null,
+      categoryName: product.category_id
+        ? categoryNames.get(product.category_id) ?? null
+        : null,
       variantCount: activeVariants.length,
       primarySku: lead?.sku ?? null,
       primaryBarcode: lead?.barcode ?? null,
       salePrice,
-      unitOfMeasure: product.unit_of_measure,
-      updatedAt: product.updated_at,
+      unitOfMeasure: product.unit_of_measure ?? "",
+      updatedAt: product.updated_at ?? new Date(0).toISOString(),
     }
 
     if (includeCost) {
       item.costPrice = resolveVariantCostPrice(
         lead?.cost_price ?? null,
-        product.base_cost_price
+        product.base_cost_price ?? 0
       )
     }
 
@@ -289,7 +378,7 @@ export async function getProductById(
   const includeCost = canViewProductCosts(user)
 
   const { data, error } = await supabase
-    .from("products")
+    .from(READ.products)
     .select(
       `
         id,
@@ -301,20 +390,7 @@ export async function getProductById(
         base_sale_price,
         category_id,
         created_at,
-        updated_at,
-        categories ( name ),
-        product_variants (
-          id,
-          name,
-          sku,
-          barcode,
-          cost_price,
-          sale_price,
-          reorder_point,
-          is_active,
-          deleted_at,
-          created_at
-        )
+        updated_at
       `
     )
     .eq("id", productId)
@@ -326,31 +402,74 @@ export async function getProductById(
     throw error
   }
 
-  if (!data) {
+  if (!data?.id || !data.name || !data.status) {
     throw new NotFoundError("Producto no encontrado.")
   }
 
-  const variants = (data.product_variants ?? [])
-    .filter((variant) => !variant.deleted_at)
+  let categoryName: string | null = null
+
+  if (data.category_id) {
+    const { data: category, error: categoryError } = await supabase
+      .from("categories")
+      .select("name")
+      .eq("id", data.category_id)
+      .maybeSingle()
+
+    if (categoryError) {
+      throw categoryError
+    }
+
+    categoryName = category?.name ?? null
+  }
+
+  const { data: variantRows, error: variantError } = await supabase
+    .from(READ.productVariants)
+    .select(
+      "id, name, sku, barcode, cost_price, sale_price, reorder_point, is_active, deleted_at, created_at"
+    )
+    .eq("product_id", productId)
+    .eq("organization_id", user.organizationId)
+
+  if (variantError) {
+    throw variantError
+  }
+
+  const variants = (variantRows ?? [])
+    .filter((variant) => variant.id && variant.name && !variant.deleted_at)
     .sort(
       (left, right) =>
-        new Date(left.created_at).getTime() - new Date(right.created_at).getTime()
+        new Date(left.created_at ?? 0).getTime() -
+        new Date(right.created_at ?? 0).getTime()
     )
-    .map(mapVariantRow)
+    .map((variant) =>
+      mapVariantRow(
+        {
+          id: variant.id!,
+          name: variant.name!,
+          sku: variant.sku ?? "—",
+          barcode: variant.barcode,
+          cost_price: variant.cost_price,
+          sale_price: variant.sale_price,
+          reorder_point: variant.reorder_point ?? 0,
+          is_active: variant.is_active ?? true,
+        },
+        includeCost
+      )
+    )
 
   return {
     id: data.id,
     name: data.name,
     description: data.description,
     status: data.status,
-    unitOfMeasure: data.unit_of_measure,
-    baseCostPrice: includeCost ? data.base_cost_price : undefined,
-    baseSalePrice: data.base_sale_price,
+    unitOfMeasure: data.unit_of_measure ?? "",
+    baseCostPrice: includeCost ? data.base_cost_price ?? undefined : undefined,
+    baseSalePrice: data.base_sale_price ?? 0,
     canViewCost: includeCost,
     categoryId: data.category_id,
-    categoryName: data.categories?.name ?? null,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    categoryName,
+    createdAt: data.created_at ?? new Date(0).toISOString(),
+    updatedAt: data.updated_at ?? new Date(0).toISOString(),
     variants,
   }
 }
@@ -375,7 +494,7 @@ export async function createProduct(
   }
 
   const { data: product, error: productError } = await supabase
-    .from("products")
+    .from(WRITE.products)
     .insert({
       organization_id: organizationId,
       name: input.name.trim(),
@@ -397,7 +516,7 @@ export async function createProduct(
     throw productError
   }
 
-  const { error: variantError } = await supabase.from("product_variants").insert({
+  const { error: variantError } = await supabase.from(WRITE.productVariants).insert({
     organization_id: organizationId,
     product_id: product.id,
     name: input.variant.name.trim(),
@@ -410,7 +529,7 @@ export async function createProduct(
   })
 
   if (variantError) {
-    await supabase.from("products").delete().eq("id", product.id)
+    await supabase.from(WRITE.products).delete().eq("id", product.id)
 
     if (isUniqueViolation(variantError)) {
       const message = variantError.message.toLowerCase().includes("barcode")
@@ -422,6 +541,19 @@ export async function createProduct(
 
     throw variantError
   }
+
+  await writeAuditLog({
+    organizationId,
+    action: "product.create",
+    entityType: "product",
+    entityId: product.id,
+    newValues: {
+      name: input.name.trim(),
+      sku: input.variant.sku.trim(),
+      base_sale_price: input.baseSalePrice,
+    },
+    source: "ui",
+  })
 
   return { id: product.id }
 }
@@ -445,36 +577,6 @@ export async function updateProduct(
   let baseCostPrice = input.baseCostPrice
   let variantCostPrice = input.variant.costPrice ?? null
 
-  if (!canViewProductCosts(user)) {
-    const { data: rawProduct, error: rawProductError } = await supabase
-      .from("products")
-      .select("base_cost_price")
-      .eq("id", productId)
-      .eq("organization_id", organizationId)
-      .single()
-
-    if (rawProductError) {
-      throw rawProductError
-    }
-
-    baseCostPrice = rawProduct.base_cost_price
-
-    const variantId = input.variant.id ?? existing.variants[0]?.id
-    if (variantId) {
-      const { data: rawVariant, error: rawVariantError } = await supabase
-        .from("product_variants")
-        .select("cost_price")
-        .eq("id", variantId)
-        .single()
-
-      if (rawVariantError) {
-        throw rawVariantError
-      }
-
-      variantCostPrice = rawVariant.cost_price
-    }
-  }
-
   const excludeVariantId = input.variant.id ?? existing.variants[0]?.id
 
   await assertSkuAvailable(organizationId, input.variant.sku, excludeVariantId)
@@ -488,7 +590,7 @@ export async function updateProduct(
   }
 
   const { error: productError } = await supabase
-    .from("products")
+    .from(WRITE.products)
     .update({
       name: input.name.trim(),
       description: input.description ?? null,
@@ -511,7 +613,7 @@ export async function updateProduct(
   }
 
   const { error: variantError } = await supabase
-    .from("product_variants")
+    .from(WRITE.productVariants)
     .update({
       name: input.variant.name.trim(),
       sku: input.variant.sku.trim(),
@@ -536,6 +638,23 @@ export async function updateProduct(
     throw variantError
   }
 
+  await writeAuditLog({
+    organizationId,
+    action: "product.update",
+    entityType: "product",
+    entityId: productId,
+    oldValues: {
+      name: existing.name,
+      base_sale_price: existing.baseSalePrice,
+      status: existing.status,
+    },
+    newValues: {
+      name: input.name.trim(),
+      base_sale_price: input.baseSalePrice,
+    },
+    source: "ui",
+  })
+
   return { id: productId }
 }
 
@@ -555,7 +674,7 @@ export async function archiveProduct(
   }
 
   const { error: productError } = await supabase
-    .from("products")
+    .from(WRITE.products)
     .update({
       status: "archived",
     })
@@ -567,7 +686,7 @@ export async function archiveProduct(
   }
 
   const { error: variantError } = await supabase
-    .from("product_variants")
+    .from(WRITE.productVariants)
     .update({
       is_active: false,
     })
@@ -578,6 +697,16 @@ export async function archiveProduct(
   if (variantError) {
     throw variantError
   }
+
+  await writeAuditLog({
+    organizationId,
+    action: "product.archive",
+    entityType: "product",
+    entityId: productId,
+    oldValues: { status: existing.status },
+    newValues: { status: "archived" },
+    source: "ui",
+  })
 }
 
 export async function reactivateProduct(
@@ -596,7 +725,7 @@ export async function reactivateProduct(
   }
 
   const { error: productError } = await supabase
-    .from("products")
+    .from(WRITE.products)
     .update({
       status: "active",
       deleted_at: null,
@@ -609,7 +738,7 @@ export async function reactivateProduct(
   }
 
   const { error: variantError } = await supabase
-    .from("product_variants")
+    .from(WRITE.productVariants)
     .update({
       is_active: true,
       deleted_at: null,
@@ -620,4 +749,14 @@ export async function reactivateProduct(
   if (variantError) {
     throw variantError
   }
+
+  await writeAuditLog({
+    organizationId,
+    action: "product.reactivate",
+    entityType: "product",
+    entityId: productId,
+    oldValues: { status: existing.status },
+    newValues: { status: "active" },
+    source: "ui",
+  })
 }

@@ -58,6 +58,13 @@ export function canManageSettings(user: AuthenticatedUser): boolean {
   ])
 }
 
+export function canManageRolePermissions(user: AuthenticatedUser): boolean {
+  return (
+    isOrgAdminRole(user.role) ||
+    hasPermission(user, "roles", "manage_permissions")
+  )
+}
+
 export function canManageUsers(user: AuthenticatedUser): boolean {
   return (
     isOrgAdminRole(user.role) ||

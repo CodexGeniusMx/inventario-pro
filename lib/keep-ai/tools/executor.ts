@@ -4,7 +4,9 @@ import {
   canViewProductCosts,
   hasPermission,
 } from "@/lib/auth/permissions"
+import { canViewPurchaseFinancials } from "@/lib/auth/financial-data"
 import type { KeepAiPreparedAction, KeepAiToolResult } from "@/lib/keep-ai/types"
+import { READ } from "@/lib/db/read-models"
 import { createClient } from "@/lib/supabase/server"
 
 type ToolArgs = Record<string, unknown>
@@ -549,8 +551,9 @@ async function runPendingPurchases(user: AuthenticatedUser): Promise<KeepAiToolR
   }
 
   const supabase = await createClient()
+  const includeFinancials = canViewPurchaseFinancials(user)
   const { data, error } = await supabase
-    .from("purchase_orders")
+    .from(READ.purchaseOrders)
     .select("document_number, status, total, currency_code, suppliers(name)")
     .eq("organization_id", user.organizationId)
     .in("status", ["ordered", "partially_received"])
@@ -564,7 +567,12 @@ async function runPendingPurchases(user: AuthenticatedUser): Promise<KeepAiToolR
   return {
     toolName: "getPendingPurchases",
     success: true,
-    data: { items: data ?? [] },
+    data: {
+      items: (data ?? []).map((row) => ({
+        ...row,
+        total: includeFinancials ? row.total : null,
+      })),
+    },
   }
 }
 

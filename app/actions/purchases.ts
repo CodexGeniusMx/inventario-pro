@@ -7,7 +7,9 @@ import {
   toActionResult,
   type ActionResult,
 } from "@/lib/errors/action-result"
-import { requireAdmin, requirePermission } from "@/lib/auth/session"
+import { hasAnyPermission } from "@/lib/auth/permissions"
+import { requirePermission, requireUser } from "@/lib/auth/session"
+import { ForbiddenError } from "@/lib/errors/app-error"
 import {
   createPurchaseSchema,
   receivePurchaseSchema,
@@ -18,7 +20,15 @@ export async function createPurchaseAction(
   input: unknown
 ): Promise<ActionResult<{ id: string }>> {
     try {
-    const user = await requirePermission("purchases", "write")
+    const user = await requireUser()
+    if (
+      !hasAnyPermission(user, [
+        { resource: "purchases", action: "create" },
+        { resource: "purchases", action: "write" },
+      ])
+    ) {
+      throw new ForbiddenError()
+    }
     const parsed = createPurchaseSchema.parse(input)
     const purchase = await purchaseService.createPurchaseOrder(user, parsed)
     revalidatePath("/purchases")

@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { DevTestingGroups } from "@/components/dev/dev-testing-groups"
+import { requireAdmin } from "@/lib/auth/session"
 import {
   runKeepAiBaselineSuite,
   runKeepAiEvaluationSuite,
@@ -14,6 +15,12 @@ type DevTestingPageProps = {
 export default async function DevTestingPage({ searchParams }: DevTestingPageProps) {
   if (process.env.NODE_ENV !== "development") {
     notFound()
+  }
+
+  try {
+    await requireAdmin()
+  } catch {
+    redirect("/dashboard")
   }
 
   const { group } = await searchParams

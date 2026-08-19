@@ -3,7 +3,7 @@ import type { PostgrestError } from "@supabase/supabase-js"
 import type { Json } from "@/lib/database.types"
 
 import type { AuthenticatedUser } from "@/lib/auth/types"
-import { resolveCostPrice, resolveSalePrice } from "@/lib/catalog/pricing"
+import { resolveSalePrice } from "@/lib/catalog/pricing"
 import {
   ConflictError,
   ForbiddenError,
@@ -12,6 +12,8 @@ import {
   ValidationError,
 } from "@/lib/errors/app-error"
 import type { CreateAndCompleteSaleRpcArgs } from "@/lib/sales/rpc"
+import { READ } from "@/lib/db/read-models"
+import { fetchVariantDisplayMeta } from "@/lib/db/variant-meta"
 import { createClient } from "@/lib/supabase/server"
 import type {
   CreateSaleInput,
@@ -171,11 +173,6 @@ export async function getSaleById(
           unit_price,
           line_total,
           movement_id,
-          product_variants (
-            name,
-            sku,
-            products ( name )
-          ),
           inventory_movements!sale_items_movement_id_fkey (
             quantity_before,
             quantity_after
@@ -195,6 +192,11 @@ export async function getSaleById(
     throw new NotFoundError("Venta no encontrada.")
   }
 
+  const variantMeta = await fetchVariantDisplayMeta(
+    supabase,
+    (data.sale_items ?? []).map((line) => line.product_variant_id)
+  )
+
   return {
     id: data.id,
     documentNumber: data.document_number,
@@ -210,12 +212,15 @@ export async function getSaleById(
     createdAt: data.created_at,
     createdByName: data.profiles?.full_name ?? "Usuario desconocido",
     notes: data.notes ?? null,
-    lines: (data.sale_items ?? []).map((line) => ({
+    lines: (data.sale_items ?? []).map((line) => {
+      const meta = variantMeta.get(line.product_variant_id)
+
+      return {
       id: line.id,
       productVariantId: line.product_variant_id,
-      productName: line.product_variants?.products?.name ?? "Producto desconocido",
-      variantName: line.product_variants?.name ?? "Default",
-      sku: line.product_variants?.sku ?? "—",
+      productName: meta?.productName ?? "Producto desconocido",
+      variantName: meta?.name ?? "Default",
+      sku: meta?.sku ?? "—",
       quantity: line.quantity,
       quantityReturned: line.quantity_returned,
       unitPrice: Number(line.unit_price),
@@ -223,7 +228,7 @@ export async function getSaleById(
       movementId: line.movement_id,
       quantityBefore: line.inventory_movements?.quantity_before ?? null,
       quantityAfter: line.inventory_movements?.quantity_after ?? null,
-    })),
+    }}),
   }
 }
 
@@ -239,15 +244,8 @@ export async function getVariantSalePrices(
   }
 
   const { data, error } = await supabase
-    .from("product_variants")
-    .select(
-      `
-        id,
-        sale_price,
-        cost_price,
-        products!inner ( base_sale_price, base_cost_price, status, deleted_at )
-      `
-    )
+    .from(READ.productVariants)
+    .select("id, sale_price, product_id")
     .eq("organization_id", user.organizationId)
     .in("id", uniqueIds)
     .is("deleted_at", null)
@@ -257,20 +255,53 @@ export async function getVariantSalePrices(
     throw error
   }
 
-  return (data ?? [])
-    .filter(
-      (variant) =>
-        !variant.products?.deleted_at && variant.products?.status === "active"
+  const productIds = Array.from(
+    new Set(
+      (data ?? [])
+        .map((variant) => variant.product_id)
+        .filter((id): id is string => Boolean(id))
     )
+  )
+  const productMeta = new Map<
+    string,
+    { base_sale_price: number | null; status: string; deleted_at: string | null }
+  >()
+
+  if (productIds.length > 0) {
+    const { data: products, error: productError } = await supabase
+      .from(READ.products)
+      .select("id, base_sale_price, status, deleted_at")
+      .in("id", productIds)
+
+    if (productError) {
+      throw productError
+    }
+
+    for (const product of products ?? []) {
+      if (product.id && product.status) {
+        productMeta.set(product.id, {
+          base_sale_price: product.base_sale_price,
+          status: product.status,
+          deleted_at: product.deleted_at,
+        })
+      }
+    }
+  }
+
+  return (data ?? [])
+    .filter((variant) => {
+      if (!variant.id || !variant.product_id) {
+        return false
+      }
+
+      const product = productMeta.get(variant.product_id)
+      return product && !product.deleted_at && product.status === "active"
+    })
     .map((variant) => ({
-      productVariantId: variant.id,
+      productVariantId: variant.id!,
       unitPrice: resolveSalePrice(
         variant.sale_price,
-        variant.products?.base_sale_price
-      ),
-      unitCost: resolveCostPrice(
-        variant.cost_price,
-        variant.products?.base_cost_price
+        productMeta.get(variant.product_id!)?.base_sale_price ?? 0
       ),
     }))
 }

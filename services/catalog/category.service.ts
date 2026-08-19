@@ -2,6 +2,7 @@ import type { AuthenticatedUser } from "@/lib/auth/types"
 import { ConflictError, ValidationError } from "@/lib/errors/app-error"
 import { assertCanManageCategories } from "@/lib/auth/product-permissions"
 import { createClient } from "@/lib/supabase/server"
+import { READ } from "@/lib/db/read-models"
 import type { CategoryOption } from "@/types/catalog"
 
 function slugify(name: string): string {
@@ -116,7 +117,7 @@ export async function archiveCategory(
   const supabase = await createClient()
 
   const { count, error: countError } = await supabase
-    .from("products")
+    .from(READ.products)
     .select("id", { count: "exact", head: true })
     .eq("organization_id", user.organizationId)
     .eq("category_id", categoryId)

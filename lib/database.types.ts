@@ -50,6 +50,7 @@ export type Database = {
           new_values: Json | null
           old_values: Json | null
           organization_id: string
+          source: string
           user_id: string | null
         }
         Insert: {
@@ -62,6 +63,7 @@ export type Database = {
           new_values?: Json | null
           old_values?: Json | null
           organization_id: string
+          source?: string
           user_id?: string | null
         }
         Update: {
@@ -74,6 +76,7 @@ export type Database = {
           new_values?: Json | null
           old_values?: Json | null
           organization_id?: string
+          source?: string
           user_id?: string | null
         }
         Relationships: [
@@ -824,6 +827,7 @@ export type Database = {
         Row: {
           branch_id: string | null
           created_at: string
+          default_warehouse_id: string | null
           full_name: string
           id: string
           is_active: boolean
@@ -834,6 +838,7 @@ export type Database = {
         Insert: {
           branch_id?: string | null
           created_at?: string
+          default_warehouse_id?: string | null
           full_name: string
           id: string
           is_active?: boolean
@@ -844,6 +849,7 @@ export type Database = {
         Update: {
           branch_id?: string | null
           created_at?: string
+          default_warehouse_id?: string | null
           full_name?: string
           id?: string
           is_active?: boolean
@@ -929,6 +935,7 @@ export type Database = {
           total: number
           updated_at: string
           warehouse_id: string
+          idempotency_key: string | null
         }
         Insert: {
           created_at?: string
@@ -936,6 +943,7 @@ export type Database = {
           currency_code?: string
           document_number: string
           id?: string
+          idempotency_key?: string | null
           notes?: string | null
           ordered_at?: string | null
           organization_id: string
@@ -1811,6 +1819,85 @@ export type Database = {
           },
         ]
       }
+      v_products: {
+        Row: {
+          base_cost_price: number | null
+          base_sale_price: number | null
+          category_id: string | null
+          created_at: string | null
+          deleted_at: string | null
+          description: string | null
+          id: string | null
+          name: string | null
+          organization_id: string | null
+          status: Database["public"]["Enums"]["product_status"] | null
+          unit_of_measure: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
+      v_product_variants: {
+        Row: {
+          barcode: string | null
+          cost_price: number | null
+          created_at: string | null
+          deleted_at: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          organization_id: string | null
+          product_id: string | null
+          reorder_point: number | null
+          sale_price: number | null
+          sku: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
+      v_purchase_orders: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          currency_code: string | null
+          document_number: string | null
+          id: string | null
+          idempotency_key: string | null
+          notes: string | null
+          ordered_at: string | null
+          organization_id: string | null
+          status: Database["public"]["Enums"]["purchase_order_status"] | null
+          subtotal: number | null
+          supplier_id: string | null
+          total: number | null
+          updated_at: string | null
+          warehouse_id: string | null
+        }
+        Relationships: []
+      }
+      v_purchase_order_items: {
+        Row: {
+          id: string | null
+          line_total: number | null
+          product_variant_id: string | null
+          purchase_order_id: string | null
+          quantity_ordered: number | null
+          quantity_received: number | null
+          unit_cost: number | null
+        }
+        Relationships: []
+      }
+      v_purchase_receipt_items: {
+        Row: {
+          id: string | null
+          movement_id: string | null
+          product_variant_id: string | null
+          purchase_order_item_id: string | null
+          purchase_receipt_id: string | null
+          quantity_received: number | null
+          unit_cost: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assert_same_organization: {
@@ -1906,6 +1993,44 @@ export type Database = {
       }
       complete_user_invitation: {
         Args: { p_invitation_id: string }
+        Returns: string
+      }
+      create_purchase_order: {
+        Args: {
+          p_created_by?: string | null
+          p_currency_code?: string
+          p_idempotency_key?: string
+          p_lines: Json
+          p_notes?: string | null
+          p_organization_id: string
+          p_supplier_id: string
+          p_warehouse_id: string
+        }
+        Returns: string
+      }
+      audit_log_record: {
+        Args: {
+          p_action: string
+          p_actor_id?: string | null
+          p_entity_id: string
+          p_entity_type: string
+          p_new_values?: Json
+          p_old_values?: Json
+          p_organization_id: string
+          p_source?: string
+        }
+        Returns: string
+      }
+      insert_audit_log: {
+        Args: {
+          p_action: string
+          p_entity_id: string
+          p_entity_type: string
+          p_new_values?: Json
+          p_old_values?: Json
+          p_organization_id: string
+          p_source?: string
+        }
         Returns: string
       }
       update_organization_settings: {

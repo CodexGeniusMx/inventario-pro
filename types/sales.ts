@@ -75,5 +75,5 @@ export type CreateSaleInput = {
 export type VariantSalePrice = {
   productVariantId: string
   unitPrice: number
-  unitCost: number
+  unitCost?: number
 }

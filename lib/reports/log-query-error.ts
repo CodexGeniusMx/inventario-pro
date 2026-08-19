@@ -41,6 +41,13 @@ export function logQueryError(source: string, error: unknown): void {
       "[sales-report-raw-error] Missing migration: apply 00025_fix_report_sales_summary.sql (ambiguous PL/pgSQL output columns in report_sales_summary)."
     )
   }
+
+  if (fields.code === "42501") {
+    console.error(
+      "[sales-report-raw-error] Permission denied (42501): check revoked base-table SELECT, security_invoker view over revoked tables, missing view GRANT, RLS policy, or RPC EXECUTE.",
+      { source }
+    )
+  }
 }
 
 export function logSalesReportRpcFailure(

@@ -1,9 +1,16 @@
 import type { AuthenticatedUser } from "@/lib/auth/types"
+import {
+  canViewPurchaseFinancials,
+  stripInventoryReportRows,
+  stripSalesReportSummary,
+} from "@/lib/auth/financial-data"
 import type { Database } from "@/lib/database.types"
 import { logSalesReportRpcFailure } from "@/lib/reports/log-query-error"
 import { resolveReportDateRange } from "@/lib/reports/date-ranges"
 import type { ParsedReportFilters } from "@/lib/validations/report.schema"
 import { createClient } from "@/lib/supabase/server"
+import { READ } from "@/lib/db/read-models"
+import { fetchVariantDisplayMeta } from "@/lib/db/variant-meta"
 import type {
   InventoryReportRow,
   MovementReportRow,
@@ -154,7 +161,10 @@ export async function getSalesReport(
     }
   })
 
-  return { summary, rows }
+  return {
+    summary: stripSalesReportSummary(summary, user),
+    rows,
+  }
 }
 
 export async function getInventoryReport(
@@ -220,7 +230,7 @@ export async function getInventoryReport(
     })
   }
 
-  return (valuationData ?? []).map((row) => {
+  const rows = (valuationData ?? []).map((row) => {
     const status = statusMap.get(`${row.product_variant_id}:${row.warehouse_id}`)
 
     return {
@@ -238,6 +248,8 @@ export async function getInventoryReport(
       inventoryValue: Number(row.inventory_value ?? 0),
     }
   })
+
+  return stripInventoryReportRows(rows, user)
 }
 
 export async function getMovementReport(
@@ -261,11 +273,7 @@ export async function getMovementReport(
         quantity_before,
         quantity_after,
         reason,
-        product_variants (
-          name,
-          sku,
-          products ( name )
-        ),
+        product_variant_id,
         warehouses ( name ),
         profiles!inventory_movements_created_by_fkey ( full_name ),
         sales ( document_number ),
@@ -301,13 +309,21 @@ export async function getMovementReport(
     throw error
   }
 
-  return (data ?? []).map((row) => ({
+  const variantMeta = await fetchVariantDisplayMeta(
+    supabase,
+    (data ?? []).map((row) => row.product_variant_id)
+  )
+
+  return (data ?? []).map((row) => {
+    const meta = variantMeta.get(row.product_variant_id)
+
+    return {
     id: row.id,
     createdAt: row.created_at,
     movementType: row.movement_type,
-    productName: row.product_variants?.products?.name ?? "Producto desconocido",
-    variantName: row.product_variants?.name ?? "Default",
-    sku: row.product_variants?.sku ?? "—",
+    productName: meta?.productName ?? "Producto desconocido",
+    variantName: meta?.name ?? "Default",
+    sku: meta?.sku ?? "—",
     warehouseName: row.warehouses?.name ?? "Almacén desconocido",
     quantity: row.quantity,
     quantityBefore: row.quantity_before,
@@ -315,7 +331,7 @@ export async function getMovementReport(
     userName: row.profiles?.full_name ?? "Usuario desconocido",
     reference: mapMovementReference(row),
     reason: row.reason,
-  }))
+  }})
 }
 
 export async function getPurchaseReport(
@@ -329,19 +345,9 @@ export async function getPurchaseReport(
   const supabase = await createClient()
 
   let query = supabase
-    .from("purchase_orders")
+    .from(READ.purchaseOrders)
     .select(
-      `
-        id,
-        document_number,
-        status,
-        total,
-        currency_code,
-        ordered_at,
-        suppliers ( name ),
-        warehouses ( name ),
-        purchase_order_items ( quantity_ordered, quantity_received )
-      `
+      "id, document_number, status, total, currency_code, ordered_at, supplier_id, warehouse_id"
     )
     .eq("organization_id", user.organizationId)
     .gte("created_at", range.from.toISOString())
@@ -380,17 +386,76 @@ export async function getPurchaseReport(
     }
   }
 
-  return (data ?? []).map((row) => {
-    const items = row.purchase_order_items ?? []
+  const includeFinancials = canViewPurchaseFinancials(user)
+  const orderRows = (data ?? []).filter(
+    (row): row is (typeof data)[number] & { id: string } => Boolean(row.id)
+  )
+  const orderIds = orderRows.map((row) => row.id)
+  const supplierIds = Array.from(
+    new Set(orderRows.map((row) => row.supplier_id).filter((id): id is string => Boolean(id)))
+  )
+  const warehouseIds = Array.from(
+    new Set(orderRows.map((row) => row.warehouse_id).filter((id): id is string => Boolean(id)))
+  )
+  const [supplierNames, warehouseNames] = await Promise.all([
+    supplierIds.length > 0
+      ? supabase.from("suppliers").select("id, name").in("id", supplierIds)
+      : Promise.resolve({ data: [], error: null }),
+    warehouseIds.length > 0
+      ? supabase.from("warehouses").select("id, name").in("id", warehouseIds)
+      : Promise.resolve({ data: [], error: null }),
+  ])
+
+  const supplierNameMap = new Map(
+    (supplierNames.data ?? []).map((row) => [row.id, row.name] as const)
+  )
+  const warehouseNameMap = new Map(
+    (warehouseNames.data ?? []).map((row) => [row.id, row.name] as const)
+  )
+  const itemsByOrder = new Map<
+    string,
+    Array<{ quantity_ordered: number; quantity_received: number }>
+  >()
+
+  if (orderIds.length > 0) {
+    const { data: itemRows, error: itemsError } = await supabase
+      .from(READ.purchaseOrderItems)
+      .select("purchase_order_id, quantity_ordered, quantity_received")
+      .in("purchase_order_id", orderIds)
+
+    if (itemsError) {
+      throw itemsError
+    }
+
+    for (const item of itemRows ?? []) {
+      if (!item.purchase_order_id) {
+        continue
+      }
+
+      const bucket = itemsByOrder.get(item.purchase_order_id) ?? []
+      bucket.push({
+        quantity_ordered: item.quantity_ordered ?? 0,
+        quantity_received: item.quantity_received ?? 0,
+      })
+      itemsByOrder.set(item.purchase_order_id, bucket)
+    }
+  }
+
+  return orderRows.map((row) => {
+    const items = itemsByOrder.get(row.id) ?? []
 
     return {
       id: row.id,
-      documentNumber: row.document_number,
-      supplierName: row.suppliers?.name ?? "Proveedor desconocido",
-      warehouseName: row.warehouses?.name ?? "Almacén desconocido",
-      status: row.status,
-      orderedAt: row.ordered_at,
-      total: Number(row.total),
+      documentNumber: row.document_number ?? "—",
+      supplierName: row.supplier_id
+        ? supplierNameMap.get(row.supplier_id) ?? "Proveedor desconocido"
+        : "Proveedor desconocido",
+      warehouseName: row.warehouse_id
+        ? warehouseNameMap.get(row.warehouse_id) ?? "Almacén desconocido"
+        : "Almacén desconocido",
+      status: row.status ?? "draft",
+      orderedAt: row.ordered_at ?? new Date(0).toISOString(),
+      total: includeFinancials ? Number(row.total ?? 0) : 0,
       currencyCode: row.currency_code ?? user.organizationBaseCurrency,
       unitsOrdered: items.reduce((sum, item) => sum + item.quantity_ordered, 0),
       unitsReceived: items.reduce((sum, item) => sum + item.quantity_received, 0),

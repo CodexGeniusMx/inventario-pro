@@ -48,6 +48,7 @@ export const createPurchaseSchema = z.object({
   lines: z
     .array(createPurchaseLineSchema)
     .min(1, "Agrega al menos una línea de producto."),
+  idempotencyKey: z.string().uuid().optional(),
 })
 
 export const receivePurchaseLineSchema = z.object({

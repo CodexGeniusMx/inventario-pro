@@ -46,7 +46,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const params = await searchParams
   const chartRangeDays = parseDashboardChartRange(params.chart)
   const summary = await getDashboardSummary(user, { chartRangeDays })
-  const { metrics, canViewFinancials } = summary
+  const { metrics, canViewFinancials, canViewInventoryValue, canViewProfit } = summary
 
   return (
     <>
@@ -78,22 +78,40 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               change={metrics.revenueMonthChange ?? undefined}
               icon={TrendingUp}
             />
-            <MetricCardCurrency
-              title="Utilidad bruta estimada"
-              amount={metrics.estimatedGrossProfitMonth}
-              subtitle={
-                metrics.estimatedGrossProfitMargin !== null
-                  ? `${formatPercent(metrics.estimatedGrossProfitMargin).replace("+", "")} de margen este mes`
-                  : "Este mes · ingresos netos menos costo de ventas estimado"
-              }
-              icon={DollarSign}
-            />
-            <MetricCardCurrency
-              title="Valor de inventario"
-              amount={metrics.inventoryValue}
-              subtitle="Productos activos al costo resuelto"
-              icon={Warehouse}
-            />
+            {canViewProfit ? (
+              <MetricCardCurrency
+                title="Utilidad bruta estimada"
+                amount={metrics.estimatedGrossProfitMonth}
+                subtitle={
+                  metrics.estimatedGrossProfitMargin !== null
+                    ? `${formatPercent(metrics.estimatedGrossProfitMargin).replace("+", "")} de margen este mes`
+                    : "Este mes · ingresos netos menos costo de ventas estimado"
+                }
+                icon={DollarSign}
+              />
+            ) : (
+              <MetricCardCount
+                title="Ventas del mes"
+                count={metrics.salesMonthCount}
+                subtitle="Ventas completadas"
+                icon={TrendingUp}
+              />
+            )}
+            {canViewInventoryValue ? (
+              <MetricCardCurrency
+                title="Valor de inventario"
+                amount={metrics.inventoryValue}
+                subtitle="Productos activos al costo resuelto"
+                icon={Warehouse}
+              />
+            ) : (
+              <MetricCardCount
+                title="Unidades en stock"
+                count={metrics.totalUnitsInStock}
+                subtitle="En variantes activas"
+                icon={Warehouse}
+              />
+            )}
           </>
         ) : (
           <>
@@ -108,12 +126,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               count={metrics.salesMonthCount}
               subtitle="Ventas completadas"
               icon={TrendingUp}
-            />
-            <MetricCardCurrency
-              title="Valor de inventario"
-              amount={metrics.inventoryValue}
-              subtitle="Productos activos al costo resuelto"
-              icon={Warehouse}
             />
             <MetricCardCount
               title="Unidades en stock"

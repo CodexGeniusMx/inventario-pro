@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server"
 
 import { requirePermission } from "@/lib/auth/session"
+import {
+  canViewReportInventoryValue,
+  canViewReportProfit,
+  canViewPurchaseFinancials,
+} from "@/lib/auth/financial-data"
 import { movementTypeLabels, stockStatusLabels } from "@/lib/inventory/labels"
 import { purchaseOrderStatusLabels } from "@/lib/purchasing/labels"
 import { buildCsv } from "@/lib/reports/csv"
+import { writeAuditLog } from "@/lib/audit/audit.service"
 import { saleStatusLabels } from "@/lib/sales/labels"
 import { reportFiltersSchema } from "@/lib/validations/report.schema"
 import {
@@ -47,6 +53,9 @@ export async function GET(
   context: RouteContext
 ): Promise<NextResponse> {
   const user = await requirePermission("reports", "read")
+  const showProfit = canViewReportProfit(user)
+  const showInventoryValue = canViewReportInventoryValue(user)
+  const showPurchaseTotals = canViewPurchaseFinancials(user)
   const { slug } = await context.params
 
   if (!isReportSlug(slug)) {
@@ -72,19 +81,23 @@ export async function GET(
 
   if (slug === "sales") {
     const { summary, rows } = await getSalesReport(user, filters)
-    csv = buildCsv(
-      ["metrica", "valor"],
-      [
-        ["cantidad_ventas", summary.salesCount],
-        ["unidades_vendidas", summary.unitsSold],
-        ["ingresos_netos", summary.netRevenue],
-        ["descuentos", summary.discountTotal],
-        ["unidades_devueltas", summary.returnUnits],
-        ["ingresos_devoluciones", summary.returnRevenue],
+    const summaryRows: Array<[string, string | number]> = [
+      ["cantidad_ventas", summary.salesCount],
+      ["unidades_vendidas", summary.unitsSold],
+      ["ingresos_netos", summary.netRevenue],
+      ["descuentos", summary.discountTotal],
+      ["unidades_devueltas", summary.returnUnits],
+      ["ingresos_devoluciones", summary.returnRevenue],
+    ]
+
+    if (showProfit) {
+      summaryRows.push(
         ["costo_ventas_estimado", summary.estimatedCogs],
-        ["utilidad_bruta_estimada", summary.estimatedGrossProfit],
-      ]
-    )
+        ["utilidad_bruta_estimada", summary.estimatedGrossProfit]
+      )
+    }
+
+    csv = buildCsv(["metrica", "valor"], summaryRows)
     csv += buildCsv(
       [
         "numero_venta",
@@ -122,8 +135,7 @@ export async function GET(
         "stock",
         "punto_reorden",
         "estado_stock",
-        "costo_unitario",
-        "valor_inventario",
+        ...(showInventoryValue ? ["costo_unitario", "valor_inventario"] : []),
       ],
       rows.map((row) => [
         row.productName,
@@ -133,8 +145,7 @@ export async function GET(
         row.quantityOnHand,
         row.reorderPoint,
         labelStockStatus(row.stockStatus),
-        row.unitCost,
-        row.inventoryValue,
+        ...(showInventoryValue ? [row.unitCost, row.inventoryValue] : []),
       ])
     )
   }
@@ -182,7 +193,7 @@ export async function GET(
         "almacen",
         "estado",
         "fecha_orden",
-        "total",
+        ...(showPurchaseTotals ? ["total"] : []),
         "cantidad_ordenada",
         "cantidad_recibida",
         "ultima_recepcion",
@@ -193,7 +204,7 @@ export async function GET(
         row.warehouseName,
         labelPurchaseStatus(row.status),
         row.orderedAt ?? "",
-        row.total,
+        ...(showPurchaseTotals ? [row.total] : []),
         row.unitsOrdered,
         row.unitsReceived,
         row.lastReceivedAt ?? "",
@@ -229,6 +240,25 @@ export async function GET(
         row.lastMovementAt ?? "",
       ])
     )
+  }
+
+  if (!csv) {
+    return NextResponse.json({ error: "Reporte no encontrado." }, { status: 404 })
+  }
+
+  if (
+    (slug === "inventory" && showInventoryValue) ||
+    (slug === "sales" && showProfit) ||
+    (slug === "purchases" && showPurchaseTotals)
+  ) {
+    await writeAuditLog({
+      organizationId: user.organizationId,
+      action: "report.export_sensitive",
+      entityType: "report",
+      entityId: user.organizationId,
+      newValues: { slug, filters },
+      source: "api",
+    })
   }
 
   return new NextResponse(csv, {

@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { hasPermission } from "@/lib/auth/permissions"
+import { hasAnyPermission } from "@/lib/auth/permissions"
 import { requirePermission } from "@/lib/auth/session"
 import { purchaseListFiltersSchema } from "@/lib/validations/purchase.schema"
 import { listPurchaseOrders } from "@/services/purchasing/purchase.service"
@@ -85,7 +85,10 @@ function PurchasesFilters({
 
 export default async function PurchasesPage({ searchParams }: PurchasesPageProps) {
   const user = await requirePermission("purchases", "read")
-  const canWrite = user.role === "admin" && hasPermission(user, "purchases", "write")
+  const canWrite = hasAnyPermission(user, [
+    { resource: "purchases", action: "create" },
+    { resource: "purchases", action: "write" },
+  ])
   const rawParams = await searchParams
 
   const parsedFilters = purchaseListFiltersSchema.safeParse({

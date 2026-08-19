@@ -11,6 +11,8 @@ import {
   ValidationError,
 } from "@/lib/errors/app-error"
 import { createClient } from "@/lib/supabase/server"
+import { READ } from "@/lib/db/read-models"
+import { fetchVariantDisplayMeta } from "@/lib/db/variant-meta"
 import type {
   AdjustmentDetail,
   AdjustmentListItem,
@@ -72,19 +74,19 @@ async function findVariantIdsForSearch(
   const [productsResult, skuVariantsResult, barcodeVariantsResult] =
     await Promise.all([
       supabase
-        .from("products")
-        .select("id, product_variants ( id )")
+        .from(READ.products)
+        .select("id")
         .eq("organization_id", organizationId)
         .is("deleted_at", null)
         .ilike("name", term),
       supabase
-        .from("product_variants")
+        .from(READ.productVariants)
         .select("id")
         .eq("organization_id", organizationId)
         .is("deleted_at", null)
         .ilike("sku", term),
       supabase
-        .from("product_variants")
+        .from(READ.productVariants)
         .select("id")
         .eq("organization_id", organizationId)
         .is("deleted_at", null)
@@ -105,15 +107,37 @@ async function findVariantIdsForSearch(
   }
 
   const ids = new Set<string>()
-  productsResult.data?.forEach((product) => {
-    product.product_variants?.forEach((variant) => {
-      if (variant?.id) {
+  const productIds = (productsResult.data ?? []).map((product) => product.id)
+
+  if (productIds.length > 0) {
+    const { data: variantsForProducts, error: variantsForProductsError } =
+      await supabase
+        .from(READ.productVariants)
+        .select("id")
+        .eq("organization_id", organizationId)
+        .in("product_id", productIds)
+        .is("deleted_at", null)
+
+    if (variantsForProductsError) {
+      throw variantsForProductsError
+    }
+
+    variantsForProducts?.forEach((variant) => {
+      if (variant.id) {
         ids.add(variant.id)
       }
     })
+  }
+  skuVariantsResult.data?.forEach((variant) => {
+    if (variant.id) {
+      ids.add(variant.id)
+    }
   })
-  skuVariantsResult.data?.forEach((variant) => ids.add(variant.id))
-  barcodeVariantsResult.data?.forEach((variant) => ids.add(variant.id))
+  barcodeVariantsResult.data?.forEach((variant) => {
+    if (variant.id) {
+      ids.add(variant.id)
+    }
+  })
 
   return Array.from(ids)
 }
@@ -294,11 +318,7 @@ export async function listMovements(
         purchase_receipt_id,
         return_id,
         warehouses ( name ),
-        product_variants (
-          name,
-          sku,
-          products ( name )
-        ),
+        product_variant_id,
         profiles!inventory_movements_created_by_fkey ( full_name ),
         stock_adjustments ( document_number ),
         sales ( document_number ),
@@ -330,15 +350,21 @@ export async function listMovements(
     throw error
   }
 
+  const variantMeta = await fetchVariantDisplayMeta(
+    supabase,
+    (data ?? []).map((row) => row.product_variant_id)
+  )
+
   return (data ?? []).map((row) => {
     const related = mapRelatedDocument(row)
+    const meta = variantMeta.get(row.product_variant_id)
 
     return {
       id: row.id,
       createdAt: row.created_at,
-      productName: row.product_variants?.products?.name ?? "Producto desconocido",
-      variantName: row.product_variants?.name ?? "Default",
-      sku: row.product_variants?.sku ?? "—",
+      productName: meta?.productName ?? "Producto desconocido",
+      variantName: meta?.name ?? "Default",
+      sku: meta?.sku ?? "—",
       warehouseId: row.warehouse_id,
       warehouseName: row.warehouses?.name ?? "Almacén desconocido",
       movementType: row.movement_type,
@@ -425,11 +451,6 @@ export async function getAdjustmentById(
           product_variant_id,
           quantity,
           movement_id,
-          product_variants (
-            name,
-            sku,
-            products ( name )
-          ),
           inventory_movements!stock_adjustment_items_movement_id_fkey (
             movement_type,
             quantity_before,
@@ -450,6 +471,11 @@ export async function getAdjustmentById(
     throw new NotFoundError("Ajuste de stock no encontrado.")
   }
 
+  const variantMeta = await fetchVariantDisplayMeta(
+    supabase,
+    (data.stock_adjustment_items ?? []).map((line) => line.product_variant_id)
+  )
+
   return {
     id: data.id,
     documentNumber: data.document_number,
@@ -460,18 +486,21 @@ export async function getAdjustmentById(
     warehouseName: data.warehouses?.name ?? "Almacén desconocido",
     createdByName: data.profiles?.full_name ?? "Usuario desconocido",
     createdAt: data.created_at,
-    lines: (data.stock_adjustment_items ?? []).map((line) => ({
+    lines: (data.stock_adjustment_items ?? []).map((line) => {
+      const meta = variantMeta.get(line.product_variant_id)
+
+      return {
       id: line.id,
       productVariantId: line.product_variant_id,
-      productName: line.product_variants?.products?.name ?? "Producto desconocido",
-      variantName: line.product_variants?.name ?? "Default",
-      sku: line.product_variants?.sku ?? "—",
+      productName: meta?.productName ?? "Producto desconocido",
+      variantName: meta?.name ?? "Default",
+      sku: meta?.sku ?? "—",
       quantity: line.quantity,
       movementId: line.movement_id,
       quantityBefore: line.inventory_movements?.quantity_before ?? null,
       quantityAfter: line.inventory_movements?.quantity_after ?? null,
       movementType: line.inventory_movements?.movement_type ?? null,
-    })),
+    }}),
   }
 }
 
@@ -481,15 +510,8 @@ export async function listVariantOptions(
   const supabase = await createClient()
 
   const { data, error } = await supabase
-    .from("product_variants")
-    .select(
-      `
-        id,
-        name,
-        sku,
-        products!inner ( name, status, deleted_at )
-      `
-    )
+    .from(READ.productVariants)
+    .select("id, name, sku, product_id")
     .eq("organization_id", user.organizationId)
     .is("deleted_at", null)
     .eq("is_active", true)
@@ -499,14 +521,45 @@ export async function listVariantOptions(
     throw error
   }
 
+  const productIds = Array.from(new Set((data ?? []).map((variant) => variant.product_id)))
+  const productMeta = new Map<string, { name: string; status: string; deleted_at: string | null }>()
+
+  if (productIds.length > 0) {
+    const { data: products, error: productError } = await supabase
+      .from(READ.products)
+      .select("id, name, status, deleted_at")
+      .in("id", productIds)
+
+    if (productError) {
+      throw productError
+    }
+
+    for (const product of products ?? []) {
+      if (product.id && product.name && product.status) {
+        productMeta.set(product.id, {
+          name: product.name,
+          status: product.status,
+          deleted_at: product.deleted_at,
+        })
+      }
+    }
+  }
+
   return (data ?? [])
-    .filter((variant) => !variant.products?.deleted_at)
-    .filter((variant) => variant.products?.status === "active")
+    .filter(
+      (variant) =>
+        variant.id &&
+        variant.name &&
+        variant.sku &&
+        variant.product_id &&
+        !productMeta.get(variant.product_id)?.deleted_at &&
+        productMeta.get(variant.product_id)?.status === "active"
+    )
     .map((variant) => ({
-      id: variant.id,
-      productName: variant.products?.name ?? "Producto desconocido",
-      variantName: variant.name,
-      sku: variant.sku,
+      id: variant.id!,
+      productName: productMeta.get(variant.product_id!)?.name ?? "Producto desconocido",
+      variantName: variant.name!,
+      sku: variant.sku!,
     }))
 }
 

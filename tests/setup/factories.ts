@@ -127,6 +127,7 @@ export const ROLE_PERMISSION_PRESETS: Record<
     ["inventory", "view"],
     ["sales", "view"],
     ["purchases", "view"],
+    ["reports", "read"],
   ]),
 }
 

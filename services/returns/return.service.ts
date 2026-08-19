@@ -11,6 +11,7 @@ import {
 } from "@/lib/errors/app-error"
 import type { ProcessReturnRpcArgs } from "@/lib/returns/rpc"
 import { createClient } from "@/lib/supabase/server"
+import { fetchVariantDisplayMeta } from "@/lib/db/variant-meta"
 import type {
   ProcessReturnInput,
   ReturnDetail,
@@ -145,11 +146,6 @@ export async function getReturnById(
           is_restockable,
           restock_movement_id,
           damage_movement_id,
-          product_variants (
-            name,
-            sku,
-            products ( name )
-          ),
           inventory_movements!return_items_restock_movement_id_fkey (
             quantity_before,
             quantity_after
@@ -169,6 +165,11 @@ export async function getReturnById(
     throw new NotFoundError("Devolución no encontrada.")
   }
 
+  const variantMeta = await fetchVariantDisplayMeta(
+    supabase,
+    (data.return_items ?? []).map((line) => line.product_variant_id)
+  )
+
   return {
     id: data.id,
     documentNumber: data.document_number,
@@ -184,14 +185,15 @@ export async function getReturnById(
       const restockMovement = Array.isArray(line.inventory_movements)
         ? line.inventory_movements[0]
         : line.inventory_movements
+      const meta = variantMeta.get(line.product_variant_id)
 
       return {
         id: line.id,
         saleItemId: line.sale_item_id,
         productVariantId: line.product_variant_id,
-        productName: line.product_variants?.products?.name ?? "Producto desconocido",
-        variantName: line.product_variants?.name ?? "Default",
-        sku: line.product_variants?.sku ?? "—",
+        productName: meta?.productName ?? "Producto desconocido",
+        variantName: meta?.name ?? "Default",
+        sku: meta?.sku ?? "—",
         quantity: line.quantity,
         isRestockable: line.is_restockable,
         quantityBefore: restockMovement?.quantity_before ?? null,
@@ -224,12 +226,7 @@ export async function getSaleReturnContext(
           product_variant_id,
           quantity,
           quantity_returned,
-          unit_price,
-          product_variants (
-            name,
-            sku,
-            products ( name )
-          )
+          unit_price
         )
       `
     )
@@ -249,18 +246,26 @@ export async function getSaleReturnContext(
     throw new ValidationError("Solo las ventas completadas se pueden devolver.")
   }
 
+  const variantMeta = await fetchVariantDisplayMeta(
+    supabase,
+    (data.sale_items ?? []).map((line) => line.product_variant_id)
+  )
+
   const lines = (data.sale_items ?? [])
-    .map((line) => ({
+    .map((line) => {
+      const meta = variantMeta.get(line.product_variant_id)
+
+      return {
       id: line.id,
       productVariantId: line.product_variant_id,
-      productName: line.product_variants?.products?.name ?? "Producto desconocido",
-      variantName: line.product_variants?.name ?? "Default",
-      sku: line.product_variants?.sku ?? "—",
+      productName: meta?.productName ?? "Producto desconocido",
+      variantName: meta?.name ?? "Default",
+      sku: meta?.sku ?? "—",
       quantitySold: line.quantity,
       quantityReturned: line.quantity_returned,
       quantityReturnable: line.quantity - line.quantity_returned,
       unitPrice: Number(line.unit_price),
-    }))
+    }})
     .filter((line) => line.quantityReturnable > 0)
 
   return {

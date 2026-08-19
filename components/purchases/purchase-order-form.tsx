@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 
@@ -70,6 +70,7 @@ export function PurchaseOrderForm({
   defaultCurrency,
 }: PurchaseOrderFormProps) {
   const router = useRouter()
+  const idempotencyKeyRef = useRef(crypto.randomUUID())
   const [supplierId, setSupplierId] = useState(suppliers[0]?.id ?? "")
   const [warehouseId, setWarehouseId] = useState(
     defaultWarehouseId ?? warehouses[0]?.id ?? ""
@@ -134,10 +135,13 @@ export function PurchaseOrderForm({
     setFieldErrors({})
     setIsSubmitting(true)
 
+    const idempotencyKey = idempotencyKeyRef.current
+
     const payload = {
       supplierId,
       warehouseId,
       notes,
+      idempotencyKey,
       ...(shouldShowCurrencySelector(allowedCurrencies)
         ? { currencyCode }
         : {}),
@@ -170,6 +174,7 @@ export function PurchaseOrderForm({
 
     router.push(`/purchases/${result.data.id}`)
     router.refresh()
+    idempotencyKeyRef.current = crypto.randomUUID()
   }
 
   if (suppliers.length === 0 || activeWarehouses.length === 0 || variants.length === 0) {

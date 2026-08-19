@@ -96,6 +96,7 @@ export type CreatePurchaseInput = {
   currencyCode?: SupportedCurrency
   notes?: string | null
   lines: CreatePurchaseLineInput[]
+  idempotencyKey?: string
 }
 
 export type ReceivePurchaseLineInput = {

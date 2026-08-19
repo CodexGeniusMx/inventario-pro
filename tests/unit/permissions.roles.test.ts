@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  canManageRolePermissions,
   canManageSettings,
   canManageUsers,
   canViewFinancialProfit,
@@ -16,12 +17,13 @@ describe("role permission presets", () => {
     expect(hasPermission(seller, "sales", "create")).toBe(true)
   })
 
-  it("vendedor cannot view costs, profit, currency settings, or users", () => {
+  it("vendedor cannot view costs, profit, currency settings, users, or permission matrix", () => {
     const seller = userWithRole("seller")
     expect(canViewProductCosts(seller)).toBe(false)
     expect(canViewFinancialProfit(seller)).toBe(false)
     expect(canManageSettings(seller)).toBe(false)
     expect(canManageUsers(seller)).toBe(false)
+    expect(canManageRolePermissions(seller)).toBe(false)
   })
 
   it("almacén can receive purchases and view inventory", () => {
@@ -48,6 +50,7 @@ describe("role permission presets", () => {
     const owner = userWithRole("owner")
     expect(canViewFinancialProfit(owner)).toBe(true)
     expect(canManageUsers(owner)).toBe(true)
+    expect(canManageRolePermissions(owner)).toBe(true)
     expect(hasPermission(owner, "settings", "currency")).toBe(true)
   })
 })

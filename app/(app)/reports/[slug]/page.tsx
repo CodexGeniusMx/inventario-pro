@@ -11,6 +11,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import {
+  canViewReportInventoryValue,
+  canViewReportProfit,
+  canViewPurchaseFinancials,
+} from "@/lib/auth/financial-data"
 import { requirePermission } from "@/lib/auth/session"
 import { formatCurrency, formatDateTime, formatNumber } from "@/lib/format"
 import { resolveReportDateRange } from "@/lib/reports/date-ranges"
@@ -43,6 +48,9 @@ export default async function ReportDetailPage({
   searchParams,
 }: ReportDetailPageProps) {
   const user = await requirePermission("reports", "read")
+  const showProfit = canViewReportProfit(user)
+  const showInventoryValue = canViewReportInventoryValue(user)
+  const showPurchaseTotals = canViewPurchaseFinancials(user)
   const { slug } = await params
 
   if (!isReportSlug(slug)) {
@@ -94,18 +102,29 @@ export default async function ReportDetailPage({
             <SummaryCard label="Cantidad de ventas" value={formatNumber(summary.salesCount)} />
             <SummaryCard label="Unidades vendidas (netas)" value={formatNumber(summary.unitsSold)} />
             <SummaryCard label="Ingresos netos" value={formatCurrency(summary.netRevenue)} />
-            <SummaryCard
-              label="Utilidad bruta estimada"
-              value={formatCurrency(summary.estimatedGrossProfit)}
-            />
+            {showProfit ? (
+              <SummaryCard
+                label="Utilidad bruta estimada"
+                value={formatCurrency(summary.estimatedGrossProfit)}
+              />
+            ) : (
+              <SummaryCard label="Descuentos" value={formatCurrency(summary.discountTotal)} />
+            )}
           </div>
 
-          <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard label="Descuentos" value={formatCurrency(summary.discountTotal)} />
-            <SummaryCard label="Unidades devueltas" value={formatNumber(summary.returnUnits)} />
-            <SummaryCard label="Ingresos por devoluciones" value={formatCurrency(summary.returnRevenue)} />
-            <SummaryCard label="Costo de ventas estimado" value={formatCurrency(summary.estimatedCogs)} />
-          </div>
+          {showProfit ? (
+            <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <SummaryCard label="Descuentos" value={formatCurrency(summary.discountTotal)} />
+              <SummaryCard label="Unidades devueltas" value={formatNumber(summary.returnUnits)} />
+              <SummaryCard label="Ingresos por devoluciones" value={formatCurrency(summary.returnRevenue)} />
+              <SummaryCard label="Costo de ventas estimado" value={formatCurrency(summary.estimatedCogs)} />
+            </div>
+          ) : (
+            <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <SummaryCard label="Unidades devueltas" value={formatNumber(summary.returnUnits)} />
+              <SummaryCard label="Ingresos por devoluciones" value={formatCurrency(summary.returnRevenue)} />
+            </div>
+          )}
 
           <DataTable
             headers={[
@@ -137,13 +156,19 @@ export default async function ReportDetailPage({
 
     if (slug === "inventory") {
       const rows = await getInventoryReport(user, filters)
-      const totalValue = rows.reduce((sum, row) => sum + row.inventoryValue, 0)
+      const totalValue = showInventoryValue
+        ? rows.reduce((sum, row) => sum + row.inventoryValue, 0)
+        : null
 
       return (
         <ReportLayout
           slug={slug}
           title={definition.title}
-          description={`${definition.description} · valor total ${formatCurrency(totalValue)}`}
+          description={
+            totalValue !== null
+              ? `${definition.description} · valor total ${formatCurrency(totalValue)}`
+              : definition.description
+          }
           filters={filters}
           filterOptions={filterOptions}
           searchParams={Object.fromEntries(
@@ -163,8 +188,7 @@ export default async function ReportDetailPage({
               "Stock",
               "Reorden",
               "Estado",
-              "Costo unitario",
-              "Valor",
+              ...(showInventoryValue ? ["Costo unitario", "Valor"] : []),
             ]}
             rows={rows.map((row) => [
               row.productName,
@@ -174,8 +198,9 @@ export default async function ReportDetailPage({
               row.quantityOnHand,
               row.reorderPoint,
               row.stockStatus,
-              formatCurrency(row.unitCost),
-              formatCurrency(row.inventoryValue),
+              ...(showInventoryValue
+                ? [formatCurrency(row.unitCost), formatCurrency(row.inventoryValue)]
+                : []),
             ])}
           />
         </ReportLayout>
@@ -237,10 +262,12 @@ export default async function ReportDetailPage({
 
     if (slug === "purchases") {
       const rows = await getPurchaseReport(user, filters)
-      const totalsByCurrency = rows.reduce<Record<string, number>>((acc, row) => {
-        acc[row.currencyCode] = (acc[row.currencyCode] ?? 0) + row.total
-        return acc
-      }, {})
+      const totalsByCurrency = showPurchaseTotals
+        ? rows.reduce<Record<string, number>>((acc, row) => {
+            acc[row.currencyCode] = (acc[row.currencyCode] ?? 0) + row.total
+            return acc
+          }, {})
+        : {}
       const totalsLabel = Object.entries(totalsByCurrency)
         .map(
           ([currency, total]) =>
@@ -271,7 +298,7 @@ export default async function ReportDetailPage({
               "Almacén",
               "Estado",
               "Ordenada",
-              "Total",
+              ...(showPurchaseTotals ? ["Total"] : []),
               "Cant. ordenada",
               "Cant. recibida",
               "Última recepción",
@@ -282,7 +309,9 @@ export default async function ReportDetailPage({
               row.warehouseName,
               row.status,
               row.orderedAt ? formatDateTime(row.orderedAt) : "—",
-              formatCurrency(row.total, row.currencyCode as "MXN" | "USD"),
+              ...(showPurchaseTotals
+                ? [formatCurrency(row.total, row.currencyCode as "MXN" | "USD")]
+                : []),
               row.unitsOrdered,
               row.unitsReceived,
               row.lastReceivedAt ? formatDateTime(row.lastReceivedAt) : "—",

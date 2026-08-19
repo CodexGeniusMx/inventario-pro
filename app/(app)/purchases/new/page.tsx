@@ -2,7 +2,8 @@ import { redirect } from "next/navigation"
 
 import { PurchaseOrderForm } from "@/components/purchases/purchase-order-form"
 import { PageHeader } from "@/components/layout/page-header"
-import { requireAdmin } from "@/lib/auth/session"
+import { hasAnyPermission } from "@/lib/auth/permissions"
+import { requireUser } from "@/lib/auth/session"
 import { listVariantOptions } from "@/services/inventory/inventory.service"
 import {
   getDefaultWarehouse,
@@ -11,11 +12,14 @@ import {
 import { listSupplierOptions } from "@/services/parties/supplier.service"
 
 export default async function NewPurchasePage() {
-  let user
+  const user = await requireUser()
 
-  try {
-    user = await requireAdmin()
-  } catch {
+  if (
+    !hasAnyPermission(user, [
+      { resource: "purchases", action: "create" },
+      { resource: "purchases", action: "write" },
+    ])
+  ) {
     redirect("/purchases")
   }
 

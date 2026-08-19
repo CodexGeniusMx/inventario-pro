@@ -119,6 +119,8 @@ export type DashboardSummary = {
   recentAdjustments: RecentAdjustmentActivity[]
   recentReturns: RecentReturnActivity[]
   canViewFinancials: boolean
+  canViewInventoryValue: boolean
+  canViewProfit: boolean
   organizationName: string
   generatedAt: string
 }
