@@ -127,4 +127,53 @@
   html {
     @apply font-sans;
   }
+
+  html[data-text-size="large"] {
+    font-size: 18px;
+  }
+
+  html[data-high-contrast="true"] {
+    --border: oklch(0.45 0 0);
+    --input: oklch(0.45 0 0);
+    --muted-foreground: oklch(0.35 0 0);
+  }
+
+  html.dark[data-high-contrast="true"] {
+    --border: oklch(0.82 0 0);
+    --input: oklch(0.82 0 0);
+    --muted-foreground: oklch(0.86 0 0);
+  }
+
+  html[data-density="compact"] [data-slot="table-head"] {
+    @apply h-8 px-1.5 text-xs;
+  }
+
+  html[data-density="compact"] [data-slot="table-cell"] {
+    @apply p-1.5 text-xs;
+  }
+
+  html[data-density="compact"] [data-slot="card"] {
+    @apply gap-3 py-3;
+  }
+
+  html[data-density="comfortable"] [data-slot="table-head"] {
+    @apply h-12 px-3;
+  }
+
+  html[data-density="comfortable"] [data-slot="table-cell"] {
+    @apply p-3;
+  }
+
+  html[data-density="comfortable"] main {
+    @apply lg:p-8;
+  }
+
+  html[data-reduced-motion="true"] *,
+  html[data-reduced-motion="true"] *::before,
+  html[data-reduced-motion="true"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

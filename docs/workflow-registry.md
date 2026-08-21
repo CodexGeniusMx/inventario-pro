@@ -18,6 +18,8 @@ Labels use **CONFIRMED FROM CODE**, **ASSUMPTION**, or **RECOMMENDATION** inline
 | 4 | Variants | ⚠️ Partial | Single default variant in `product-form.tsx` |
 | 5 | Categories | ⚠️ Partial | Inline create only; no admin page |
 | 6 | Units | ⚠️ Partial | `00028`, `unit.service.ts`; no settings UI |
+| 7 | Personal settings | ✅ Phase 1A | `/account/*`, `user_preferences`, migration `00032` |
+| 8 | Role permission editor | ✅ Phase 1A | `/settings/permissions`, org overrides RPC |
 | 7 | Initial stock | ✅ | `create_stock_adjustment` + `initial_stock` type |
 | 8 | Inventory adjustment | ✅ | `inventory.service.ts` → RPC |
 | 9 | Purchase order | ✅ | `create_purchase_order` RPC (`00029`) — atomic |

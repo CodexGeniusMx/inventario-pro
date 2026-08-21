@@ -874,6 +874,111 @@ export type Database = {
           },
         ]
       }
+      user_preferences: {
+        Row: {
+          created_at: string
+          density: string
+          high_contrast: boolean
+          notifications_email_enabled: boolean
+          notifications_in_app: boolean
+          notifications_whatsapp_enabled: boolean
+          organization_id: string
+          reduce_motion: boolean
+          text_size: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          density?: string
+          high_contrast?: boolean
+          notifications_email_enabled?: boolean
+          notifications_in_app?: boolean
+          notifications_whatsapp_enabled?: boolean
+          organization_id: string
+          reduce_motion?: boolean
+          text_size?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          density?: string
+          high_contrast?: boolean
+          notifications_email_enabled?: boolean
+          notifications_in_app?: boolean
+          notifications_whatsapp_enabled?: boolean
+          organization_id?: string
+          reduce_motion?: boolean
+          text_size?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_role_permission_overrides: {
+        Row: {
+          created_at: string
+          granted: boolean
+          id: string
+          organization_id: string
+          permission_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          granted: boolean
+          id?: string
+          organization_id: string
+          permission_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          granted?: boolean
+          id?: string
+          organization_id?: string
+          permission_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_role_permission_overrides_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_role_permission_overrides_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       purchase_order_items: {
         Row: {
           id: string
@@ -2077,6 +2182,57 @@ export type Database = {
           p_warehouse_id: string
         }
         Returns: string
+      }
+      get_or_create_user_preferences: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Tables"]["user_preferences"]["Row"]
+      }
+      upsert_user_preferences: {
+        Args: {
+          p_density?: string | null
+          p_high_contrast?: boolean | null
+          p_notifications_email_enabled?: boolean | null
+          p_notifications_in_app?: boolean | null
+          p_notifications_whatsapp_enabled?: boolean | null
+          p_reduce_motion?: boolean | null
+          p_text_size?: string | null
+          p_theme?: string | null
+        }
+        Returns: Database["public"]["Tables"]["user_preferences"]["Row"]
+      }
+      get_my_effective_permissions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          action: string
+          resource: string
+        }[]
+      }
+      get_effective_permissions_for_role: {
+        Args: {
+          p_organization_id: string
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: {
+          action: string
+          granted: boolean
+          is_default: boolean
+          is_override: boolean
+          permission_id: string
+          resource: string
+        }[]
+      }
+      update_organization_role_permissions: {
+        Args: {
+          p_changes: Json
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: Json
+      }
+      restore_organization_role_permissions: {
+        Args: {
+          p_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: Json
       }
     }
     Enums: {

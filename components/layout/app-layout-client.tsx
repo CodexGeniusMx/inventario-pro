@@ -27,7 +27,14 @@ const pageTitles: Record<string, string> = {
   "/suppliers/new": "Nuevo proveedor",
   "/reports": "Reportes",
   "/users": "Usuarios",
-  "/settings": "Configuración",
+  "/settings": "Administrar empresa",
+  "/settings/permissions": "Roles y permisos",
+  "/account": "Mi cuenta",
+  "/account/profile": "Mi perfil",
+  "/account/appearance": "Apariencia",
+  "/account/accessibility": "Accesibilidad",
+  "/account/notifications": "Notificaciones",
+  "/account/security": "Seguridad",
 }
 
 function getPageTitle(pathname: string): string {

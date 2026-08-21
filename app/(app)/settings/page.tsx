@@ -21,8 +21,8 @@ export default async function SettingsPage() {
   return (
     <>
       <PageHeader
-        title="Configuración"
-        description="Administra empresa, monedas, inventario, Keep AI y WhatsApp."
+        title="Administrar empresa"
+        description="Configuración organizacional: empresa, monedas, inventario, Keep AI y WhatsApp."
       />
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">

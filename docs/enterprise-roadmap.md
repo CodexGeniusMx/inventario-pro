@@ -56,17 +56,25 @@ Quantity of features is explicitly deprioritized until:
 
 ### Do not start yet
 
-- Permission matrix UI  
-- Import  
+- Excel import  
 - Redis  
 
+### 1A-P — Personal settings + role permission editor ✅ IMPLEMENTED (2026-08-20)
+
+**Goal:** Separate personal preferences from org administration; org-scoped permission overrides without weakening Phase 0.
+
+| # | Deliverable | Status |
+|---|-------------|--------|
+| 1A-P.1 | `user_preferences` + RLS + RPCs | Migration `00032` |
+| 1A-P.2 | `/account/*` personal settings (theme, density, a11y, notifications, security) | Implemented |
+| 1A-P.3 | `organization_role_permission_overrides` + effective `has_permission()` | Migration `00032` |
+| 1A-P.4 | Permission editor UI `/settings/permissions` | Implemented |
+| 1A-P.5 | Audit on matrix changes | RPC `audit_log_record` |
+| 1A-P.6 | Unit tests + live QA checklist | `tests/phase-1a/` |
+
+See [phase-1a-personal-settings-permissions-report.md](./phase-1a-personal-settings-permissions-report.md).
+
 ---
-
-## Phase 1 — Adopt & migrate (P1)
-
-**Goal:** A business can move from Excel without re-entering 500–5,000 SKUs manually.
-
-**Duration estimate:** 4–6 weeks
 
 ### 1A — Import foundation
 

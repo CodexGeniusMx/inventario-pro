@@ -1,6 +1,6 @@
 # Keep Inventory — Security Architecture
 
-**Last updated:** 2026-08-19 (Phase 0 trust hardening)  
+**Last updated:** 2026-08-20 (Phase 1A personal settings + permission editor)  
 **Status labels:** **IMPLEMENTED** · **PLANNED** · **NOT YET VERIFIED**
 
 ---
@@ -61,6 +61,32 @@ Migration `00029_phase0_trust_hardening.sql` replaces legacy `is_admin()`-only w
 | `can_read_audit_logs()` | audit_logs SELECT |
 
 Direct inventory mutations remain RPC-only (**IMPLEMENTED**).
+
+### 3.4 Organization permission overrides (Phase 1A)
+
+Migration `00032_user_preferences_and_role_permission_editor.sql`:
+
+| Control | Status |
+|---------|--------|
+| Global defaults in `role_permissions` (unchanged) | **IMPLEMENTED** |
+| Per-org overrides in `organization_role_permission_overrides` | **IMPLEMENTED** (awaiting migration apply) |
+| Effective resolution: override → else global default | **IMPLEMENTED** in `has_permission()` |
+| Client direct writes to overrides | **DENIED** (RLS) |
+| Mutations via `update_organization_role_permissions` RPC | **IMPLEMENTED** |
+| Requires `can_manage_role_permissions()` | **IMPLEMENTED** |
+| Owner role matrix immutable | **IMPLEMENTED** |
+| Admin `roles:manage_permissions` protected from revocation | **IMPLEMENTED** |
+| Audit on matrix changes | **IMPLEMENTED** (`audit_log_record`) |
+
+Keep AI inherits effective permissions from session — no separate AI permission universe.
+
+### 3.5 Personal user preferences (Phase 1A)
+
+| Control | Status |
+|---------|--------|
+| `user_preferences` per authenticated user | **IMPLEMENTED** (awaiting migration apply) |
+| RLS: own row only | **IMPLEMENTED** |
+| Org settings separate from personal settings | **IMPLEMENTED** (`/account/*` vs `/settings/*`) |
 
 ---
 

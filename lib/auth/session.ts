@@ -7,6 +7,7 @@ import {
   isAdmin as checkIsAdmin,
   canManageSettings,
   canManageUsers,
+  canManageRolePermissions,
 } from "@/lib/auth/permissions"
 import type { AuthenticatedUser } from "@/lib/auth/types"
 import {
@@ -179,23 +180,46 @@ async function loadAuthenticatedUser(): Promise<AuthenticatedUser | null> {
     return null
   }
 
-  const { data: permissionRows, error: permissionsError } = await supabase
-    .from("role_permissions")
-    .select(
-      `
-        permissions (
-          resource,
-          action
+  const { data: permissionRows, error: permissionsError } = await supabase.rpc(
+    "get_my_effective_permissions"
+  )
+
+  let permissions: AuthenticatedUser["permissions"]
+
+  if (!permissionsError && permissionRows) {
+    permissions = permissionRows.map((row) => ({
+      resource: row.resource,
+      action: row.action,
+    }))
+  } else {
+    if (
+      permissionsError &&
+      permissionsError.code !== "42883" &&
+      permissionsError.code !== "PGRST202" &&
+      !isMissingSchemaError(permissionsError)
+    ) {
+      throw permissionsError
+    }
+
+    const { data: legacyPermissionRows, error: legacyPermissionsError } =
+      await supabase
+        .from("role_permissions")
+        .select(
+          `
+            permissions (
+              resource,
+              action
+            )
+          `
         )
-      `
-    )
-    .eq("role", profile.role)
+        .eq("role", profile.role)
 
-  if (permissionsError) {
-    throw permissionsError
+    if (legacyPermissionsError) {
+      throw legacyPermissionsError
+    }
+
+    permissions = permissionsFromRows(legacyPermissionRows ?? [])
   }
-
-  const permissions = permissionsFromRows(permissionRows ?? [])
   const extendedOrg = await loadExtendedOrganizationSettings(
     profile.organization_id
   )
@@ -268,6 +292,38 @@ export async function requireAdminOrRedirect(
       reason: "User is not org admin (owner/admin).",
     })
     redirect(redirectTo)
+  }
+
+  return user
+}
+
+export async function requireRolePermissionsAccessOrRedirect(
+  redirectTo = "/dashboard"
+): Promise<AuthenticatedUser> {
+  const user = await requireUserOrRedirect("/login")
+
+  if (!canManageRolePermissions(user)) {
+    logAuthRedirect({
+      pathname: await getCurrentPathname(),
+      userId: user.id,
+      profileFound: true,
+      organizationFound: true,
+      role: user.role,
+      requiredPermission: "roles.manage_permissions",
+      destination: redirectTo,
+      reason: "User lacks role permission management authority.",
+    })
+    redirect(redirectTo)
+  }
+
+  return user
+}
+
+export async function requireRolePermissionsAccess(): Promise<AuthenticatedUser> {
+  const user = await requireUser()
+
+  if (!canManageRolePermissions(user)) {
+    throw new ForbiddenError()
   }
 
   return user
